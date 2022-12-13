@@ -1,0 +1,130 @@
+plugins {
+    id "java"
+    id "jacoco"
+    id "application"
+
+    id "com.github.bjornvester.wsdl2java" version "2.0.2"
+    id "com.github.johnrengelman.shadow" version "8.1.1"
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+mainClassName = "ru.tinkoff.kora.example.soap.client.Application"
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+configurations {
+    koraBom
+    implementation.extendsFrom(koraBom)
+    annotationProcessor.extendsFrom(koraBom)
+}
+
+dependencies {
+    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
+    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+    annotationProcessor "org.slf4j:slf4j-simple:2.0.11"
+
+    implementation "ru.tinkoff.kora:json-module"
+    implementation "ru.tinkoff.kora:http-client-jdk"
+    implementation("ru.tinkoff.kora:soap-client") {
+        exclude group: "jakarta.xml"
+        exclude group: "jakarta.jws"
+        exclude group: "jakarta.xml.ws"
+        exclude group: "jakarta.xml.bind"
+        exclude group: "org.glassfish.jaxb"
+        exclude group: "com.sun.activation"
+    }
+
+    implementation "ru.tinkoff.kora:logging-logback"
+    implementation "ru.tinkoff.kora:config-hocon"
+
+    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "io.goodforgod:testcontainers-extensions-mockserver:0.9.4"
+}
+
+//noinspection GroovyAssignabilityCheck
+run {
+    environment([
+            "SOAP_CLIENT_URL": "$httpClientUrl",
+    ])
+}
+
+test {
+    jvmArgs += [
+            "-XX:+TieredCompilation",
+            "-XX:TieredStopAtLevel=1",
+    ]
+
+    environment([
+            "": ""
+    ])
+
+    useJUnitPlatform()
+    testLogging {
+        showStandardStreams(true)
+        events("passed", "skipped", "failed")
+        exceptionFormat("full")
+    }
+
+    jacoco {
+        excludes += ["**/Application*"]
+    }
+
+    reports {
+        html.required = false
+        junitXml.required = false
+    }
+}
+
+wsdl2java {
+    cxfVersion = "4.0.2"
+    wsdlDir = layout.projectDirectory.dir("src/main/resources/wsdl")
+    useJakarta = true
+    markGenerated = true
+    verbose = false
+    packageName = "ru.tinkoff.kora.example.generated.soap"
+    generatedSourceDir.set(layout.buildDirectory.dir("generated/sources/wsdl2java/java"))
+    includesWithOptions = [
+            "**/simple-service.wsdl": ["-wsdlLocation", "https://kora.tinkoff.ru/simple/service?wsdl"],
+    ]
+}
+
+jar.enabled = true
+shadowJar {
+    mergeServiceFiles()
+    manifest {
+        attributes "Main-Class": mainClassName
+        attributes "Implementation-Version": koraVersion
+        attributes "Build-Time": java.time.OffsetDateTime.now()
+    }
+}
+
+
+artifacts {
+    archives shadowJar
+}
+
+compileJava {
+    options.encoding("UTF-8")
+    options.incremental(true)
+    options.fork = true
+}
+
+check.dependsOn jacocoTestReport
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
+    }
+}
+
+javadoc {
+    options.encoding = "UTF-8"
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption("html5", true)
+    }
+}

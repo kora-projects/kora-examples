@@ -1,0 +1,37 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenLocal()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "kora-examples"
+
+include "kora-java-http-server"
+include "kora-java-http-client"
+include "kora-java-soap-client"
+include "kora-java-openapi-generator-http-server"
+include "kora-java-openapi-generator-http-client"
+include "kora-java-database-jdbc"
+include "kora-java-database-r2dbc"
+include "kora-java-database-vertx"
+include "kora-java-database-cassandra"
+include "kora-java-telemetry"
+include "kora-java-validation"
+include "kora-java-resilient"
+include "kora-java-cache-caffeine"
+include "kora-java-cache-redis"
+include "kora-java-grpc-client"
+include "kora-java-grpc-server"
+include "kora-java-kafka"
+include "kora-java-scheduling-jdk"
+include "kora-java-scheduling-quartz"
+include "kora-java-config-hocon"
+include "kora-java-config-yaml"
+include "kora-java-config-yaml"
+include "kora-java-json"
+include "kora-java-helloworld"
+include "kora-java-crud"
+include "kora-kotlin-helloworld"
+include "kora-kotlin-crud"

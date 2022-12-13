@@ -1,0 +1,42 @@
+plugins {
+    id "com.diffplug.spotless" version "6.19.0"
+}
+
+group = groupId
+version = koraVersion
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+subprojects {
+    apply plugin: "java"
+    apply plugin: "com.diffplug.spotless"
+
+    group = groupId
+    version = koraVersion
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    spotless {
+        java {
+            encoding("UTF-8")
+            importOrder()
+            removeUnusedImports()
+            eclipse("4.21").configFile("${rootDir}/config/codestyle.xml")
+            targetExclude("**/proto/**", "**/generated/openapi/**", "**/generated/soap/**", "**/generated/grpc/**",)
+        }
+    }
+
+    configurations {
+        all {
+            resolutionStrategy {
+                cacheChangingModulesFor 0, "seconds" // check for updates every build
+            }
+        }
+    }
+}

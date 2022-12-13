@@ -1,0 +1,25 @@
+<configuration debug="false">
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%cyan(%d{HH:mm:ss.SSS}) %highlight(%-5level) [%thread] %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ASYNC" class="ru.tinkoff.kora.logging.logback.KoraAsyncAppender">
+        <appender-ref ref="STDOUT"/>
+    </appender>
+
+    <root level="WARN">
+        <appender-ref ref="ASYNC"/>
+    </root>
+
+    <logger level="DEBUG" name="ru.tinkoff.kora.example"/>
+    <logger level="INFO" name="ru.tinkoff.kora"/>
+
+    <logger level="WARN" name="org.apache"/>
+    <logger level="DEBUG" name="org.testcontainers.containers"/>
+    <logger level="DEBUG" name="io.goodforgod.testcontainers"/>
+</configuration>

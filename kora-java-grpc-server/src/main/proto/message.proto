@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package ru.tinkoff.kora.generated.grpc;
+
+import "google/protobuf/timestamp.proto";
+
+service UserService {
+  rpc createUser(RequestEvent) returns (ResponseEvent) {}
+}
+
+message RequestEvent {
+  string name = 1;
+  string code = 2;
+}
+
+message ResponseEvent {
+  bytes id = 1;
+  StatusType status = 2;
+  Type type = 3;
+  google.protobuf.Timestamp created_at = 4;
+
+  enum StatusType {
+    SUCCESS = 0;
+    FAILED = 1;
+  }
+
+  enum Type {
+    CLOSED = 0;
+    OPENED = 1;
+    REOPENED = 2;
+  }
+}

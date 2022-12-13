@@ -1,0 +1,161 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+buildscript {
+    dependencies {
+        classpath("ru.tinkoff.kora:openapi-generator:$koraVersion")
+    }
+}
+
+plugins {
+    id "java"
+    id "jacoco"
+    id "application"
+
+    id "org.openapi.generator" version "7.1.0"
+    id "com.github.johnrengelman.shadow" version "8.1.1"
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+mainClassName = "ru.tinkoff.kora.example.openapi.http.client.Application"
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+configurations {
+    koraBom
+    implementation.extendsFrom(koraBom)
+    annotationProcessor.extendsFrom(koraBom)
+}
+
+dependencies {
+    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
+    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+    annotationProcessor "org.slf4j:slf4j-simple:2.0.11"
+
+    implementation "ru.tinkoff.kora:validation-module"
+    implementation "ru.tinkoff.kora:validation-common"
+    implementation "ru.tinkoff.kora:http-client-jdk"
+    implementation "ru.tinkoff.kora:json-module"
+    implementation "io.projectreactor:reactor-core:3.5.10" // For reactive examples (optional)
+
+    implementation "ru.tinkoff.kora:logging-logback"
+    implementation "ru.tinkoff.kora:config-hocon"
+
+    testImplementation "org.json:json:20231013"
+    testImplementation "org.skyscreamer:jsonassert:1.5.1"
+    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "io.goodforgod:testcontainers-extensions-mockserver:0.9.4"
+}
+
+// OpeAPI for V2
+openApiGenerate {
+    generatorName = "kora"
+    inputSpec = "$projectDir/src/main/resources/openapi/petstoreV2.yaml"
+    outputDir = "$buildDir/generated/openapi"
+    apiPackage = "ru.tinkoff.kora.example.openapi.petV2.api"
+    modelPackage = "ru.tinkoff.kora.example.openapi.petV2.model"
+    invokerPackage = "ru.tinkoff.kora.example.openapi.petV2.invoker"
+    configOptions = [
+            mode              : "java-client", // так же есть reactive_client вариация HTTP Server'а
+            clientConfigPrefix: "httpClient.petV2"
+    ]
+}
+
+// Additional OpenAPI Generator for V3
+tasks.register('openApiGeneratePetV3', GenerateTask) {
+    generatorName = "kora"
+    group = "openapi tools"
+    inputSpec = "$projectDir/src/main/resources/openapi/petstoreV3.yaml"
+    outputDir = "$buildDir/generated/openapi"
+    apiPackage = "ru.tinkoff.kora.example.openapi.petV3.api"
+    modelPackage = "ru.tinkoff.kora.example.openapi.petV3.model"
+    invokerPackage = "ru.tinkoff.kora.example.openapi.petV3.invoker"
+    configOptions = [
+            mode              : "java-reactive-client", // так же есть java_client вариация HTTP Server'а
+            clientConfigPrefix: "httpClient.petV3"
+    ]
+}
+
+compileJava.dependsOn tasks.openApiGenerate
+compileJava.dependsOn tasks.openApiGeneratePetV3
+
+//noinspection GroovyAssignabilityCheck
+run {
+    environment([
+            "HTTP_CLIENT_PET_V2_URL": "$httpClientUrlPetV2",
+            "HTTP_CLIENT_PET_V3_URL": "$httpClientUrlPetV3",
+    ])
+}
+
+test {
+    jvmArgs += [
+            "-XX:+TieredCompilation",
+            "-XX:TieredStopAtLevel=1",
+    ]
+
+    environment([
+            "": ""
+    ])
+
+    useJUnitPlatform()
+    testLogging {
+        showStandardStreams(true)
+        events("passed", "skipped", "failed")
+        exceptionFormat("full")
+    }
+
+    jacoco {
+        excludes += ["**/Application*"]
+    }
+
+    reports {
+        html.required = false
+        junitXml.required = false
+    }
+}
+
+sourceSets {
+    main {
+        java.srcDirs += "$buildDir/generated/openapi"
+    }
+}
+
+jar.enabled = true
+shadowJar {
+    mergeServiceFiles()
+    manifest {
+        attributes "Main-Class": mainClassName
+        attributes "Implementation-Version": koraVersion
+        attributes "Build-Time": java.time.OffsetDateTime.now()
+    }
+}
+
+
+artifacts {
+    archives shadowJar
+}
+
+compileJava {
+    options.encoding("UTF-8")
+    options.incremental(true)
+    options.fork = true
+}
+
+check.dependsOn tasks.jacocoTestReport
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
+    }
+}
+
+javadoc {
+    options.encoding = "UTF-8"
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption("html5", true)
+    }
+}
