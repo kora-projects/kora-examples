@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - "master"
+  pull_request:
+    branches:
+      - "master"
 
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
@@ -25,3 +27,9 @@ jobs:
 
       - name: Test
         run: './gradlew test jacocoTestReport'
+
+      - name: Test Report
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: |
+            **/test-results/**/*.xml
