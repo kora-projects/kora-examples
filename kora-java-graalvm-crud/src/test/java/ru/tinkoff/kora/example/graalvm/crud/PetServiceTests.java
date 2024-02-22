@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import reactor.core.publisher.Mono;
 import ru.tinkoff.kora.example.graalvm.crud.openapi.server.model.CategoryCreateTO;
 import ru.tinkoff.kora.example.graalvm.crud.openapi.server.model.PetCreateTO;
 import ru.tinkoff.kora.example.graalvm.crud.openapi.server.model.PetUpdateTO;
@@ -74,7 +73,7 @@ class PetServiceTests implements KoraAppTestConfigModifier {
         assertEquals(1, added.category().id());
 
         // when
-        Mockito.when(petRepository.findById(anyLong())).thenReturn(Mono.just(added));
+        Mockito.when(petRepository.findById(anyLong())).thenReturn(Optional.of(added));
         var updated = petService.update(added.id(),
                 new PetUpdateTO(PetUpdateTO.StatusEnum.PENDING, "cat", new CategoryCreateTO("cat")));
         assertTrue(updated.isPresent());
@@ -97,7 +96,7 @@ class PetServiceTests implements KoraAppTestConfigModifier {
         assertEquals(1, added.category().id());
 
         // when
-        Mockito.when(petRepository.findById(anyLong())).thenReturn(Mono.just(added));
+        Mockito.when(petRepository.findById(anyLong())).thenReturn(Optional.of(added));
         Mockito.when(categoryRepository.findByName(any())).thenReturn(Optional.of(added.category()));
         var updated = petService.update(added.id(),
                 new PetUpdateTO(PetUpdateTO.StatusEnum.PENDING, "cat", new CategoryCreateTO("dog")));
@@ -117,9 +116,9 @@ class PetServiceTests implements KoraAppTestConfigModifier {
     }
 
     private void mockRepository(Map<String, Long> categoryNameToId) {
-        categoryNameToId.forEach((k, v) -> Mockito.when(categoryRepository.insert(k)).thenReturn(Mono.just(v)));
+        categoryNameToId.forEach((k, v) -> Mockito.when(categoryRepository.insert(k)).thenReturn(v));
         Mockito.when(categoryRepository.findByName(any())).thenReturn(Optional.empty());
-        Mockito.when(petRepository.insert(any())).thenReturn(Mono.just(1L));
-        Mockito.when(petRepository.findById(anyLong())).thenReturn(Mono.empty());
+        Mockito.when(petRepository.insert(any())).thenReturn(1L);
+        Mockito.when(petRepository.findById(anyLong())).thenReturn(Optional.empty());
     }
 }
