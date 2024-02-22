@@ -61,8 +61,7 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:1.17.6"
 }
 
-// OpenAPI Generator for HTTP Server
-tasks.register("openApiGenerateHttpServer", GenerateTask) {
+openApiGenerate {
     generatorName = "kora"
     group = "openapi tools"
     inputSpec = "$projectDir/src/main/resources/openapi/http-server.yaml"
@@ -71,12 +70,12 @@ tasks.register("openApiGenerateHttpServer", GenerateTask) {
     modelPackage = "ru.tinkoff.kora.example.crud.openapi.http.server.model"
     invokerPackage = "ru.tinkoff.kora.example.crud.openapi.http.server.invoker"
     configOptions = [
-            mode                  : "java-server", // так же есть java_server вариация HTTP Server"а
+            mode                  : "java-server", // так же есть java-server вариация HTTP Server"а
             enableServerValidation: "true"
     ]
 }
 
-compileJava.dependsOn tasks.openApiGenerateHttpServer
+compileJava.dependsOn tasks.openApiGenerate
 test.dependsOn tasks.shadowJar
 
 //noinspection GroovyAssignabilityCheck
@@ -128,13 +127,12 @@ flyway {
     locations = ["classpath:db/migration"]
 }
 
-jar.enabled = true
+jar.enabled = false
 shadowJar {
     mergeServiceFiles()
     manifest {
         attributes "Main-Class": mainClassName
         attributes "Implementation-Version": koraVersion
-        attributes "Build-Time": java.time.OffsetDateTime.now()
     }
 }
 

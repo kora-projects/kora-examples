@@ -75,7 +75,7 @@ tasks.register("openApiGeneratePetV3", GenerateTask) {
     modelPackage = "ru.tinkoff.kora.example.openapi.petV3.model"
     invokerPackage = "ru.tinkoff.kora.example.openapi.petV3.invoker"
     configOptions = [
-            mode                  : "java-reactive-server", // так же есть java_server вариация HTTP Server'а
+            mode                  : "java-reactive-server", // так же есть java-server вариация HTTP Server'а
             enableServerValidation: "true"
     ]
 }
@@ -117,13 +117,12 @@ sourceSets {
     }
 }
 
-jar.enabled = true
+jar.enabled = false
 shadowJar {
     mergeServiceFiles()
     manifest {
         attributes "Main-Class": mainClassName
         attributes "Implementation-Version": koraVersion
-        attributes "Build-Time": java.time.OffsetDateTime.now()
     }
 }
 
