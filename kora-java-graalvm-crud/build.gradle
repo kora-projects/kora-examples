@@ -41,8 +41,6 @@ dependencies {
 
     implementation "ru.tinkoff.kora:http-server-undertow"
     implementation "ru.tinkoff.kora:database-jdbc"
-//    implementation "ru.tinkoff.kora:database-r2dbc"
-//    implementation "ru.tinkoff.kora:database-vertx"
     implementation "ru.tinkoff.kora:micrometer-module"
     implementation "ru.tinkoff.kora:json-module"
     implementation "ru.tinkoff.kora:validation-module"
