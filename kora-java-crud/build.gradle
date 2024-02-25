@@ -50,7 +50,7 @@ dependencies {
     implementation "ru.tinkoff.kora:logging-logback"
 
     implementation "org.mapstruct:mapstruct:1.5.5.Final"
-    implementation "org.postgresql:postgresql:42.6.0"
+    implementation "org.postgresql:postgresql:42.7.2"
 
     testImplementation "org.json:json:20231013"
     testImplementation "org.skyscreamer:jsonassert:1.5.1"

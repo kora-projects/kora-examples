@@ -34,8 +34,8 @@ dependencies {
     implementation "ru.tinkoff.kora:config-hocon"
 
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.9.6"
-    testImplementation "org.postgresql:postgresql:42.6.0"
+    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.9.6-SNAPSHOT"
+    testImplementation "org.postgresql:postgresql:42.7.2"
 }
 
 //noinspection GroovyAssignabilityCheck

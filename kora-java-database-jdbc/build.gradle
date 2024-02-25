@@ -26,9 +26,9 @@ dependencies {
     koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
     annotationProcessor "ru.tinkoff.kora:annotation-processors"
 
-    implementation "org.postgresql:postgresql:42.6.0"
+    implementation "org.postgresql:postgresql:42.7.2"
     implementation "ru.tinkoff.kora:database-jdbc"
-    implementation "io.projectreactor:reactor-core:3.5.10" // For reactive examples (optional)
+    implementation "io.projectreactor:reactor-core:3.6.3" // For reactive examples (optional)
     implementation "io.azam.ulidj:ulidj:1.0.4" // For sortable UUID (optional)
 
     implementation "ru.tinkoff.kora:logging-logback"

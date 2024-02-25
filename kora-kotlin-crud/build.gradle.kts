@@ -59,7 +59,7 @@ dependencies {
     implementation("ru.tinkoff.kora:openapi-management")
     implementation("ru.tinkoff.kora:logging-logback")
 
-    implementation("org.postgresql:postgresql:42.6.0")
+    implementation("org.postgresql:postgresql:42.7.2")
     implementation("org.mapstruct:mapstruct:1.5.5.Final")
 
     testImplementation("org.json:json:20231013")
@@ -67,7 +67,7 @@ dependencies {
 
     testImplementation("io.mockk:mockk:1.13.8")
     testImplementation("ru.tinkoff.kora:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.9.6")
+    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.9.6-SNAPSHOT")
     testImplementation("org.testcontainers:junit-jupiter:1.17.6")
 }
 
