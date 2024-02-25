@@ -1,18 +1,20 @@
-# Kora Java GraalVM CRUD Service
+# Kora Java GraalVM CRUD Cassandra Service
 
-Пример сервиса реализованного на Kora с HTTP [CRUD](https://github.com/swagger-api/swagger-petstore) API, 
-в качестве базы данных выступает Postgres, используется кэш Caffeine, а также другие модули которые использовались бы в реальном приложении в бою.
+Пример сервиса реализованного на Kora с HTTP [CRUD](https://github.com/swagger-api/swagger-petstore) API,
+в качестве базы данных выступает Cassandra, используется кэш Redis, а также другие модули которые использовались бы в реальном приложении в бою.
 
 В примере использовались модули:
 - [HTTP Server](https://kora-projects.github.io/kora-docs/ru/documentation/http-server/)
 - [HTTP Server OpenAPI Generation](https://kora-projects.github.io/kora-docs/ru/documentation/openapi-codegen/)
 - [Probes](https://kora-projects.github.io/kora-docs/ru/documentation/probes/)
 - [Metrics](https://kora-projects.github.io/kora-docs/ru/documentation/metrics/)
-- [Database JDBC](https://kora-projects.github.io/kora-docs/ru/documentation/database-jdbc/)
+- [Database Cassandra](https://kora-projects.github.io/kora-docs/ru/documentation/database-cassandra/)
 - [JSON](https://kora-projects.github.io/kora-docs/ru/documentation/json/)
 - [Resilient](https://kora-projects.github.io/kora-docs/ru/documentation/resilient/)
 - [Validation](https://kora-projects.github.io/kora-docs/ru/documentation/validation/)
-- [Cache Caffeine](https://kora-projects.github.io/kora-docs/ru/documentation/cache/#caffeine)
+- [Cache Redis](https://kora-projects.github.io/kora-docs/ru/documentation/cache/#redis)
+
+Скомпилирован с помощью [GraalVM](https://www.graalvm.org/release-notes/JDK_21/)
 
 ## Build
 
@@ -20,6 +22,7 @@
 
 ```shell
 ./gradlew shadowJar
+docker build -t kora-java-graalvm-crud-cassandra .
 ```
 
 ### Generate

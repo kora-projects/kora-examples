@@ -1,7 +1,6 @@
 package ru.tinkoff.kora.example.graalvm.crud.r2dbc.service;
 
-import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
+import reactor.core.publisher.Mono;
 import ru.tinkoff.kora.cache.annotation.CacheInvalidate;
 import ru.tinkoff.kora.cache.annotation.CachePut;
 import ru.tinkoff.kora.cache.annotation.Cacheable;
@@ -16,6 +15,8 @@ import ru.tinkoff.kora.example.graalvm.crud.r2dbc.repository.PetRepository;
 import ru.tinkoff.kora.resilient.circuitbreaker.annotation.CircuitBreaker;
 import ru.tinkoff.kora.resilient.retry.annotation.Retry;
 import ru.tinkoff.kora.resilient.timeout.annotation.Timeout;
+
+import java.util.Optional;
 
 @Component
 public class PetService {
@@ -32,58 +33,54 @@ public class PetService {
     @CircuitBreaker("pet")
     @Retry("pet")
     @Timeout("pet")
-    public Optional<PetWithCategory> findByID(long petId) {
-        return petRepository.findById(petId).blockOptional();
+    public Mono<PetWithCategory> findByID(long petId) {
+        return petRepository.findById(petId);
     }
 
     @CircuitBreaker("pet")
     @Timeout("pet")
-    public PetWithCategory add(PetCreateTO createTO) {
-        final long petCategoryId = categoryRepository.findByName(createTO.category().name()).blockOptional()
+    public Mono<PetWithCategory> add(PetCreateTO createTO) {
+        return categoryRepository.findByName(createTO.category().name())
                 .map(PetCategory::id)
-                .orElseGet(() -> categoryRepository.insert(createTO.category().name()).block());
-
-        var pet = new Pet(ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE), createTO.name(), Pet.Status.AVAILABLE,
-                petCategoryId);
-        var petId = petRepository.insert(pet).block();
-
-        return new PetWithCategory(petId, pet.name(), pet.status(),
-                new PetCategory(petCategoryId, createTO.category().name()));
+                .switchIfEmpty(categoryRepository.insert(createTO.category().name()))
+                .flatMap(categoryId -> {
+                    var pet = new Pet(0, createTO.name(), Pet.Status.AVAILABLE, categoryId);
+                    return petRepository.insert(pet)
+                            .map(petId -> new PetWithCategory(petId, pet.name(), pet.status(),
+                                    new PetCategory(categoryId, createTO.category().name())));
+                });
     }
 
     @CircuitBreaker("pet")
     @Timeout("pet")
     @CachePut(value = PetCache.class, parameters = "id")
-    public Optional<PetWithCategory> update(long id, PetUpdateTO updateTO) {
-        final Optional<PetWithCategory> existing = petRepository.findById(id).blockOptional();
-        if (existing.isEmpty()) {
-            return Optional.empty();
-        }
+    public Mono<PetWithCategory> update(long id, PetUpdateTO updateTO) {
+        return petRepository.findById(id)
+                .flatMap(existingPet -> {
+                    var categoryMono = Mono.just(existingPet.category());
+                    if (updateTO.category() != null) {
+                        categoryMono = categoryRepository.findByName(updateTO.category().name())
+                                .switchIfEmpty(Mono.defer(() -> categoryRepository.insert(updateTO.category().name())
+                                        .map(newCategoryId -> new PetCategory(newCategoryId, updateTO.category().name()))));
+                    }
 
-        var category = existing.get().category();
-        if (updateTO.category() != null) {
-            category = categoryRepository.findByName(updateTO.category().name())
-                    .blockOptional()
-                    .orElseGet(() -> {
-                        final long newCategoryId = categoryRepository.insert(updateTO.category().name()).block();
-                        return new PetCategory(newCategoryId, updateTO.category().name());
-                    });
-        }
+                    var status = (updateTO.status() == null)
+                            ? existingPet.status()
+                            : toStatus(updateTO.status());
 
-        var status = (updateTO.status() == null)
-                ? existing.get().status()
-                : toStatus(updateTO.status());
-        var result = new PetWithCategory(existing.get().id(), updateTO.name(), status, category);
-
-        petRepository.update(result.getPet()).block();
-        return Optional.of(result);
+                    return categoryMono
+                            .flatMap(category -> {
+                                var result = new PetWithCategory(existingPet.id(), updateTO.name(), status, category);
+                                return petRepository.update(result.getPet()).then(Mono.just(result));
+                            });
+                });
     }
 
     @CircuitBreaker("pet")
     @Timeout("pet")
     @CacheInvalidate(PetCache.class)
-    public boolean delete(long petId) {
-        return petRepository.deleteById(petId).block().value() == 1;
+    public Mono<Boolean> delete(long petId) {
+        return petRepository.deleteById(petId).map(counter -> counter.value() == 1);
     }
 
     private static Pet.Status toStatus(PetUpdateTO.StatusEnum statusEnum) {

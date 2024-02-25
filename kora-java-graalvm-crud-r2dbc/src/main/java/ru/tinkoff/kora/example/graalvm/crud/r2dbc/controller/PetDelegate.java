@@ -1,12 +1,15 @@
 package ru.tinkoff.kora.example.graalvm.crud.r2dbc.controller;
 
-import static ru.tinkoff.kora.example.graalvm.crud.openapi.server.api.PetApiResponses.*;
-
+import reactor.core.publisher.Mono;
 import ru.tinkoff.kora.common.Component;
 import ru.tinkoff.kora.example.graalvm.crud.openapi.server.api.PetApiDelegate;
-import ru.tinkoff.kora.example.graalvm.crud.openapi.server.model.*;
+import ru.tinkoff.kora.example.graalvm.crud.openapi.server.model.MessageTO;
+import ru.tinkoff.kora.example.graalvm.crud.openapi.server.model.PetCreateTO;
+import ru.tinkoff.kora.example.graalvm.crud.openapi.server.model.PetUpdateTO;
 import ru.tinkoff.kora.example.graalvm.crud.r2dbc.model.mapper.PetMapper;
 import ru.tinkoff.kora.example.graalvm.crud.r2dbc.service.PetService;
+
+import static ru.tinkoff.kora.example.graalvm.crud.openapi.server.api.PetApiResponses.*;
 
 @Component
 public final class PetDelegate implements PetApiDelegate {
@@ -20,53 +23,52 @@ public final class PetDelegate implements PetApiDelegate {
     }
 
     @Override
-    public GetPetByIdApiResponse getPetById(long petId) {
+    public Mono<GetPetByIdApiResponse> getPetById(long petId) {
         if (petId < 0) {
-            return new GetPetByIdApiResponse.GetPetById400ApiResponse(malformedId(petId));
+            return Mono.just(new GetPetByIdApiResponse.GetPetById400ApiResponse(malformedId(petId)));
         }
 
-        var pet = petService.findByID(petId);
-        if (pet.isPresent()) {
-            var body = petMapper.asDTO(pet.get());
-            return new GetPetByIdApiResponse.GetPetById200ApiResponse(body);
-        } else {
-            return new GetPetByIdApiResponse.GetPetById404ApiResponse(notFound(petId));
-        }
+        return petService.findByID(petId)
+                .map(pet -> {
+                    var body = petMapper.asDTO(pet);
+                    return ((GetPetByIdApiResponse) new GetPetByIdApiResponse.GetPetById200ApiResponse(body));
+                })
+                .switchIfEmpty(Mono.fromSupplier(() -> new GetPetByIdApiResponse.GetPetById404ApiResponse(notFound(petId))));
     }
 
     @Override
-    public AddPetApiResponse addPet(PetCreateTO petCreateTO) {
-        var pet = petService.add(petCreateTO);
-        var body = petMapper.asDTO(pet);
-        return new AddPetApiResponse.AddPet200ApiResponse(body);
+    public Mono<AddPetApiResponse> addPet(PetCreateTO petCreateTO) {
+        return petService.add(petCreateTO)
+                .map(pet -> {
+                    var body = petMapper.asDTO(pet);
+                    return new AddPetApiResponse.AddPet200ApiResponse(body);
+                });
     }
 
     @Override
-    public UpdatePetApiResponse updatePet(long petId, PetUpdateTO petUpdateTO) {
+    public Mono<UpdatePetApiResponse> updatePet(long petId, PetUpdateTO petUpdateTO) {
         if (petId < 0) {
-            return new UpdatePetApiResponse.UpdatePet400ApiResponse(malformedId(petId));
+            return Mono.just(new UpdatePetApiResponse.UpdatePet400ApiResponse(malformedId(petId)));
         }
 
-        var updated = petService.update(petId, petUpdateTO);
-        if (updated.isPresent()) {
-            var body = petMapper.asDTO(updated.get());
-            return new UpdatePetApiResponse.UpdatePet200ApiResponse(body);
-        } else {
-            return new UpdatePetApiResponse.UpdatePet404ApiResponse(notFound(petId));
-        }
+        return petService.update(petId, petUpdateTO)
+                .map(pet -> {
+                    var body = petMapper.asDTO(pet);
+                    return ((UpdatePetApiResponse) new UpdatePetApiResponse.UpdatePet200ApiResponse(body));
+                })
+                .switchIfEmpty(Mono.fromSupplier(() -> new UpdatePetApiResponse.UpdatePet404ApiResponse(notFound(petId))));
     }
 
     @Override
-    public DeletePetApiResponse deletePet(long petId) {
+    public Mono<DeletePetApiResponse> deletePet(long petId) {
         if (petId < 0) {
-            return new DeletePetApiResponse.DeletePet400ApiResponse(malformedId(petId));
+            return Mono.just(new DeletePetApiResponse.DeletePet400ApiResponse(malformedId(petId)));
         }
 
-        if (petService.delete(petId)) {
-            return new DeletePetApiResponse.DeletePet200ApiResponse(new MessageTO("Successfully deleted pet with ID: " + petId));
-        } else {
-            return new DeletePetApiResponse.DeletePet404ApiResponse(notFound(petId));
-        }
+        return petService.delete(petId)
+                .map(isDeleted -> (isDeleted)
+                        ? new DeletePetApiResponse.DeletePet200ApiResponse(new MessageTO("Successfully deleted pet with ID: " + petId))
+                        : new DeletePetApiResponse.DeletePet404ApiResponse(notFound(petId)));
     }
 
     private static MessageTO notFound(long petId) {

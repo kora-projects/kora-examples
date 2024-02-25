@@ -67,14 +67,16 @@ class PetServiceTests implements KoraAppTestConfigModifier {
         mockCache();
         mockRepository(Map.of("dog", 1L, "cat", 2L));
 
-        var added = petService.add(new PetCreateTO("dog", new CategoryCreateTO("dog")));
+        var added = petService.add(new PetCreateTO("dog", new CategoryCreateTO("dog"))).block();
         assertEquals(1, added.id());
         assertEquals(1, added.category().id());
 
         // when
         Mockito.when(petRepository.findById(anyLong())).thenReturn(Mono.just(added));
+        Mockito.when(petRepository.update(any())).thenReturn(Mono.empty());
         var updated = petService.update(added.id(),
-                new PetUpdateTO(PetUpdateTO.StatusEnum.PENDING, "cat", new CategoryCreateTO("cat")));
+                new PetUpdateTO(PetUpdateTO.StatusEnum.PENDING, "cat", new CategoryCreateTO("cat")))
+                .blockOptional();
         assertTrue(updated.isPresent());
         assertEquals(1, updated.get().id());
         assertEquals(2, updated.get().category().id());
@@ -90,15 +92,17 @@ class PetServiceTests implements KoraAppTestConfigModifier {
         mockCache();
         mockRepository(Map.of("dog", 1L));
 
-        var added = petService.add(new PetCreateTO("dog", new CategoryCreateTO("dog")));
+        var added = petService.add(new PetCreateTO("dog", new CategoryCreateTO("dog"))).block();
         assertEquals(1, added.id());
         assertEquals(1, added.category().id());
 
         // when
         Mockito.when(petRepository.findById(anyLong())).thenReturn(Mono.just(added));
+        Mockito.when(petRepository.update(any())).thenReturn(Mono.empty());
         Mockito.when(categoryRepository.findByName(any())).thenReturn(Mono.just(added.category()));
         var updated = petService.update(added.id(),
-                new PetUpdateTO(PetUpdateTO.StatusEnum.PENDING, "cat", new CategoryCreateTO("dog")));
+                new PetUpdateTO(PetUpdateTO.StatusEnum.PENDING, "cat", new CategoryCreateTO("dog")))
+                .blockOptional();
         assertTrue(updated.isPresent());
         assertNotEquals(0, updated.get().id());
         assertNotEquals(0, updated.get().category().id());

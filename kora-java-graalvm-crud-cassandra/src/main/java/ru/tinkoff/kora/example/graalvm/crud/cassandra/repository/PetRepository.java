@@ -18,11 +18,11 @@ public interface PetRepository extends CassandraRepository {
     Mono<Pet> findById(long id);
 
     @Query("INSERT INTO %{entity#inserts}")
-    Mono<UpdateCount> insert(Pet entity);
+    Mono<Void> insert(Pet entity);
 
     @Query("UPDATE %{entity#table} SET %{entity#updates} WHERE %{entity#where = @id}")
     Mono<Void> update(Pet entity);
 
     @Query("DELETE FROM pets WHERE id = :id")
-    Mono<UpdateCount> deleteById(long id);
+    Mono<Void> deleteById(long id);
 }

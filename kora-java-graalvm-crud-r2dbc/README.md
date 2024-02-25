@@ -1,6 +1,6 @@
-# Kora Java GraalVM CRUD Service
+# Kora Java GraalVM CRUD R2DBC Service
 
-Пример сервиса реализованного на Kora с HTTP [CRUD](https://github.com/swagger-api/swagger-petstore) API, 
+Пример сервиса реализованного на Kora с HTTP [CRUD](https://github.com/swagger-api/swagger-petstore) API,
 в качестве базы данных выступает Postgres, используется кэш Caffeine, а также другие модули которые использовались бы в реальном приложении в бою.
 
 В примере использовались модули:
@@ -8,11 +8,13 @@
 - [HTTP Server OpenAPI Generation](https://kora-projects.github.io/kora-docs/ru/documentation/openapi-codegen/)
 - [Probes](https://kora-projects.github.io/kora-docs/ru/documentation/probes/)
 - [Metrics](https://kora-projects.github.io/kora-docs/ru/documentation/metrics/)
-- [Database JDBC](https://kora-projects.github.io/kora-docs/ru/documentation/database-jdbc/)
+- [Database R2DBC](https://kora-projects.github.io/kora-docs/ru/documentation/database-r2dbc/)
 - [JSON](https://kora-projects.github.io/kora-docs/ru/documentation/json/)
 - [Resilient](https://kora-projects.github.io/kora-docs/ru/documentation/resilient/)
 - [Validation](https://kora-projects.github.io/kora-docs/ru/documentation/validation/)
 - [Cache Caffeine](https://kora-projects.github.io/kora-docs/ru/documentation/cache/#caffeine)
+
+Скомпилирован с помощью [GraalVM](https://www.graalvm.org/release-notes/JDK_21/)
 
 ## Build
 
@@ -20,6 +22,7 @@
 
 ```shell
 ./gradlew shadowJar
+docker build -t kora-java-graalvm-crud-r2dbc .
 ```
 
 ### Generate

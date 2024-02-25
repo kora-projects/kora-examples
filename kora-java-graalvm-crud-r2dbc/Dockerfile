@@ -6,7 +6,7 @@ WORKDIR $APP_DIR
 
 ADD $JAR_DIR/*.jar $APP_DIR/application.jar
 
-RUN native-image --no-fallback -classpath $APP_DIR/application.jar --trace-class-initialization=ch.qos.logback.core.subst.Parser$1,ch.qos.logback.core.util.Loader,ch.qos.logback.core.model.processor.ImplicitModelHandler$1,ch.qos.logback.classic.Logger,ch.qos.logback.core.CoreConstants,ch.qos.logback.core.pattern.parser.Parser,ch.qos.logback.core.subst.NodeToStringTransformer$1,ch.qos.logback.core.subst.Token,ch.qos.logback.classic.Level,ch.qos.logback.core.status.InfoStatus,org.slf4j.LoggerFactory,ch.qos.logback.core.model.processor.DefaultProcessor$1,ch.qos.logback.core.status.StatusBase,ch.qos.logback.core.util.Duration,ch.qos.logback.classic.model.processor.LogbackClassicDefaultNestedComponentRules,ch.qos.logback.classic.PatternLayout,ch.qos.logback.core.model.processor.ChainedModelFilter$1
+RUN native-image --no-fallback -classpath $APP_DIR/application.jar
 
 FROM ubuntu:noble-20240212 as runner
 

@@ -54,7 +54,7 @@ public class PetService {
                             : updateTO.category().name();
 
                     var petUpdate = new Pet(pet.id(), updateTO.name(), status, category);
-                    return petRepository.insert(petUpdate).then(Mono.just(petUpdate));
+                    return petRepository.update(petUpdate).then(Mono.just(petUpdate));
                 });
     }
 
@@ -62,7 +62,7 @@ public class PetService {
     @Timeout("pet")
     @CacheInvalidate(PetCache.class)
     public Mono<Boolean> delete(long petId) {
-        return petRepository.deleteById(petId).map(r -> r.value() == 1);
+        return petRepository.deleteById(petId).thenReturn(true);
     }
 
     private static Pet.Status toStatus(PetUpdateTO.StatusEnum statusEnum) {

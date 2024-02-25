@@ -39,7 +39,7 @@ class PetControllerTests {
     public static void setup(@ContainerPostgresConnection JdbcConnection connection) {
         var params = connection.paramsInNetwork().orElseThrow();
         container.withEnv(Map.of(
-                "POSTGRES_JDBC_URL", params.jdbcUrl(),
+                "POSTGRES_R2DBC_URL", "r2dbc:postgresql://%s:%s/%s".formatted(params.host(), params.port(), params.database()),
                 "POSTGRES_USER", params.username(),
                 "POSTGRES_PASS", params.password(),
                 "CACHE_EXPIRE_WRITE", "0s"));

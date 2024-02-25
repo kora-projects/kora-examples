@@ -19,7 +19,7 @@ repositories {
     mavenCentral()
 }
 
-mainClassName = "ru.tinkoff.kora.example.graalvm.crud.Application"
+mainClassName = "ru.tinkoff.kora.example.graalvm.crud.cassandra.Application"
 
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
@@ -50,16 +50,17 @@ dependencies {
     implementation "ru.tinkoff.kora:openapi-management"
     implementation "ru.tinkoff.kora:logging-logback"
 
-    implementation "io.projectreactor:reactor-core:3.6.3"
+    implementation "io.projectreactor:reactor-core:3.6.3" // For reactive examples (optional)
     implementation "org.mapstruct:mapstruct:1.5.5.Final"
 
     testImplementation "org.json:json:20231013"
     testImplementation "org.skyscreamer:jsonassert:1.5.1"
+    testImplementation "redis.clients:jedis:4.4.3"
 
     testImplementation "org.mockito:mockito-core:5.6.0"
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-cassandra:0.9.5"
-    testImplementation "io.goodforgod:testcontainers-extensions-redis:0.9.5"
+    testImplementation "io.goodforgod:testcontainers-extensions-cassandra:0.9.6-SNAPSHOT"
+    testImplementation "io.goodforgod:testcontainers-extensions-redis:0.9.6-SNAPSHOT"
     testImplementation "org.testcontainers:junit-jupiter:1.17.6"
 }
 
@@ -94,7 +95,7 @@ graalvmNative {
 }
 
 compileJava.dependsOn tasks.openApiGenerate
-//processResources.dependsOn tasks.collectReachabilityMetadata
+processResources.dependsOn tasks.collectReachabilityMetadata
 test.dependsOn tasks.shadowJar
 
 //noinspection GroovyAssignabilityCheck

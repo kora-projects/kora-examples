@@ -8,6 +8,10 @@ public record PetWithCategory(@Column("id") long id,
                               @Column("status") Pet.Status status,
                               @Embedded("category_") PetCategory category) {
 
+    public PetWithCategory(Pet pet, PetCategory category) {
+        this(pet.id(), pet.name(), pet.status(), category);
+    }
+
     public Pet getPet() {
         return new Pet(id, name, status, category.id());
     }

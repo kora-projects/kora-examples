@@ -1,7 +1,7 @@
-CREATE KEYSPACE IF NOT EXISTS cassandra WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
+CREATE KEYSPACE IF NOT EXISTS petshop WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
 
 
-CREATE TABLE IF NOT EXISTS pets
+CREATE TABLE IF NOT EXISTS petshop.pets
 (
     id       BIGINT,
     name     VARCHAR,
