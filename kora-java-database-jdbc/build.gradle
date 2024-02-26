@@ -29,7 +29,6 @@ dependencies {
     implementation "org.postgresql:postgresql:42.7.2"
     implementation "ru.tinkoff.kora:database-jdbc"
     implementation "io.projectreactor:reactor-core:3.6.3" // For reactive examples (optional)
-    implementation "io.azam.ulidj:ulidj:1.0.4" // For sortable UUID (optional)
 
     implementation "ru.tinkoff.kora:logging-logback"
     implementation "ru.tinkoff.kora:config-hocon"

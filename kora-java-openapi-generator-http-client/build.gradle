@@ -47,7 +47,7 @@ dependencies {
     testImplementation "org.json:json:20231013"
     testImplementation "org.skyscreamer:jsonassert:1.5.1"
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-mockserver:0.9.6-SNAPSHOT"
+    testImplementation "io.goodforgod:testcontainers-extensions-mockserver:0.9.7-SNAPSHOT"
 }
 
 // OpeAPI for V2

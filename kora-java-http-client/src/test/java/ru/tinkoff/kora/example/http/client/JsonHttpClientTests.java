@@ -40,11 +40,11 @@ class JsonHttpClientTests implements KoraAppTestConfigModifier {
                         .withBody(new StringBody("{\"id\":\"1\"}")))
                 .respond(
                         org.mockserver.model.HttpResponse.response()
-                                .withBody("{\"name\":\"Bob\",\"value\":100}"));
+                                .withBody("{\"name\":\"Ivan\",\"value\":100}"));
 
         // then
         var response = httpClient.post(new JsonHttpClient.JsonRequest("1"));
-        assertEquals("Bob", response.name());
+        assertEquals("Ivan", response.name());
         assertEquals(100, response.value());
     }
 }

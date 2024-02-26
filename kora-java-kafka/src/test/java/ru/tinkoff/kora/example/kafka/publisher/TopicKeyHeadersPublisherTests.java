@@ -46,7 +46,7 @@ class TopicKeyHeadersPublisherTests implements KoraAppTestConfigModifier {
 
         // when
         var code = ThreadLocalRandom.current().nextInt(1, 100_000);
-        var name = "Bob";
+        var name = "Ivan";
         var event = new JSONObject().put("username", name).put("code", code);
         publisher.send("1", event.toString(),
                 new RecordHeaders(List.of(new RecordHeader("2", "3".getBytes(StandardCharsets.UTF_8)))));

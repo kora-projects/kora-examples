@@ -63,7 +63,7 @@ dependencies {
 
     testImplementation "org.mockito:mockito-core:5.6.0"
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.9.6-SNAPSHOT"
+    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.9.7-SNAPSHOT"
     testImplementation "org.testcontainers:junit-jupiter:1.17.6"
 }
 

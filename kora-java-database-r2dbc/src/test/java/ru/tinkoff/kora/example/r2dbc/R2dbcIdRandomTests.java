@@ -43,7 +43,7 @@ class R2dbcIdRandomTests implements KoraAppTestConfigModifier {
     @Test
     void syncSingleSuccess() {
         // given
-        var entityCreate = new R2dbcIdRandomRepository.Entity("Bob");
+        var entityCreate = new R2dbcIdRandomRepository.Entity("Ivan");
 
         // when
         repository.insert(entityCreate).block();

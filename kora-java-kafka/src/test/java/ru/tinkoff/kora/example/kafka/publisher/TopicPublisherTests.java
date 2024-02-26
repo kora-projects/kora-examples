@@ -43,7 +43,7 @@ class TopicPublisherTests implements KoraAppTestConfigModifier {
 
         // when
         var code = ThreadLocalRandom.current().nextInt(1, 100_000);
-        var name = "Bob";
+        var name = "Ivan";
         var event = new JSONObject().put("username", name).put("code", code);
         publisher.send(event.toString());
 

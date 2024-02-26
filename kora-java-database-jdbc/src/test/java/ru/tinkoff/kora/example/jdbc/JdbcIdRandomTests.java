@@ -41,7 +41,7 @@ class JdbcIdRandomTests implements KoraAppTestConfigModifier {
     @Test
     void insertOne() {
         // given
-        var entityCreate = new Entity("Bob");
+        var entityCreate = new Entity("Ivan");
 
         // when
         repository.insert(entityCreate);

@@ -43,7 +43,7 @@ class R2dbcIdSequenceTests implements KoraAppTestConfigModifier {
     @Test
     void syncSingleSuccess() {
         // given
-        var entityCreate = new R2dbcIdSequenceRepository.Entity("Bob");
+        var entityCreate = new R2dbcIdSequenceRepository.Entity("Ivan");
 
         // when
         long id = repository.insert(entityCreate).block();

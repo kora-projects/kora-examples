@@ -47,7 +47,7 @@ class AutoCommitValueExceptionListenerTests implements KoraAppTestConfigModifier
     void processed() {
         // given
         var topic = "my-topic-consumer";
-        var event = new JSONObject().put("username", "Bob").put("code", 1);
+        var event = new JSONObject().put("username", "Ivan").put("code", 1);
 
         // when
         connection.send(topic, Event.ofValueAndRandomKey(event));

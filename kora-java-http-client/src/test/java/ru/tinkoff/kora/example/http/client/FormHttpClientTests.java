@@ -46,14 +46,14 @@ class FormHttpClientTests implements KoraAppTestConfigModifier {
                         .withMethod("POST")
                         .withHeader("content-type", "application/x-www-form-urlencoded")
                         .withPath("/form/encoded")
-                        .withBody(new StringBody("password=12345&name=Bob")))
+                        .withBody(new StringBody("password=12345&name=Ivan")))
                 .respond(
                         org.mockserver.model.HttpResponse.response()
                                 .withBody("OK"));
 
         // then
         var response = httpClient.formEncoded(new FormUrlEncoded(
-                new FormUrlEncoded.FormPart("name", "Bob"),
+                new FormUrlEncoded.FormPart("name", "Ivan"),
                 new FormUrlEncoded.FormPart("password", "12345")));
 
         assertEquals(200, response.code());

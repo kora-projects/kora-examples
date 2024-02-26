@@ -43,7 +43,7 @@ class ProducerJsonPublisherTests implements KoraAppTestConfigModifier {
 
         // when
         var code = ThreadLocalRandom.current().nextInt(1, 100_000);
-        var name = "Bob";
+        var name = "Ivan";
         var event = new ProducerJsonPublisher.MyEvent(name, code);
         publisher.send(new ProducerRecord<>(topic, event));
 

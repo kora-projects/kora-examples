@@ -23,5 +23,5 @@
 
     <logger level="WARN" name="org.apache"/>
     <logger level="DEBUG" name="org.testcontainers.containers"/>
-    <logger level="DEBUG" name="io.goodforgod.testcontainers"/>
+    <logger level="DEBUG" name="io.goodforgod.testcontainers.extensions"/>
 </configuration>

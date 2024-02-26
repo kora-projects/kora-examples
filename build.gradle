@@ -1,5 +1,6 @@
 plugins {
     id "com.diffplug.spotless" version "6.19.0"
+    id "org.graalvm.buildtools.native" version "0.10.1" // or dependsOn fails in graalvm examples
     id "com.asarkar.gradle.build-time-tracker" version "4.3.0"
 }
 
