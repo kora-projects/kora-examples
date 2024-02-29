@@ -3,18 +3,17 @@ package ru.tinkoff.kora.example.graalvm.kafka;
 import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.Network;
 import io.goodforgod.testcontainers.extensions.kafka.*;
+import java.time.Duration;
+import java.util.Map;
+import java.util.UUID;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
-import java.util.Map;
-import java.util.UUID;
-
 @TestcontainersKafka(
         network = @Network(shared = true),
         mode = ContainerMode.PER_RUN,
-        topics = @Topics({"tasks", "users"}))
+        topics = @Topics({ "tasks", "users" }))
 class UserListenerTests {
 
     private static final AppContainer container = AppContainer.build()

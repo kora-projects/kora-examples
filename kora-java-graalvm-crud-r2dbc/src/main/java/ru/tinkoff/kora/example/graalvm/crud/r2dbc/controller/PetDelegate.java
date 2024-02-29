@@ -1,5 +1,7 @@
 package ru.tinkoff.kora.example.graalvm.crud.r2dbc.controller;
 
+import static ru.tinkoff.kora.example.graalvm.crud.openapi.server.api.PetApiResponses.*;
+
 import reactor.core.publisher.Mono;
 import ru.tinkoff.kora.common.Component;
 import ru.tinkoff.kora.example.graalvm.crud.openapi.server.api.PetApiDelegate;
@@ -8,8 +10,6 @@ import ru.tinkoff.kora.example.graalvm.crud.openapi.server.model.PetCreateTO;
 import ru.tinkoff.kora.example.graalvm.crud.openapi.server.model.PetUpdateTO;
 import ru.tinkoff.kora.example.graalvm.crud.r2dbc.model.mapper.PetMapper;
 import ru.tinkoff.kora.example.graalvm.crud.r2dbc.service.PetService;
-
-import static ru.tinkoff.kora.example.graalvm.crud.openapi.server.api.PetApiResponses.*;
 
 @Component
 public final class PetDelegate implements PetApiDelegate {
@@ -67,7 +67,8 @@ public final class PetDelegate implements PetApiDelegate {
 
         return petService.delete(petId)
                 .map(isDeleted -> (isDeleted)
-                        ? new DeletePetApiResponse.DeletePet200ApiResponse(new MessageTO("Successfully deleted pet with ID: " + petId))
+                        ? new DeletePetApiResponse.DeletePet200ApiResponse(
+                                new MessageTO("Successfully deleted pet with ID: " + petId))
                         : new DeletePetApiResponse.DeletePet404ApiResponse(notFound(petId)));
     }
 

@@ -2,7 +2,6 @@ package ru.tinkoff.kora.example.graalvm.crud.vertx.repository;
 
 import reactor.core.publisher.Mono;
 import ru.tinkoff.kora.database.common.UpdateCount;
-import ru.tinkoff.kora.database.common.annotation.Id;
 import ru.tinkoff.kora.database.common.annotation.Query;
 import ru.tinkoff.kora.database.common.annotation.Repository;
 import ru.tinkoff.kora.database.vertx.VertxRepository;

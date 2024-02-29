@@ -27,20 +27,20 @@ dependencies {
     koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
     annotationProcessor "ru.tinkoff.kora:annotation-processors"
     annotationProcessor "org.slf4j:slf4j-simple:2.0.11"
-    annotationProcessor "io.goodforgod:graalvm-hint-processor:1.1.1"
-    compileOnly "io.goodforgod:graalvm-hint-annotations:1.1.1"
+    annotationProcessor "io.goodforgod:graalvm-hint-processor:1.2.0"
+    compileOnly "io.goodforgod:graalvm-hint-annotations:1.2.0"
 
     implementation "ru.tinkoff.kora:http-server-undertow"
     implementation "ru.tinkoff.kora:kafka"
     implementation "ru.tinkoff.kora:json-module"
-    implementation "ru.tinkoff.kora:config-hocon"
+    implementation "ru.tinkoff.kora:config-yaml"
     implementation "ru.tinkoff.kora:micrometer-module"
     implementation "ru.tinkoff.kora:logging-logback"
 
     testImplementation "org.json:json:20231013"
     testImplementation "org.mockito:mockito-core:5.6.0"
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-kafka:0.9.7-SNAPSHOT"
+    testImplementation "io.goodforgod:testcontainers-extensions-kafka:0.9.6"
     testImplementation "org.testcontainers:junit-jupiter:1.17.6"
 }
 

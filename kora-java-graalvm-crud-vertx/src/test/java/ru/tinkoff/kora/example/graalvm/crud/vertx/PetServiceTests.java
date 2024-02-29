@@ -1,5 +1,10 @@
 package ru.tinkoff.kora.example.graalvm.crud.vertx;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+
+import java.util.Collections;
+import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -16,12 +21,6 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
-
-import java.util.Collections;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 
 @KoraAppTest(Application.class)
 class PetServiceTests implements KoraAppTestConfigModifier {

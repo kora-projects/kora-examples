@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
-import ru.tinkoff.kora.database.common.UpdateCount;
 import ru.tinkoff.kora.example.graalvm.crud.cassandra.repository.PetRepository;
 import ru.tinkoff.kora.example.graalvm.crud.cassandra.service.PetCache;
 import ru.tinkoff.kora.example.graalvm.crud.cassandra.service.PetService;

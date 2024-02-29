@@ -16,8 +16,6 @@ import ru.tinkoff.kora.resilient.circuitbreaker.annotation.CircuitBreaker;
 import ru.tinkoff.kora.resilient.retry.annotation.Retry;
 import ru.tinkoff.kora.resilient.timeout.annotation.Timeout;
 
-import java.util.Optional;
-
 @Component
 public class PetService {
 

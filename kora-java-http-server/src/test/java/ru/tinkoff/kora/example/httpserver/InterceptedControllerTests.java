@@ -1,18 +1,17 @@
 package ru.tinkoff.kora.example.httpserver;
 
-import org.junit.jupiter.api.Test;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.shaded.org.awaitility.Awaitility;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Arrays;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 @Testcontainers
 class InterceptedControllerTests {
@@ -39,7 +38,8 @@ class InterceptedControllerTests {
         // then
         var interceptedLogs = Awaitility.await()
                 .atMost(Duration.ofSeconds(30))
-                .until(() -> container.getLogs().split("\n"), logs -> Arrays.stream(logs).anyMatch(log -> log.endsWith("Method Level Interceptor")));
+                .until(() -> container.getLogs().split("\n"),
+                        logs -> Arrays.stream(logs).anyMatch(log -> log.endsWith("Method Level Interceptor")));
         assertTrue(Arrays.stream(interceptedLogs).anyMatch(log -> log.endsWith("Server Level Interceptor")));
         assertTrue(Arrays.stream(interceptedLogs).anyMatch(log -> log.endsWith("Controller Level Interceptor")));
         assertTrue(Arrays.stream(interceptedLogs).anyMatch(log -> log.endsWith("Method Level Interceptor")));

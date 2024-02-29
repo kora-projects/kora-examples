@@ -43,15 +43,13 @@ public final class PetDelegate implements PetApiDelegate {
         Logger logger = LoggerFactory.getLogger(getClass());
         return petService.add(petCreateTO)
                 .doOnSuccess(r -> {
-                    if(r == null) {
+                    if (r == null) {
                         logger.warn("INSERT NULL");
                     } else {
                         logger.warn("INSERT NOT NULL");
                     }
                 })
-                .doOnError(e -> {
-                    logger.warn("ERROR - " + e);
-                })
+                .doOnError(e -> { logger.warn("ERROR - " + e); })
                 .map(pet -> {
                     var body = petMapper.asDTO(pet);
                     return new AddPetApiResponse.AddPet200ApiResponse(body);
