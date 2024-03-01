@@ -1,0 +1,26 @@
+name: Build Master
+
+on:
+  push:
+    branches:
+      - "master"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: "17"
+          distribution: "adopt"
+
+      - name: Build
+        run: "./gradlew classes"
+
+      - name: Build tests
+        run: "./gradlew testClasses"
+
+      - name: Test
+        run: "./gradlew test"
