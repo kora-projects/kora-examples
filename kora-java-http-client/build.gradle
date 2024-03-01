@@ -35,7 +35,7 @@ dependencies {
     implementation "ru.tinkoff.kora:config-hocon"
 
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-mockserver:0.9.4"
+    testImplementation "io.goodforgod:testcontainers-extensions-mockserver:0.9.6"
 }
 
 test.dependsOn tasks.shadowJar
