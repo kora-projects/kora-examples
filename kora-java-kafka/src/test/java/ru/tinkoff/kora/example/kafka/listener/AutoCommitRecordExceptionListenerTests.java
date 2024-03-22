@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.kafka.*;
 import java.time.Duration;
+import java.util.Timer;
 import java.util.concurrent.Executors;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -41,7 +42,7 @@ class AutoCommitRecordExceptionListenerTests implements KoraAppTestConfigModifie
 
     @Test
     void processed() throws InterruptedException {
-        Thread.sleep(1000); // wait async consumer registreation and dynamic membership rebalance
+        Thread.sleep(1000); // wait async consumer registration and dynamic membership rebalance
 
         // given
         var topic = "my-topic-consumer";
@@ -59,7 +60,7 @@ class AutoCommitRecordExceptionListenerTests implements KoraAppTestConfigModifie
 
     @Test
     void failed() throws InterruptedException {
-        Thread.sleep(1000); // wait async consumer registreation and dynamic membership rebalance
+        Thread.sleep(1000); // wait async consumer registration and dynamic membership rebalance
 
         // given
         var topic = "my-topic-consumer";

@@ -25,7 +25,6 @@ configurations {
 dependencies {
     koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
     annotationProcessor "ru.tinkoff.kora:annotation-processors"
-    annotationProcessor "org.slf4j:slf4j-simple:2.0.11"
 
     implementation "ru.tinkoff.kora:resilient-kora"
 

@@ -25,6 +25,24 @@ CREATE TABLE IF NOT EXISTS entities_uuid
 );
 
 
+CREATE TABLE IF NOT EXISTS entities_composite
+(
+    a BIGINT    GENERATED ALWAYS AS IDENTITY,
+    b BIGINT    GENERATED ALWAYS AS IDENTITY,
+    name VARCHAR NOT NULL,
+    PRIMARY KEY (a, b)
+);
+
+
+CREATE TABLE IF NOT EXISTS entities_composite_uuid
+(
+    a UUID    NOT NULL,
+    b UUID    NOT NULL,
+    name VARCHAR NOT NULL,
+    PRIMARY KEY (a, b)
+);
+
+
 CREATE TABLE IF NOT EXISTS entities_jsonb
 (
     id    UUID  NOT NULL,

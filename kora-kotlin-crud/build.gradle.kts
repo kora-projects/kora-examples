@@ -67,7 +67,7 @@ dependencies {
 
     testImplementation("io.mockk:mockk:1.13.8")
     testImplementation("ru.tinkoff.kora:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.9.4")
+    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.9.6")
     testImplementation("org.testcontainers:junit-jupiter:1.17.6")
 }
 

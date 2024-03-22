@@ -39,7 +39,7 @@ class JdbcCrudSyncTests implements KoraAppTestConfigModifier {
     }
 
     @Test
-    void syncSingleSuccess() {
+    void syncSingle() {
         // given
         var entityCreate = new JdbcCrudSyncRepository.Entity("1", 1, "2", null);
         repository.insert(entityCreate);
@@ -68,7 +68,7 @@ class JdbcCrudSyncTests implements KoraAppTestConfigModifier {
     }
 
     @Test
-    void syncBatchSuccess() {
+    void syncBatch() {
         // given
         var entityCreate1 = new JdbcCrudSyncRepository.Entity("1", 1, "2", null);
         var entityCreate2 = new JdbcCrudSyncRepository.Entity("2", 3, "4", null);

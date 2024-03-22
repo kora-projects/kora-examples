@@ -1,16 +1,17 @@
 package ru.tinkoff.kora.example.jdbc;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.jdbc.ContainerPostgresConnection;
 import io.goodforgod.testcontainers.extensions.jdbc.JdbcConnection;
 import io.goodforgod.testcontainers.extensions.jdbc.Migration;
 import io.goodforgod.testcontainers.extensions.jdbc.TestcontainersPostgres;
-import java.util.UUID;
+import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
+import ru.tinkoff.kora.database.common.UpdateCount;
+import ru.tinkoff.kora.example.jdbc.JdbcIdRandomCompositeRepository.Entity;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
@@ -23,13 +24,13 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent;
                 apply = Migration.Mode.PER_METHOD,
                 drop = Migration.Mode.PER_METHOD))
 @KoraAppTest(Application.class)
-class JdbcJsonbTests implements KoraAppTestConfigModifier {
+class JdbcIdRandomCompositeTests implements KoraAppTestConfigModifier {
 
     @ContainerPostgresConnection
     private JdbcConnection connection;
 
     @TestComponent
-    private JdbcJsonbRepository repository;
+    private JdbcIdRandomCompositeRepository repository;
 
     @NotNull
     @Override
@@ -40,18 +41,32 @@ class JdbcJsonbTests implements KoraAppTestConfigModifier {
     }
 
     @Test
-    void syncSingle() {
+    void insertOne() {
         // given
-        var entityCreate = new JdbcJsonbRepository.Entity(UUID.randomUUID(),
-                new JdbcJsonbRepository.Entity.JsonbValue("Foo", "Bar"));
+        var entityCreate = new Entity("Bob");
 
         // when
-        repository.insert(entityCreate);
+        UpdateCount count = repository.insert(entityCreate);
+        assertEquals(1, count.value());
 
-        // then
         var foundCreated = repository.findById(entityCreate.id());
         assertNotNull(foundCreated);
-        assertEquals(entityCreate.id(), foundCreated.id());
-        assertEquals(entityCreate.value(), foundCreated.value());
+        assertEquals(entityCreate.name(), foundCreated.name());
+    }
+
+    @Test
+    void insertMany() {
+        // given
+        var entities = List.of(
+                new Entity("b1"),
+                new Entity("b2"));
+
+        // when
+        var countMany = repository.insert(entities);
+        assertEquals(2, countMany.value());
+
+        var foundCreated = repository.findById(entities.get(0).id());
+        assertNotNull(foundCreated);
+        assertEquals(entities.get(0).name(), foundCreated.name());
     }
 }

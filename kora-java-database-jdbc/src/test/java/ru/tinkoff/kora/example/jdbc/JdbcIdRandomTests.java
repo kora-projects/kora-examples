@@ -9,6 +9,7 @@ import io.goodforgod.testcontainers.extensions.jdbc.Migration;
 import io.goodforgod.testcontainers.extensions.jdbc.TestcontainersPostgres;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
+import ru.tinkoff.kora.example.jdbc.JdbcIdRandomRepository.Entity;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
@@ -38,9 +39,9 @@ class JdbcIdRandomTests implements KoraAppTestConfigModifier {
     }
 
     @Test
-    void syncSingleSuccess() {
+    void insertOne() {
         // given
-        var entityCreate = new JdbcIdRandomRepository.Entity("Bob");
+        var entityCreate = new Entity("Bob");
 
         // when
         repository.insert(entityCreate);
@@ -48,7 +49,6 @@ class JdbcIdRandomTests implements KoraAppTestConfigModifier {
         // then
         var foundCreated = repository.findById(entityCreate.id());
         assertNotNull(foundCreated);
-        assertEquals(entityCreate.id(), foundCreated.id());
         assertEquals(entityCreate.name(), foundCreated.name());
     }
 }

@@ -40,7 +40,7 @@ class JdbcCrudReactorTests implements KoraAppTestConfigModifier {
     }
 
     @Test
-    void monoSingleSuccess() {
+    void monoSingle() {
         // given
         var entityCreate = new JdbcCrudReactorRepository.Entity("1", 1, "2", null);
         repository.insert(entityCreate).block(Duration.ofMinutes(1));
@@ -69,7 +69,7 @@ class JdbcCrudReactorTests implements KoraAppTestConfigModifier {
     }
 
     @Test
-    void monoBatchSuccess() {
+    void monoBatch() {
         // given
         var entityCreate1 = new JdbcCrudReactorRepository.Entity("1", 1, "2", null);
         var entityCreate2 = new JdbcCrudReactorRepository.Entity("2", 3, "4", null);
