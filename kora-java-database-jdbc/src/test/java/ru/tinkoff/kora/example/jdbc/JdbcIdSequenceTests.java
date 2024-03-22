@@ -1,6 +1,7 @@
 package ru.tinkoff.kora.example.jdbc;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.tinkoff.kora.example.jdbc.JdbcIdSequenceRepository.*;
 
 import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.jdbc.ContainerPostgresConnection;
@@ -39,27 +40,38 @@ class JdbcIdSequenceTests implements KoraAppTestConfigModifier {
     }
 
     @Test
-    void syncSingleSuccess() {
+    void insertOne() {
         // given
-        var entityCreate = new JdbcIdSequenceRepository.Entity("Bob");
+        var entity1 = new Entity("Foo");
+        var entity2 = new Entity("Bar");
 
         // when
-        long id = repository.insert(entityCreate);
-        assertNotEquals(0, id);
-
-        var ids = repository
-                .createGenerated(List.of(new JdbcIdSequenceRepository.Entity("b1"), new JdbcIdSequenceRepository.Entity("b2")));
-        for (Long id2 : ids) {
-            assertNotEquals(0, id2);
-        }
-
-        var id3 = repository.createGenerated(new JdbcIdSequenceRepository.Entity("b3"));
-        assertNotEquals(0, id3);
+        long id1 = repository.insert(entity1);
+        assertEquals(1, id1);
+        long id2 = repository.insertGenerated(entity2);
+        assertEquals(2, id2);
 
         // then
-        var foundCreated = repository.findById(id);
+        var foundCreated = repository.findById(1L);
         assertNotNull(foundCreated);
-        assertEquals(id, foundCreated.id());
-        assertEquals(entityCreate.name(), foundCreated.name());
+        assertEquals(entity1.name(), foundCreated.name());
+    }
+
+    @Test
+    void insertMany() {
+        // given
+        var entities = List.of(new Entity("b1"), new Entity("b2"));
+
+        // when
+        var ids = repository.insertGenerated(entities);
+        for (long id : ids) {
+            assertNotEquals(0, id);
+            assertNotEquals(0, id);
+        }
+
+        // then
+        var foundCreated = repository.findById(ids.get(0));
+        assertNotNull(foundCreated);
+        assertEquals(entities.get(0).name(), foundCreated.name());
     }
 }

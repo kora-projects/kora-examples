@@ -1,34 +1,43 @@
-name: Run tests
+name: Test PR
 
 on:
-  push:
-    branches:
-      - "master"
   pull_request:
     branches:
       - "master"
 
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ "17" ]
+    name: Pull Request against Java ${{ matrix.java }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
-          distribution: 'adopt'
+          java-version: ${{ matrix.java }}
+          distribution: "adopt"
 
       - name: Build
-        run: './gradlew classes'
+        run: "./gradlew classes"
 
       - name: Build tests
-        run: './gradlew testClasses'
+        run: "./gradlew testClasses"
 
       - name: Test
-        run: './gradlew test jacocoTestReport'
+        run: "./gradlew test jacocoTestReport"
 
       - name: Test Report
+        if: matrix.java == '17'
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: |

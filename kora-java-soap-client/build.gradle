@@ -26,7 +26,6 @@ configurations {
 dependencies {
     koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
     annotationProcessor "ru.tinkoff.kora:annotation-processors"
-    annotationProcessor "org.slf4j:slf4j-simple:2.0.11"
 
     implementation "ru.tinkoff.kora:json-module"
     implementation "ru.tinkoff.kora:http-client-jdk"
@@ -43,7 +42,7 @@ dependencies {
     implementation "ru.tinkoff.kora:config-hocon"
 
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-mockserver:0.9.4"
+    testImplementation "io.goodforgod:testcontainers-extensions-mockserver:0.9.6"
 }
 
 //noinspection GroovyAssignabilityCheck

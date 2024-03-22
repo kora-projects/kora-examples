@@ -36,7 +36,6 @@ dependencies {
     koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
     annotationProcessor "org.mapstruct:mapstruct-processor:1.5.5.Final"
     annotationProcessor "ru.tinkoff.kora:annotation-processors"
-    annotationProcessor "org.slf4j:slf4j-simple:2.0.11"
 
     implementation "ru.tinkoff.kora:http-server-undertow"
     implementation "ru.tinkoff.kora:database-jdbc"
@@ -58,7 +57,7 @@ dependencies {
 
     testImplementation "org.mockito:mockito-core:5.6.0"
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.9.4"
+    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.9.6"
     testImplementation "org.testcontainers:junit-jupiter:1.17.6"
 }
 

@@ -8,7 +8,7 @@ import ru.tinkoff.kora.database.jdbc.JdbcRepository;
 @Repository
 public interface JdbcIdSequenceRepository extends JdbcRepository {
 
-    record Entity(Long id,
+    record Entity(@Id Long id,
                   @Column("name") String name) {
 
         public Entity(String name) {
@@ -32,12 +32,12 @@ public interface JdbcIdSequenceRepository extends JdbcRepository {
             VALUES (:entity.name)
             """)
     @Id
-    Long createGenerated(Entity entity);
+    Long insertGenerated(Entity entity);
 
     @Query("""
             INSERT INTO entities_sequence(name)
             VALUES (:entity.name)
             """)
     @Id
-    List<Long> createGenerated(@Batch List<Entity> entity);
+    List<Long> insertGenerated(@Batch List<Entity> entity);
 }

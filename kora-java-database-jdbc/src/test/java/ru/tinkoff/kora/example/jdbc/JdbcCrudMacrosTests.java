@@ -39,7 +39,7 @@ class JdbcCrudMacrosTests implements KoraAppTestConfigModifier {
     }
 
     @Test
-    void syncSingleSuccess() {
+    void syncSingle() {
         // given
         var entityCreate = new JdbcCrudMacrosRepository.Entity("1", 1, "2", null);
         repository.insert(entityCreate);
@@ -68,7 +68,7 @@ class JdbcCrudMacrosTests implements KoraAppTestConfigModifier {
     }
 
     @Test
-    void syncBatchSuccess() {
+    void syncBatch() {
         // given
         var entityCreate1 = new JdbcCrudMacrosRepository.Entity("1", 1, "2", null);
         var entityCreate2 = new JdbcCrudMacrosRepository.Entity("2", 3, "4", null);
