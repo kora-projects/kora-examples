@@ -9,7 +9,7 @@ import ru.tinkoff.kora.json.common.annotation.Json;
 import ru.tinkoff.kora.kafka.common.annotation.KafkaListener;
 
 @Component
-public final class AutoCommitTopicMapperListener extends AbstractListener<AutoCommitTopicMapperListener.MyEvent> {
+public final class AutoCommitValueMapperListener extends AbstractListener<AutoCommitValueMapperListener.MyEvent> {
 
     @Json
     public record MyEvent(String username, int code) {}
