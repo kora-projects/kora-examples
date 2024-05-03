@@ -23,6 +23,10 @@ public interface JdbcIdSequenceCompositeRepository extends JdbcRepository {
     @Nullable
     Entity findById(Entity.EntityId id);
 
+    @Query("SELECT %{return#selects} FROM %{return#table} WHERE %{id#where}")
+    @Nullable
+    Entity findByIdMacros(Entity.EntityId id);
+
     @Query("""
             INSERT INTO entities_composite(name)
             VALUES (:entity.name)

@@ -24,6 +24,10 @@ public interface JdbcIdRandomCompositeRepository extends JdbcRepository {
     @Nullable
     Entity findById(Entity.EntityId id);
 
+    @Query("SELECT %{return#selects} FROM %{return#table} WHERE %{id#where}")
+    @Nullable
+    Entity findByIdMacros(Entity.EntityId id);
+
     @Query("""
             INSERT INTO entities_composite_uuid(a, b, name)
             VALUES (:entity.id.a, :entity.id.b, :entity.name)
