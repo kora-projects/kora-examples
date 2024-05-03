@@ -11,6 +11,11 @@ import ru.tinkoff.kora.config.common.annotation.ConfigSource;
 @ConfigSource("foo")
 public interface FooConfig {
 
+    enum EnumValue {
+        ANY,
+        SOME
+    }
+
     String valueEnvRequired();
 
     @Nullable
@@ -69,12 +74,6 @@ public interface FooConfig {
     Properties valueProperties();
 
     BarConfig bar();
-
-    enum EnumValue {
-
-        ANY,
-        SOME
-    }
 
     interface BarConfig {
 
