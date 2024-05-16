@@ -23,7 +23,7 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 @KoraAppTest(Application.class)
 class AutoCommitRecordExceptionListenerTests implements KoraAppTestConfigModifier {
 
-    @ContainerKafkaConnection
+    @ConnectionKafka
     private KafkaConnection connection;
 
     @Tag(AutoCommitRecordExceptionListenerModule.AutoCommitRecordExceptionListenerProcessTag.class)

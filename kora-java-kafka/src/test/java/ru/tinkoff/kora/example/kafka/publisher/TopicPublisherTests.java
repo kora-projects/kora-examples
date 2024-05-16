@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import io.goodforgod.testcontainers.extensions.ContainerMode;
-import io.goodforgod.testcontainers.extensions.kafka.ContainerKafkaConnection;
+import io.goodforgod.testcontainers.extensions.kafka.ConnectionKafka;
 import io.goodforgod.testcontainers.extensions.kafka.KafkaConnection;
 import io.goodforgod.testcontainers.extensions.kafka.TestcontainersKafka;
 import io.goodforgod.testcontainers.extensions.kafka.Topics;
@@ -22,7 +22,7 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 @KoraAppTest(Application.class)
 class TopicPublisherTests implements KoraAppTestConfigModifier {
 
-    @ContainerKafkaConnection
+    @ConnectionKafka
     private KafkaConnection connection;
 
     @TestComponent

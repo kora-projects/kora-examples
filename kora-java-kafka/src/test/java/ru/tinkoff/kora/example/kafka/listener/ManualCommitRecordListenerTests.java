@@ -1,7 +1,7 @@
 package ru.tinkoff.kora.example.kafka.listener;
 
 import io.goodforgod.testcontainers.extensions.ContainerMode;
-import io.goodforgod.testcontainers.extensions.kafka.ContainerKafkaConnection;
+import io.goodforgod.testcontainers.extensions.kafka.ConnectionKafka;
 import io.goodforgod.testcontainers.extensions.kafka.Event;
 import io.goodforgod.testcontainers.extensions.kafka.KafkaConnection;
 import io.goodforgod.testcontainers.extensions.kafka.TestcontainersKafka;
@@ -24,7 +24,7 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 @KoraAppTest(Application.class)
 class ManualCommitRecordListenerTests implements KoraAppTestConfigModifier {
 
-    @ContainerKafkaConnection
+    @ConnectionKafka
     private KafkaConnection connection;
 
     @Tag(ManualCommitRecordListenerModule.ManualCommitRecordListenerProcessTag.class)

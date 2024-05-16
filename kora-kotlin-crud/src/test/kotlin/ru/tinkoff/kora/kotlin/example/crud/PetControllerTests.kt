@@ -2,10 +2,10 @@ package ru.tinkoff.kora.kotlin.example.crud
 
 import io.goodforgod.testcontainers.extensions.ContainerMode
 import io.goodforgod.testcontainers.extensions.Network
-import io.goodforgod.testcontainers.extensions.jdbc.ContainerPostgresConnection
+import io.goodforgod.testcontainers.extensions.jdbc.ConnectionPostgreSQL
 import io.goodforgod.testcontainers.extensions.jdbc.JdbcConnection
 import io.goodforgod.testcontainers.extensions.jdbc.Migration
-import io.goodforgod.testcontainers.extensions.jdbc.TestcontainersPostgres
+import io.goodforgod.testcontainers.extensions.jdbc.TestcontainersPostgreSQL
 import org.json.JSONObject
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
@@ -20,7 +20,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
 
-@TestcontainersPostgres(
+@TestcontainersPostgreSQL(
     network = Network(shared = true),
     mode = ContainerMode.PER_RUN,
     migration = Migration(
@@ -29,7 +29,7 @@ import java.time.Duration
         drop = Migration.Mode.PER_METHOD
     )
 )
-class PetControllerTests(@ContainerPostgresConnection val connection: JdbcConnection) {
+class PetControllerTests(@ConnectionPostgreSQL val connection: JdbcConnection) {
 
     companion object {
 
@@ -37,7 +37,7 @@ class PetControllerTests(@ContainerPostgresConnection val connection: JdbcConnec
 
         @JvmStatic
         @BeforeAll
-        fun setup(@ContainerPostgresConnection connection: JdbcConnection) {
+        fun setup(@ConnectionPostgreSQL connection: JdbcConnection) {
             val params = connection.paramsInNetwork().orElseThrow()
             container.withEnv(
                 mapOf(

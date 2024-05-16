@@ -19,11 +19,11 @@ class UserListenerTests {
     private static final AppContainer container = AppContainer.build()
             .withNetwork(org.testcontainers.containers.Network.SHARED);
 
-    @ContainerKafkaConnection
+    @ConnectionKafka
     private KafkaConnection connection;
 
     @BeforeAll
-    public static void setup(@ContainerKafkaConnection KafkaConnection connection) {
+    public static void setup(@ConnectionKafka KafkaConnection connection) {
         var params = connection.paramsInNetwork().orElseThrow();
         container.withEnv(Map.of("KAFKA_BOOTSTRAP", params.bootstrapServers()));
         container.start();

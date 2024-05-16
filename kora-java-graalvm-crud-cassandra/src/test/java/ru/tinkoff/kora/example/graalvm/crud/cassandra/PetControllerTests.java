@@ -5,10 +5,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.Network;
 import io.goodforgod.testcontainers.extensions.cassandra.CassandraConnection;
-import io.goodforgod.testcontainers.extensions.cassandra.ContainerCassandraConnection;
+import io.goodforgod.testcontainers.extensions.cassandra.ConnectionCassandra;
 import io.goodforgod.testcontainers.extensions.cassandra.Migration;
 import io.goodforgod.testcontainers.extensions.cassandra.TestcontainersCassandra;
-import io.goodforgod.testcontainers.extensions.redis.ContainerRedisConnection;
+import io.goodforgod.testcontainers.extensions.redis.ConnectionRedis;
 import io.goodforgod.testcontainers.extensions.redis.RedisConnection;
 import io.goodforgod.testcontainers.extensions.redis.TestcontainersRedis;
 import java.net.http.HttpClient;
@@ -27,7 +27,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
         network = @Network(shared = true),
         mode = ContainerMode.PER_RUN,
         migration = @Migration(
-                migrations = "migrations",
+                locations = "migrations",
                 engine = Migration.Engines.SCRIPTS,
                 apply = Migration.Mode.PER_METHOD,
                 drop = Migration.Mode.PER_METHOD))
@@ -39,12 +39,12 @@ class PetControllerTests {
     private static final AppContainer container = AppContainer.build()
             .withNetwork(org.testcontainers.containers.Network.SHARED);
 
-    @ContainerCassandraConnection
+    @ConnectionCassandra
     private CassandraConnection connection;
 
     @BeforeAll
-    public static void setup(@ContainerCassandraConnection CassandraConnection cassandraConnection,
-                             @ContainerRedisConnection RedisConnection redisConnection) {
+    public static void setup(@ConnectionCassandra CassandraConnection cassandraConnection,
+                             @ConnectionRedis RedisConnection redisConnection) {
         final String keyspace = "petshop";
         cassandraConnection.createKeyspace(keyspace);
 

@@ -2,6 +2,7 @@ package ru.tinkoff.kora.example.graalvm.crud.jdbc;
 
 import java.net.URI;
 import java.nio.file.Paths;
+import java.time.Duration;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -31,6 +32,7 @@ public final class AppContainer extends GenericContainer<AppContainer> {
     protected void configure() {
         super.configure();
         withExposedPorts(8080, 8085);
+        withStartupTimeout(Duration.ofSeconds(120));
         withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(AppContainer.class)));
         waitingFor(Wait.forHttp("/system/readiness").forPort(8085).forStatusCode(200));
     }

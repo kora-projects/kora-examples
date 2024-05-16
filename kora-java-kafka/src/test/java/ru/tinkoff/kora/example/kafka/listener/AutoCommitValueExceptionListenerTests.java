@@ -3,7 +3,7 @@ package ru.tinkoff.kora.example.kafka.listener;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.goodforgod.testcontainers.extensions.ContainerMode;
-import io.goodforgod.testcontainers.extensions.kafka.ContainerKafkaConnection;
+import io.goodforgod.testcontainers.extensions.kafka.ConnectionKafka;
 import io.goodforgod.testcontainers.extensions.kafka.Event;
 import io.goodforgod.testcontainers.extensions.kafka.KafkaConnection;
 import io.goodforgod.testcontainers.extensions.kafka.TestcontainersKafka;
@@ -26,7 +26,7 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 @KoraAppTest(Application.class)
 class AutoCommitValueExceptionListenerTests implements KoraAppTestConfigModifier {
 
-    @ContainerKafkaConnection
+    @ConnectionKafka
     private KafkaConnection connection;
 
     @Tag(AutoCommitValueExceptionListenerModule.AutoCommitValueExceptionListenerProcessTag.class)

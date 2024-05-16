@@ -6,11 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.redis.*;
 import java.math.BigDecimal;
-import java.time.Duration;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.utility.DockerImageName;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
@@ -20,11 +18,7 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 @KoraAppTest(Application.class)
 class RedisCachedServiceTests implements KoraAppTestConfigModifier {
 
-    @ContainerRedis
-    private static final RedisContainer<?> CONTAINER = new RedisContainer<>(DockerImageName.parse("redis:7.2-alpine"))
-            .waitAfterStart(Duration.ofSeconds(1));
-
-    @ContainerRedisConnection
+    @ConnectionRedis
     private RedisConnection connection;
 
     @TestComponent

@@ -36,7 +36,7 @@ subprojects {
     }
 
     configurations {
-        all {
+        configureEach {
             resolutionStrategy {
                 cacheChangingModulesFor 0, "seconds" // check for updates every build
             }
