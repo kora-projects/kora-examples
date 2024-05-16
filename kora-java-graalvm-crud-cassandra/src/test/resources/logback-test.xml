@@ -21,5 +21,4 @@
 
     <logger level="DEBUG" name="org.testcontainers.containers"/>
     <logger level="DEBUG" name="io.goodforgod.testcontainers.extensions"/>
-    <logger level="WARN" name="io.goodforgod.testcontainers.extensions.cassandra.CassandraContainerExtra"/>
 </configuration>
