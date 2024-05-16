@@ -23,7 +23,8 @@ public class PetService {
         this.petRepository = petRepository;
     }
 
-    @Cacheable(PetCache.class)
+    //TODO fixed in 1.1.1
+//    @Cacheable(PetCache.class)
     @CircuitBreaker("pet")
     @Retry("pet")
     @Timeout("pet")
