@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.kafka.*;
 import java.time.Duration;
-import java.util.Timer;
 import java.util.concurrent.Executors;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;

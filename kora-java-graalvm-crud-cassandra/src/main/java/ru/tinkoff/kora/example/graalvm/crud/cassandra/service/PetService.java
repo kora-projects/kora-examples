@@ -4,7 +4,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import reactor.core.publisher.Mono;
 import ru.tinkoff.kora.cache.annotation.CacheInvalidate;
 import ru.tinkoff.kora.cache.annotation.CachePut;
-import ru.tinkoff.kora.cache.annotation.Cacheable;
 import ru.tinkoff.kora.common.Component;
 import ru.tinkoff.kora.example.graalvm.crud.cassandra.model.dao.Pet;
 import ru.tinkoff.kora.example.graalvm.crud.cassandra.repository.PetRepository;
@@ -23,8 +22,8 @@ public class PetService {
         this.petRepository = petRepository;
     }
 
-    //TODO fixed in 1.1.1
-//    @Cacheable(PetCache.class)
+    // TODO fixed in 1.1.1
+    // @Cacheable(PetCache.class)
     @CircuitBreaker("pet")
     @Retry("pet")
     @Timeout("pet")
