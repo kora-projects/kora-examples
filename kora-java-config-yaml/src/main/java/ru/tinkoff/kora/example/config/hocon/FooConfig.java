@@ -1,6 +1,8 @@
 package ru.tinkoff.kora.example.config.hocon;
 
 import jakarta.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.*;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -46,13 +48,11 @@ public interface FooConfig {
 
     long valueLong();
 
-    // TODO 1.0.5
-    // BigInteger valueBigInt();
+    BigInteger valueBigInt();
 
     double valueDouble();
 
-    // TODO 1.0.5
-    // BigDecimal valueBigDecimal();
+    BigDecimal valueBigDecimal();
 
     boolean valueBoolean();
 
