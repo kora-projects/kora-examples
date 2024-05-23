@@ -17,7 +17,9 @@ import software.amazon.awssdk.services.s3.model.BucketAlreadyExistsException;
 import software.amazon.awssdk.services.s3.model.BucketAlreadyOwnedByYouException;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
+import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -67,11 +69,12 @@ class SyncS3ClientTests implements KoraAppTestConfigModifier {
         // given
         var key = "k1";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key, S3Body.ofBytes(value));
+        client.putObject(key, S3Body.ofPublisher(HttpRequest.BodyPublishers.ofByteArray(value), value.length));
 
         // when
         var found = client.getObject(key);
         assertNotNull(found);
+        assertTrue(Arrays.equals(value, found.body().asBytes()));
 
         // then
         assertThrows(S3NotFoundException.class, () -> client.getObject("k2"));

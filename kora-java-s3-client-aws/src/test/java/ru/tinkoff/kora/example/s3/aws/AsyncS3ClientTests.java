@@ -17,7 +17,9 @@ import software.amazon.awssdk.services.s3.model.BucketAlreadyExistsException;
 import software.amazon.awssdk.services.s3.model.BucketAlreadyOwnedByYouException;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
+import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletionException;
 
@@ -68,11 +70,12 @@ class AsyncS3ClientTests implements KoraAppTestConfigModifier {
         // given
         var key = "k1";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key, S3Body.ofBytes(value)).toCompletableFuture().join();
+        client.putObject(key, S3Body.ofPublisher(HttpRequest.BodyPublishers.ofByteArray(value), value.length)).toCompletableFuture().join();
 
         // when
         var found = client.getObject(key).join();
         assertNotNull(found);
+        assertTrue(Arrays.equals(value, found.body().asBytes()));
 
         // then
         var ex = assertThrows(CompletionException.class, () -> client.getObject("k2").join());

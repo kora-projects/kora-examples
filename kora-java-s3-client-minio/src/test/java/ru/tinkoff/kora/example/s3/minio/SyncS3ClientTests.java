@@ -16,6 +16,7 @@ import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -68,6 +69,7 @@ class SyncS3ClientTests implements KoraAppTestConfigModifier {
         // when
         var found = client.getObject(key);
         assertNotNull(found);
+        assertTrue(Arrays.equals(value, found.body().asBytes()));
 
         // then
         assertThrows(S3NotFoundException.class, () -> client.getObject("k2"));
