@@ -22,17 +22,17 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 
 @TestcontainersKafka(mode = ContainerMode.PER_RUN, topics = @Topics({ "my-topic-consumer" }))
 @KoraAppTest(Application.class)
-class AutoCommitTopicListenerTests implements KoraAppTestConfigModifier {
+class AutoCommitValueKeyHeadersListenerTests implements KoraAppTestConfigModifier {
 
     @ContainerKafkaConnection
     private KafkaConnection connection;
 
-    @Tag(AutoCommitTopicListenerModule.AutoCommitTopicListenerProcessTag.class)
+    @Tag(AutoCommitValueKeyHeadersListenerModule.AutoCommitValueKeyHeadersListenerProcessTag.class)
     @TestComponent
     private Lifecycle consumerLifecycle;
 
     @TestComponent
-    private AutoCommitTopicListener consumer;
+    private AutoCommitValueKeyHeadersListener consumer;
 
     @NotNull
     @Override
