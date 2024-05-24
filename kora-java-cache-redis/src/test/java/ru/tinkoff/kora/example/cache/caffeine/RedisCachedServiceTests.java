@@ -1,9 +1,13 @@
 package ru.tinkoff.kora.example.cache.caffeine;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
 import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.redis.ConnectionRedis;
 import io.goodforgod.testcontainers.extensions.redis.RedisConnection;
 import io.goodforgod.testcontainers.extensions.redis.TestcontainersRedis;
+import java.math.BigDecimal;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,11 +15,6 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
-
-import java.math.BigDecimal;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @TestcontainersRedis(mode = ContainerMode.PER_RUN)
 @KoraAppTest(Application.class)

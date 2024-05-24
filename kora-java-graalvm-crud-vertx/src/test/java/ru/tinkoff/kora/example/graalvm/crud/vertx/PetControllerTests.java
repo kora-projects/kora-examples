@@ -15,7 +15,7 @@ import java.time.Duration;
 import java.util.Map;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -35,16 +35,18 @@ class PetControllerTests {
     @ConnectionPostgreSQL
     private JdbcConnection connection;
 
-    @BeforeAll
-    public static void setup(@ConnectionPostgreSQL JdbcConnection connection) {
-        var params = connection.paramsInNetwork().orElseThrow();
-        container.withEnv(Map.of(
-                "POSTGRES_VERTX_URL", "postgresql://%s:%s/%s".formatted(params.host(), params.port(), params.database()),
-                "POSTGRES_USER", params.username(),
-                "POSTGRES_PASS", params.password(),
-                "CACHE_EXPIRE_WRITE", "0s"));
+    @BeforeEach
+    public void setup(@ConnectionPostgreSQL JdbcConnection connection) {
+        if (!container.isRunning()) {
+            var params = connection.paramsInNetwork().orElseThrow();
+            container.withEnv(Map.of(
+                    "POSTGRES_VERTX_URL", "postgresql://%s:%s/%s".formatted(params.host(), params.port(), params.database()),
+                    "POSTGRES_USER", params.username(),
+                    "POSTGRES_PASS", params.password(),
+                    "CACHE_EXPIRE_WRITE", "0s"));
 
-        container.start();
+            container.start();
+        }
     }
 
     @AfterAll

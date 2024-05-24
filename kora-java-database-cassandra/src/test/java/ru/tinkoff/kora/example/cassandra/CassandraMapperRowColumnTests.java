@@ -38,11 +38,11 @@ class CassandraMapperRowColumnTests implements KoraAppTestConfigModifier {
     @Override
     public KoraConfigModification config() {
         return KoraConfigModification
-                .ofSystemProperty("CASSANDRA_CONTACT_POINTS", connection.params().host() + ":" + connection.params().port())
+                .ofSystemProperty("CASSANDRA_CONTACT_POINTS", connection.params().contactPoint())
                 .withSystemProperty("CASSANDRA_USER", connection.params().username())
                 .withSystemProperty("CASSANDRA_PASS", connection.params().password())
                 .withSystemProperty("CASSANDRA_DC", connection.params().datacenter())
-                .withSystemProperty("CASSANDRA_KEYSPACE", "cassandra");
+                .withSystemProperty("CASSANDRA_KEYSPACE", connection.params().keyspace());
     }
 
     @Test

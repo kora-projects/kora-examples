@@ -1,6 +1,4 @@
-CREATE KEYSPACE IF NOT EXISTS cassandra WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
-
-CREATE TABLE IF NOT EXISTS cassandra.entities
+CREATE TABLE IF NOT EXISTS entities
 (
     id     VARCHAR,
     value1 INT,
@@ -10,10 +8,10 @@ CREATE TABLE IF NOT EXISTS cassandra.entities
 );
 
 
-CREATE TYPE IF NOT EXISTS cassandra.username(first text, last text);
+CREATE TYPE IF NOT EXISTS username(first text, last text);
 
 
-CREATE TABLE IF NOT EXISTS cassandra.entities_udt
+CREATE TABLE IF NOT EXISTS entities_udt
 (
     id   VARCHAR,
     name FROZEN<username>,

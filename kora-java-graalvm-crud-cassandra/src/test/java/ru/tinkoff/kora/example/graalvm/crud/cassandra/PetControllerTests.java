@@ -18,7 +18,7 @@ import java.time.Duration;
 import java.util.Map;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -42,26 +42,25 @@ class PetControllerTests {
     @ConnectionCassandra
     private CassandraConnection connection;
 
-    @BeforeAll
-    public static void setup(@ConnectionCassandra CassandraConnection cassandraConnection,
-                             @ConnectionRedis RedisConnection redisConnection) {
-        final String keyspace = "petshop";
-        cassandraConnection.createKeyspace(keyspace);
+    @BeforeEach
+    public void setup(@ConnectionCassandra CassandraConnection cassandraConnection,
+                      @ConnectionRedis RedisConnection redisConnection) {
+        if (!container.isRunning()) {
+            var paramsCassandra = cassandraConnection.paramsInNetwork().orElseThrow();
+            var paramsRedis = redisConnection.paramsInNetwork().orElseThrow();
+            container.withEnv(Map.of(
+                    "CASSANDRA_CONTACT_POINTS", paramsCassandra.contactPoint(),
+                    "CASSANDRA_USER", paramsCassandra.username(),
+                    "CASSANDRA_PASS", paramsCassandra.password(),
+                    "CASSANDRA_DC", paramsCassandra.datacenter(),
+                    "CASSANDRA_KEYSPACE", paramsCassandra.keyspace(),
+                    "CACHE_EXPIRE_WRITE", "0s",
+                    "REDIS_URL", paramsRedis.uri().toString(),
+                    "REDIS_USER", paramsRedis.username(),
+                    "REDIS_PASS", paramsRedis.password()));
 
-        var paramsCassandra = cassandraConnection.paramsInNetwork().orElseThrow();
-        var paramsRedis = redisConnection.paramsInNetwork().orElseThrow();
-        container.withEnv(Map.of(
-                "CASSANDRA_CONTACT_POINTS", String.format("%s:%s", paramsCassandra.host(), paramsCassandra.port()),
-                "CASSANDRA_USER", paramsCassandra.username(),
-                "CASSANDRA_PASS", paramsCassandra.password(),
-                "CASSANDRA_DC", paramsCassandra.datacenter(),
-                "CASSANDRA_KEYSPACE", keyspace,
-                "CACHE_EXPIRE_WRITE", "0s",
-                "REDIS_URL", paramsRedis.uri().toString(),
-                "REDIS_USER", paramsRedis.username(),
-                "REDIS_PASS", paramsRedis.password()));
-
-        container.start();
+            container.start();
+        }
     }
 
     @AfterAll
@@ -89,7 +88,7 @@ class PetControllerTests {
         assertEquals(200, response.statusCode(), response.body());
 
         // then
-        connection.assertCountsEquals(1, "petshop.pets");
+        connection.assertCountsEquals(1, "pets");
         var responseBody = new JSONObject(response.body());
         assertNotNull(responseBody.query("/id"));
         assertNotEquals(0L, responseBody.query("/id"));
@@ -117,7 +116,7 @@ class PetControllerTests {
 
         var createResponse = httpClient.send(createRequest, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, createResponse.statusCode(), createResponse.body());
-        connection.assertCountsEquals(1, "petshop.pets");
+        connection.assertCountsEquals(1, "pets");
         var createResponseBody = new JSONObject(createResponse.body());
 
         // then
@@ -151,7 +150,7 @@ class PetControllerTests {
 
         var createResponse = httpClient.send(createRequest, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, createResponse.statusCode(), createResponse.body());
-        connection.assertCountsEquals(1, "petshop.pets");
+        connection.assertCountsEquals(1, "pets");
         var createResponseBody = new JSONObject(createResponse.body());
 
         // when
@@ -202,7 +201,7 @@ class PetControllerTests {
 
         var createResponse = httpClient.send(createRequest, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, createResponse.statusCode(), createResponse.body());
-        connection.assertCountsEquals(1, "petshop.pets");
+        connection.assertCountsEquals(1, "pets");
         var createResponseBody = new JSONObject(createResponse.body());
 
         // when
@@ -216,6 +215,6 @@ class PetControllerTests {
         assertEquals(200, deleteResponse.statusCode(), deleteResponse.body());
 
         // then
-        connection.assertCountsEquals(0, "petshop.pets");
+        connection.assertCountsEquals(0, "pets");
     }
 }
