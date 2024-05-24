@@ -1,7 +1,5 @@
 package ru.tinkoff.kora.example.kafka.listener;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.kafka.ContainerKafkaConnection;
 import io.goodforgod.testcontainers.extensions.kafka.Event;
@@ -24,17 +22,17 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 
 @TestcontainersKafka(mode = ContainerMode.PER_RUN, topics = @Topics({ "my-topic-consumer" }))
 @KoraAppTest(Application.class)
-class AutoCommitTopicExceptionListenerTests implements KoraAppTestConfigModifier {
+class AutoCommitValueListenerTests implements KoraAppTestConfigModifier {
 
     @ContainerKafkaConnection
     private KafkaConnection connection;
 
-    @Tag(AutoCommitTopicExceptionListenerModule.AutoCommitTopicExceptionListenerProcessTag.class)
+    @Tag(AutoCommitValueListenerModule.AutoCommitValueListenerProcessTag.class)
     @TestComponent
     private Lifecycle consumerLifecycle;
 
     @TestComponent
-    private AutoCommitTopicExceptionListener consumer;
+    private AutoCommitValueListener consumer;
 
     @NotNull
     @Override
@@ -57,22 +55,5 @@ class AutoCommitTopicExceptionListenerTests implements KoraAppTestConfigModifier
                 .atMost(Duration.ofSeconds(15))
                 .pollExecutorService(Executors.newSingleThreadExecutor())
                 .until(() -> consumer.received().size() == 1);
-    }
-
-    @Test
-    void failed() {
-        // given
-        var topic = "my-topic-consumer";
-        var event = "incorrect";
-
-        // when
-        connection.send(topic, Event.ofValueAndRandomKey(event));
-
-        // then
-        Awaitility.await()
-                .atMost(Duration.ofSeconds(15))
-                .pollExecutorService(Executors.newSingleThreadExecutor())
-                .until(() -> consumer.failed().size() == 1);
-        assertEquals(0, consumer.received().size());
     }
 }

@@ -1,13 +1,7 @@
 package ru.tinkoff.kora.example.kafka.listener;
 
 import io.goodforgod.testcontainers.extensions.ContainerMode;
-import io.goodforgod.testcontainers.extensions.kafka.ContainerKafkaConnection;
-import io.goodforgod.testcontainers.extensions.kafka.Event;
-import io.goodforgod.testcontainers.extensions.kafka.KafkaConnection;
-import io.goodforgod.testcontainers.extensions.kafka.TestcontainersKafka;
-import io.goodforgod.testcontainers.extensions.kafka.Topics;
-import java.time.Duration;
-import java.util.concurrent.Executors;
+import io.goodforgod.testcontainers.extensions.kafka.*;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -20,19 +14,22 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 
+import java.time.Duration;
+import java.util.concurrent.Executors;
+
 @TestcontainersKafka(mode = ContainerMode.PER_RUN, topics = @Topics({ "my-topic-consumer" }))
 @KoraAppTest(Application.class)
-class AutoCommitTopicKeyListenerTests implements KoraAppTestConfigModifier {
+class AutoCommitRecordsTelemetryListenerTests implements KoraAppTestConfigModifier {
 
     @ContainerKafkaConnection
     private KafkaConnection connection;
 
-    @Tag(AutoCommitTopicKeyListenerModule.AutoCommitTopicKeyListenerProcessTag.class)
+    @Tag(AutoCommitRecordsTelemetryListenerModule.AutoCommitRecordsTelemetryListenerProcessTag.class)
     @TestComponent
     private Lifecycle consumerLifecycle;
 
     @TestComponent
-    private AutoCommitTopicKeyListener consumer;
+    private AutoCommitRecordsTelemetryListener consumer;
 
     @NotNull
     @Override
