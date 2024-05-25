@@ -17,7 +17,7 @@ class ArgumentValidatorTests {
     @Test
     void createSuccess() {
         // given
-        var user = new ArgumentValidator.User("1", "Bob", "2");
+        var user = new ArgumentValidator.User("1", "Ivan", "2");
         var code = "ME2";
 
         // then
@@ -28,7 +28,7 @@ class ArgumentValidatorTests {
     @Test
     void createFails() {
         // given
-        var user = new ArgumentValidator.User("1", "Bob", "2");
+        var user = new ArgumentValidator.User("1", "Ivan", "2");
         var code = "2";
 
         // then

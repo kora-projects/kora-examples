@@ -1,0 +1,179 @@
+buildscript {
+    dependencies {
+        classpath("ru.tinkoff.kora:openapi-generator:$koraVersion")
+    }
+}
+
+plugins {
+    id "java"
+    id "jacoco"
+    id "application"
+
+    id "org.openapi.generator" version "7.1.0"
+    id "com.github.johnrengelman.shadow" version "8.1.1"
+    id "org.graalvm.buildtools.native" version "0.10.1"
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+mainClassName = "ru.tinkoff.kora.example.graalvm.crud.cassandra.Application"
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+configurations {
+    koraBom
+    implementation.extendsFrom(koraBom)
+    annotationProcessor.extendsFrom(koraBom)
+}
+
+dependencies {
+    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
+    annotationProcessor "org.mapstruct:mapstruct-processor:1.5.5.Final"
+    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+    annotationProcessor "io.goodforgod:graalvm-hint-processor:1.2.0"
+    compileOnly "io.goodforgod:graalvm-hint-annotations:1.2.0"
+
+    implementation "ru.tinkoff.kora:http-server-undertow"
+    implementation "ru.tinkoff.kora:database-cassandra"
+    implementation "ru.tinkoff.kora:micrometer-module"
+    implementation "ru.tinkoff.kora:json-module"
+    implementation "ru.tinkoff.kora:validation-module"
+    implementation "ru.tinkoff.kora:cache-redis"
+    implementation "ru.tinkoff.kora:resilient-kora"
+    implementation "ru.tinkoff.kora:config-hocon"
+    implementation "ru.tinkoff.kora:openapi-management"
+    implementation "ru.tinkoff.kora:logging-logback"
+
+    implementation "io.projectreactor:reactor-core:3.6.3" // For reactive examples (optional)
+    implementation "org.mapstruct:mapstruct:1.5.5.Final"
+
+    testImplementation "org.json:json:20231013"
+    testImplementation "org.skyscreamer:jsonassert:1.5.1"
+    testImplementation "redis.clients:jedis:4.4.3"
+
+    testImplementation "org.mockito:mockito-core:5.6.0"
+    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "io.goodforgod:testcontainers-extensions-cassandra:0.11.0"
+    testImplementation "io.goodforgod:testcontainers-extensions-redis:0.11.0"
+    testImplementation "org.testcontainers:junit-jupiter:1.17.6"
+}
+
+openApiGenerate {
+    generatorName = "kora"
+    group = "openapi tools"
+    inputSpec = "$projectDir/src/main/resources/openapi/http-server.yaml"
+    outputDir = "$buildDir/generated/openapi"
+    apiPackage = "ru.tinkoff.kora.example.graalvm.crud.openapi.server.api"
+    modelPackage = "ru.tinkoff.kora.example.graalvm.crud.openapi.server.model"
+    invokerPackage = "ru.tinkoff.kora.example.graalvm.crud.openapi.server.invoker"
+    configOptions = [
+            mode                  : "java-reactive-server", // так же есть java-server вариация HTTP Server"а
+            enableServerValidation: "true"
+    ]
+}
+
+graalvmNative {
+    binaries {
+        main {
+            imageName = "$project.name"
+            mainClass = "$mainClassName"
+            javaLauncher = javaToolchains.launcherFor {
+                languageVersion = JavaLanguageVersion.of(21)
+                vendor = JvmVendorSpec.matching("GraalVM Community")
+            }
+        }
+    }
+    metadataRepository {
+        enabled = true
+    }
+}
+
+compileJava.dependsOn tasks.openApiGenerate
+processResources.dependsOn tasks.collectReachabilityMetadata
+test.dependsOn tasks.shadowJar
+
+//noinspection GroovyAssignabilityCheck
+run {
+    environment([
+            "CASSANDRA_CONTACT_POINTS": "$cassandraHost:$cassandraPort",
+            "CASSANDRA_USER"          : "$cassandraUser",
+            "CASSANDRA_PASS"          : "$cassandraPassword",
+            "CASSANDRA_DC"            : "$cassandraDatacenter",
+            "CASSANDRA_KEYSPACE"      : "$cassandraKeyspace",
+            "REDIS_URL"               : "redis://$redisHost:$redisPort/$redisDatabase",
+            "REDIS_USER"              : "$redisUser",
+            "REDIS_PASS"              : "$redisPassword",
+    ])
+}
+
+test {
+    jvmArgs += [
+            "-XX:+TieredCompilation",
+            "-XX:TieredStopAtLevel=1",
+    ]
+
+    environment([
+            "": ""
+    ])
+
+    useJUnitPlatform()
+    testLogging {
+        showStandardStreams(true)
+        events("passed", "skipped", "failed")
+        exceptionFormat("full")
+    }
+
+    jacoco {
+        excludes += ["**/Application*"]
+    }
+
+    reports {
+        html.required = false
+        junitXml.required = false
+    }
+}
+
+sourceSets {
+    main {
+        java.srcDirs += "$buildDir/generated/openapi"
+        resources.srcDirs += "$buildDir/native-reachability-metadata"
+    }
+}
+
+jar.enabled = false
+shadowJar {
+    mergeServiceFiles()
+    manifest {
+        attributes "Main-Class": mainClassName
+        attributes "Implementation-Version": koraVersion
+    }
+}
+
+artifacts {
+    archives shadowJar
+}
+
+compileJava {
+    options.encoding("UTF-8")
+    options.incremental(true)
+    options.fork = true
+}
+
+check.dependsOn jacocoTestReport
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
+    }
+}
+
+javadoc {
+    options.encoding = "UTF-8"
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption("html5", true)
+    }
+}

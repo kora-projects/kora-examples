@@ -3,6 +3,7 @@ pluginManagement {
         gradlePluginPortal()
         mavenLocal()
         mavenCentral()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     }
 }
 
@@ -31,5 +32,10 @@ include "kora-java-config-hocon"
 include "kora-java-config-yaml"
 include "kora-java-helloworld"
 include "kora-java-crud"
+include "kora-java-graalvm-crud-jdbc"
+include "kora-java-graalvm-crud-r2dbc"
+include "kora-java-graalvm-crud-vertx"
+include "kora-java-graalvm-crud-cassandra"
+include "kora-java-graalvm-kafka"
 include "kora-kotlin-helloworld"
 include "kora-kotlin-crud"

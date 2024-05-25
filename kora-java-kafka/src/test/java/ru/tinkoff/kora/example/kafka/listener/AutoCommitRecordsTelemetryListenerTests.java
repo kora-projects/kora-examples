@@ -21,7 +21,7 @@ import java.util.concurrent.Executors;
 @KoraAppTest(Application.class)
 class AutoCommitRecordsTelemetryListenerTests implements KoraAppTestConfigModifier {
 
-    @ContainerKafkaConnection
+    @ConnectionKafka
     private KafkaConnection connection;
 
     @Tag(AutoCommitRecordsTelemetryListenerModule.AutoCommitRecordsTelemetryListenerProcessTag.class)

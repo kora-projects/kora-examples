@@ -16,7 +16,7 @@ class ResultValidatorTests {
     @Test
     void createSuccess() {
         // given
-        var name = "Bob";
+        var name = "Ivan";
         var status = "2";
 
         // then

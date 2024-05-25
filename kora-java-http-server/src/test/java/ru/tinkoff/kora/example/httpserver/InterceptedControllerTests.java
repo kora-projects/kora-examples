@@ -38,7 +38,8 @@ class InterceptedControllerTests {
         // then
         var interceptedLogs = Awaitility.await()
                 .atMost(Duration.ofSeconds(30))
-                .until(() -> container.getLogs().split("\n"), logs -> logs.length >= 9);
+                .until(() -> container.getLogs().split("\n"),
+                        logs -> Arrays.stream(logs).anyMatch(log -> log.endsWith("Method Level Interceptor")));
         assertTrue(Arrays.stream(interceptedLogs).anyMatch(log -> log.endsWith("Server Level Interceptor")));
         assertTrue(Arrays.stream(interceptedLogs).anyMatch(log -> log.endsWith("Controller Level Interceptor")));
         assertTrue(Arrays.stream(interceptedLogs).anyMatch(log -> log.endsWith("Method Level Interceptor")));

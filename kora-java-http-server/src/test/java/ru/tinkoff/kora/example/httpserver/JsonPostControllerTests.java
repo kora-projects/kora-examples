@@ -23,13 +23,13 @@ class JsonPostControllerTests {
 
         // then
         var request = HttpRequest.newBuilder()
-                .POST(HttpRequest.BodyPublishers.ofString("{\"name\":\"Bob\"}"))
+                .POST(HttpRequest.BodyPublishers.ofString("{\"name\":\"Ivan\"}"))
                 .uri(container.getURI().resolve("/json"))
                 .timeout(Duration.ofSeconds(5))
                 .build();
 
         var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, response.statusCode(), response.body());
-        assertEquals("Hello world: Bob", response.body(), response.body());
+        assertEquals("Hello world: Ivan", response.body(), response.body());
     }
 }

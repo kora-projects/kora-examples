@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.cassandra.CassandraConnection;
-import io.goodforgod.testcontainers.extensions.cassandra.ContainerCassandraConnection;
+import io.goodforgod.testcontainers.extensions.cassandra.ConnectionCassandra;
 import io.goodforgod.testcontainers.extensions.cassandra.Migration;
 import io.goodforgod.testcontainers.extensions.cassandra.TestcontainersCassandra;
 import java.util.List;
@@ -20,13 +20,13 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent;
         mode = ContainerMode.PER_RUN,
         migration = @Migration(
                 engine = Migration.Engines.SCRIPTS,
-                migrations = { "migrations" },
+                locations = { "migrations" },
                 apply = Migration.Mode.PER_METHOD,
                 drop = Migration.Mode.PER_METHOD))
 @KoraAppTest(Application.class)
 class CassandraMapperResultSetReactiveTests implements KoraAppTestConfigModifier {
 
-    @ContainerCassandraConnection
+    @ConnectionCassandra
     private CassandraConnection connection;
 
     @TestComponent
@@ -38,11 +38,11 @@ class CassandraMapperResultSetReactiveTests implements KoraAppTestConfigModifier
     @Override
     public KoraConfigModification config() {
         return KoraConfigModification
-                .ofSystemProperty("CASSANDRA_CONTACT_POINTS", connection.params().host() + ":" + connection.params().port())
+                .ofSystemProperty("CASSANDRA_CONTACT_POINTS", connection.params().contactPoint())
                 .withSystemProperty("CASSANDRA_USER", connection.params().username())
                 .withSystemProperty("CASSANDRA_PASS", connection.params().password())
                 .withSystemProperty("CASSANDRA_DC", connection.params().datacenter())
-                .withSystemProperty("CASSANDRA_KEYSPACE", "cassandra");
+                .withSystemProperty("CASSANDRA_KEYSPACE", connection.params().keyspace());
     }
 
     @Test

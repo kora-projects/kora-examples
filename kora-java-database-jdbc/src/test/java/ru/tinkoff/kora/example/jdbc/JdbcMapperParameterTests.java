@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import io.goodforgod.testcontainers.extensions.ContainerMode;
-import io.goodforgod.testcontainers.extensions.jdbc.ContainerPostgresConnection;
+import io.goodforgod.testcontainers.extensions.jdbc.ConnectionPostgreSQL;
 import io.goodforgod.testcontainers.extensions.jdbc.JdbcConnection;
 import io.goodforgod.testcontainers.extensions.jdbc.Migration;
-import io.goodforgod.testcontainers.extensions.jdbc.TestcontainersPostgres;
+import io.goodforgod.testcontainers.extensions.jdbc.TestcontainersPostgreSQL;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,7 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 
-@TestcontainersPostgres(
+@TestcontainersPostgreSQL(
         mode = ContainerMode.PER_RUN,
         migration = @Migration(
                 engine = Migration.Engines.FLYWAY,
@@ -25,7 +25,7 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 @KoraAppTest(Application.class)
 class JdbcMapperParameterTests implements KoraAppTestConfigModifier {
 
-    @ContainerPostgresConnection
+    @ConnectionPostgreSQL
     private JdbcConnection connection;
 
     @TestComponent

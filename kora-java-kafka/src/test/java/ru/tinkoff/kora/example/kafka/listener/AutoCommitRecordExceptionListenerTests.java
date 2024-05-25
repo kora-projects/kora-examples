@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.kafka.*;
 import java.time.Duration;
-import java.util.Timer;
 import java.util.concurrent.Executors;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -23,7 +22,7 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 @KoraAppTest(Application.class)
 class AutoCommitRecordExceptionListenerTests implements KoraAppTestConfigModifier {
 
-    @ContainerKafkaConnection
+    @ConnectionKafka
     private KafkaConnection connection;
 
     @Tag(AutoCommitRecordExceptionListenerModule.AutoCommitRecordExceptionListenerProcessTag.class)
@@ -46,7 +45,7 @@ class AutoCommitRecordExceptionListenerTests implements KoraAppTestConfigModifie
 
         // given
         var topic = "my-topic-consumer";
-        var event = new JSONObject().put("username", "Bob").put("code", 1);
+        var event = new JSONObject().put("username", "Ivan").put("code", 1);
 
         // when
         connection.send(topic, Event.ofValueAndRandomKey(event));

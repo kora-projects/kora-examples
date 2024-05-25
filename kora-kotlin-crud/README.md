@@ -1,6 +1,6 @@
 # Kora Kotlin CRUD Service
 
-Пример сервиса реализованного на Kora с HTTP [CRUD](https://appmaster.io/ru/blog/grubye-operatsii-chto-takoe-grubye-operatsii) API,
+Пример сервиса реализованного на Kora с HTTP [CRUD](https://github.com/swagger-api/swagger-petstore) API,
 в качестве базы данных выступает Postgres, используется кэш Caffeine, а также другие модули которые использовались бы в реальном приложении в бою.
 
 В примере использовались модули:

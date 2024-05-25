@@ -26,16 +26,15 @@ dependencies {
     koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
     annotationProcessor "ru.tinkoff.kora:annotation-processors"
 
-    implementation "org.postgresql:postgresql:42.6.0"
+    implementation "org.postgresql:postgresql:42.7.2"
     implementation "ru.tinkoff.kora:database-jdbc"
-    implementation "io.projectreactor:reactor-core:3.5.10" // For reactive examples (optional)
-    implementation "io.azam.ulidj:ulidj:1.0.4" // For sortable UUID (optional)
+    implementation "io.projectreactor:reactor-core:3.6.3" // For reactive examples (optional)
 
     implementation "ru.tinkoff.kora:logging-logback"
     implementation "ru.tinkoff.kora:config-hocon"
 
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.9.6"
+    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.11.0"
 }
 
 //noinspection GroovyAssignabilityCheck
@@ -74,13 +73,12 @@ test {
     }
 }
 
-jar.enabled = true
+jar.enabled = false
 shadowJar {
     mergeServiceFiles()
     manifest {
         attributes "Main-Class": mainClassName
         attributes "Implementation-Version": koraVersion
-        attributes "Build-Time": java.time.OffsetDateTime.now()
     }
 }
 

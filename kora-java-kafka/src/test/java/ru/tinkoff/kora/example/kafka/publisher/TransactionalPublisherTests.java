@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.kafka.*;
-import io.goodforgod.testcontainers.extensions.kafka.ContainerKafkaConnection.Property;
 import io.goodforgod.testcontainers.extensions.kafka.Topics;
 import java.time.Duration;
 import java.util.concurrent.ThreadLocalRandom;
@@ -22,7 +21,7 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 @KoraAppTest(Application.class)
 class TransactionalPublisherTests implements KoraAppTestConfigModifier {
 
-    @ContainerKafkaConnection(properties = @Property(name = ConsumerConfig.ISOLATION_LEVEL_CONFIG, value = "read_committed"))
+    @ConnectionKafka(properties = { ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed" })
     private KafkaConnection connection;
 
     @TestComponent
