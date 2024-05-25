@@ -42,7 +42,7 @@ dependencies {
     implementation "ru.tinkoff.kora:config-hocon"
 
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-mockserver:0.9.6"
+    testImplementation "io.goodforgod:testcontainers-extensions-mockserver:0.11.0"
 }
 
 //noinspection GroovyAssignabilityCheck
@@ -92,13 +92,12 @@ wsdl2java {
     ]
 }
 
-jar.enabled = true
+jar.enabled = false
 shadowJar {
     mergeServiceFiles()
     manifest {
         attributes "Main-Class": mainClassName
         attributes "Implementation-Version": koraVersion
-        attributes "Build-Time": java.time.OffsetDateTime.now()
     }
 }
 

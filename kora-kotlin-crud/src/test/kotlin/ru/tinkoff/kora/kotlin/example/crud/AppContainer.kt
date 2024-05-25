@@ -8,6 +8,7 @@ import org.testcontainers.images.builder.ImageFromDockerfile
 import org.testcontainers.utility.DockerImageName
 import java.net.URI
 import java.nio.file.Paths
+import java.time.Duration
 import java.util.concurrent.Future
 
 class AppContainer : GenericContainer<AppContainer> {
@@ -32,6 +33,7 @@ class AppContainer : GenericContainer<AppContainer> {
     override fun configure() {
         super.configure()
         withExposedPorts(8080, 8085)
+        withStartupTimeout(Duration.ofSeconds(120))
         withLogConsumer(Slf4jLogConsumer(LoggerFactory.getLogger(AppContainer::class.java)))
         waitingFor(Wait.forHttp("/system/readiness").forPort(8085).forStatusCode(200))
     }

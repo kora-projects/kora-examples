@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import io.goodforgod.testcontainers.extensions.ContainerMode;
-import io.goodforgod.testcontainers.extensions.mockserver.ContainerMockserverConnection;
-import io.goodforgod.testcontainers.extensions.mockserver.MockserverConnection;
-import io.goodforgod.testcontainers.extensions.mockserver.TestcontainersMockserver;
+import io.goodforgod.testcontainers.extensions.mockserver.ConnectionMockServer;
+import io.goodforgod.testcontainers.extensions.mockserver.MockServerConnection;
+import io.goodforgod.testcontainers.extensions.mockserver.TestcontainersMockServer;
 import java.nio.charset.StandardCharsets;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
@@ -15,12 +15,12 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 
-@TestcontainersMockserver(mode = ContainerMode.PER_RUN)
+@TestcontainersMockServer(mode = ContainerMode.PER_RUN)
 @KoraAppTest(Application.class)
 class ReactorHttpClientTests implements KoraAppTestConfigModifier {
 
-    @ContainerMockserverConnection
-    private MockserverConnection mockserverConnection;
+    @ConnectionMockServer
+    private MockServerConnection mockserverConnection;
 
     @NotNull
     @Override

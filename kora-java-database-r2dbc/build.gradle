@@ -26,16 +26,16 @@ dependencies {
     koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
     annotationProcessor "ru.tinkoff.kora:annotation-processors"
 
-    runtimeOnly "io.netty:netty-transport-native-epoll:4.1.100.Final:linux-x86_64"
-    implementation "org.postgresql:r2dbc-postgresql:1.0.0.RELEASE"
+    runtimeOnly "io.netty:netty-transport-native-epoll:4.1.109.Final:linux-x86_64"
+    implementation "org.postgresql:r2dbc-postgresql:1.0.4.RELEASE"
     implementation "ru.tinkoff.kora:database-r2dbc"
 
     implementation "ru.tinkoff.kora:logging-logback"
     implementation "ru.tinkoff.kora:config-hocon"
 
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.9.6"
-    testImplementation "org.postgresql:postgresql:42.6.0"
+    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.11.0"
+    testImplementation "org.postgresql:postgresql:42.7.2"
 }
 
 //noinspection GroovyAssignabilityCheck
@@ -74,13 +74,12 @@ test {
     }
 }
 
-jar.enabled = true
+jar.enabled = false
 shadowJar {
     mergeServiceFiles()
     manifest {
         attributes "Main-Class": mainClassName
         attributes "Implementation-Version": koraVersion
-        attributes "Build-Time": java.time.OffsetDateTime.now()
     }
 }
 

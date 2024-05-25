@@ -15,4 +15,6 @@
     <root level="WARN">
         <appender-ref ref="ASYNC"/>
     </root>
+
+    <logger level="INFO" name="ru.tinkoff.kora"/>
 </configuration>

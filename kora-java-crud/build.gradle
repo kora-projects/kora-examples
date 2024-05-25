@@ -42,7 +42,6 @@ dependencies {
     implementation "ru.tinkoff.kora:micrometer-module"
     implementation "ru.tinkoff.kora:json-module"
     implementation "ru.tinkoff.kora:validation-module"
-    implementation "ru.tinkoff.kora:validation-common"
     implementation "ru.tinkoff.kora:cache-caffeine"
     implementation "ru.tinkoff.kora:resilient-kora"
     implementation "ru.tinkoff.kora:config-hocon"
@@ -50,19 +49,18 @@ dependencies {
     implementation "ru.tinkoff.kora:logging-logback"
 
     implementation "org.mapstruct:mapstruct:1.5.5.Final"
-    implementation "org.postgresql:postgresql:42.6.0"
+    implementation "org.postgresql:postgresql:42.7.2"
 
     testImplementation "org.json:json:20231013"
     testImplementation "org.skyscreamer:jsonassert:1.5.1"
 
     testImplementation "org.mockito:mockito-core:5.6.0"
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.9.6"
+    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.11.0"
     testImplementation "org.testcontainers:junit-jupiter:1.17.6"
 }
 
-// OpenAPI Generator for HTTP Server
-tasks.register("openApiGenerateHttpServer", GenerateTask) {
+openApiGenerate {
     generatorName = "kora"
     group = "openapi tools"
     inputSpec = "$projectDir/src/main/resources/openapi/http-server.yaml"
@@ -71,12 +69,12 @@ tasks.register("openApiGenerateHttpServer", GenerateTask) {
     modelPackage = "ru.tinkoff.kora.example.crud.openapi.http.server.model"
     invokerPackage = "ru.tinkoff.kora.example.crud.openapi.http.server.invoker"
     configOptions = [
-            mode                  : "java-server", // так же есть java_server вариация HTTP Server"а
+            mode                  : "java-server", // так же есть java-server вариация HTTP Server"а
             enableServerValidation: "true"
     ]
 }
 
-compileJava.dependsOn tasks.openApiGenerateHttpServer
+compileJava.dependsOn tasks.openApiGenerate
 test.dependsOn tasks.shadowJar
 
 //noinspection GroovyAssignabilityCheck
@@ -128,13 +126,12 @@ flyway {
     locations = ["classpath:db/migration"]
 }
 
-jar.enabled = true
+jar.enabled = false
 shadowJar {
     mergeServiceFiles()
     manifest {
         attributes "Main-Class": mainClassName
         attributes "Implementation-Version": koraVersion
-        attributes "Build-Time": java.time.OffsetDateTime.now()
     }
 }
 

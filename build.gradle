@@ -1,5 +1,6 @@
 plugins {
     id "com.diffplug.spotless" version "6.19.0"
+    id "org.graalvm.buildtools.native" version "0.10.1" // or dependsOn fails in graalvm examples
     id "com.asarkar.gradle.build-time-tracker" version "4.3.0"
 }
 
@@ -9,6 +10,7 @@ version = koraVersion
 repositories {
     mavenLocal()
     mavenCentral()
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 }
 
 subprojects {
@@ -22,6 +24,7 @@ subprojects {
     repositories {
         mavenLocal()
         mavenCentral()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     }
 
     spotless {
@@ -35,7 +38,7 @@ subprojects {
     }
 
     configurations {
-        all {
+        configureEach {
             resolutionStrategy {
                 cacheChangingModulesFor 0, "seconds" // check for updates every build
             }

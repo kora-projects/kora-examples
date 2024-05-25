@@ -3,7 +3,7 @@ package ru.tinkoff.kora.example.kafka.publisher;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.goodforgod.testcontainers.extensions.ContainerMode;
-import io.goodforgod.testcontainers.extensions.kafka.ContainerKafkaConnection;
+import io.goodforgod.testcontainers.extensions.kafka.ConnectionKafka;
 import io.goodforgod.testcontainers.extensions.kafka.KafkaConnection;
 import io.goodforgod.testcontainers.extensions.kafka.TestcontainersKafka;
 import io.goodforgod.testcontainers.extensions.kafka.Topics;
@@ -25,7 +25,7 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 @KoraAppTest(Application.class)
 class TopicKeyHeadersPublisherTests implements KoraAppTestConfigModifier {
 
-    @ContainerKafkaConnection
+    @ConnectionKafka
     private KafkaConnection connection;
 
     @TestComponent
@@ -46,7 +46,7 @@ class TopicKeyHeadersPublisherTests implements KoraAppTestConfigModifier {
 
         // when
         var code = ThreadLocalRandom.current().nextInt(1, 100_000);
-        var name = "Bob";
+        var name = "Ivan";
         var event = new JSONObject().put("username", name).put("code", code);
         publisher.send("1", event.toString(),
                 new RecordHeaders(List.of(new RecordHeader("2", "3".getBytes(StandardCharsets.UTF_8)))));

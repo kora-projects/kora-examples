@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.Network;
-import io.goodforgod.testcontainers.extensions.jdbc.ContainerPostgresConnection;
+import io.goodforgod.testcontainers.extensions.jdbc.ConnectionPostgreSQL;
 import io.goodforgod.testcontainers.extensions.jdbc.JdbcConnection;
 import io.goodforgod.testcontainers.extensions.jdbc.Migration;
-import io.goodforgod.testcontainers.extensions.jdbc.TestcontainersPostgres;
+import io.goodforgod.testcontainers.extensions.jdbc.TestcontainersPostgreSQL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-@TestcontainersPostgres(
+@TestcontainersPostgreSQL(
         network = @Network(shared = true),
         mode = ContainerMode.PER_RUN,
         migration = @Migration(
@@ -32,11 +32,11 @@ class PetControllerTests {
     private static final AppContainer container = AppContainer.build()
             .withNetwork(org.testcontainers.containers.Network.SHARED);
 
-    @ContainerPostgresConnection
+    @ConnectionPostgreSQL
     private JdbcConnection connection;
 
     @BeforeAll
-    public static void setup(@ContainerPostgresConnection JdbcConnection connection) {
+    public static void setup(@ConnectionPostgreSQL JdbcConnection connection) {
         var params = connection.paramsInNetwork().orElseThrow();
         container.withEnv(Map.of(
                 "POSTGRES_JDBC_URL", params.jdbcUrl(),

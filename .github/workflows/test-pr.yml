@@ -34,7 +34,7 @@ jobs:
         run: "./gradlew testClasses"
 
       - name: Test
-        run: "./gradlew test jacocoTestReport"
+        run: "./gradlew test jacocoTestReport --no-parallel"
 
       - name: Test Report
         if: matrix.java == '17'

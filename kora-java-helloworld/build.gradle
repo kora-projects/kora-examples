@@ -74,13 +74,12 @@ test {
 
 test.dependsOn tasks.shadowJar
 
-jar.enabled = true
+jar.enabled = false
 shadowJar {
     mergeServiceFiles()
     manifest {
         attributes "Main-Class": mainClassName
         attributes "Implementation-Version": koraVersion
-        attributes "Build-Time": java.time.OffsetDateTime.now()
     }
 }
 

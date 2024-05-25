@@ -23,4 +23,4 @@ jobs:
         run: "./gradlew testClasses"
 
       - name: Test
-        run: "./gradlew test"
+        run: "./gradlew test jacocoTestReport --no-parallel"

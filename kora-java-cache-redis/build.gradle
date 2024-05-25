@@ -32,7 +32,7 @@ dependencies {
     implementation "ru.tinkoff.kora:config-hocon"
 
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-redis:0.9.6"
+    testImplementation "io.goodforgod:testcontainers-extensions-redis:0.11.0"
     testImplementation "redis.clients:jedis:4.4.3"
 }
 
@@ -70,13 +70,12 @@ test {
     }
 }
 
-jar.enabled = true
+jar.enabled = false
 shadowJar {
     mergeServiceFiles()
     manifest {
         attributes "Main-Class": mainClassName
         attributes "Implementation-Version": koraVersion
-        attributes "Build-Time": java.time.OffsetDateTime.now()
     }
 }
 
