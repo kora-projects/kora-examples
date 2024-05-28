@@ -1,11 +1,10 @@
 package ru.tinkoff.kora.example.s3.minio;
 
-import ru.tinkoff.kora.s3.client.annotation.S3;
-import ru.tinkoff.kora.s3.client.model.*;
-
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import ru.tinkoff.kora.s3.client.annotation.S3;
+import ru.tinkoff.kora.s3.client.model.*;
 
 @S3.Client("my")
 public interface AsyncS3Client {
@@ -25,11 +24,11 @@ public interface AsyncS3Client {
     @S3.List("pre-{prefix}")
     CompletionStage<S3ObjectList> listObject(String prefix);
 
-    @S3.List("pre-{prefix}")
+    @S3.List(value = "pre-{prefix}", limit = 50)
     CompletionStage<S3ObjectMetaList> listObjectMeta(String prefix);
 
     @S3.Put("pre-{key}")
-    CompletionStage<String> putObject(String key, S3Body object);
+    CompletionStage<S3ObjectUpload> putObject(String key, S3Body object);
 
     @S3.Delete("pre-{key}")
     CompletionStage<Void> deleteObject(String key);

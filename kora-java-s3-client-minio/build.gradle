@@ -28,6 +28,7 @@ dependencies {
 
     implementation "ru.tinkoff.kora:s3-client-minio"
     implementation "ru.tinkoff.kora:http-client-ok"
+    implementation "io.projectreactor:reactor-core:3.5.10" // For reactive examples (optional)
 
     implementation 'org.camunda.bpm:camunda-engine-rest-openapi:7.21.0'
 

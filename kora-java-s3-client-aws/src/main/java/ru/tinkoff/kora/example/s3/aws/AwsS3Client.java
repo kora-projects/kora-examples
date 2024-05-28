@@ -16,7 +16,7 @@ public interface AwsS3Client {
     @S3.Get("pre-{key}")
     GetObjectResponse getObjectMeta(String key);
 
-    @S3.List("pre-{prefix}")
+    @S3.List(value = "pre-{prefix}", limit = 50)
     ListObjectsV2Response listObjectMeta(String prefix);
 
     @S3.Put("pre-{key}")
