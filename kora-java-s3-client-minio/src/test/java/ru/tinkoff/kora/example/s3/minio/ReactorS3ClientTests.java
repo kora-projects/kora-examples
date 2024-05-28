@@ -7,12 +7,12 @@ import io.minio.MinioClient;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import ru.tinkoff.kora.s3.client.S3NotFoundException;
 import ru.tinkoff.kora.s3.client.model.S3Body;
 import ru.tinkoff.kora.s3.client.model.S3Object;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
@@ -22,13 +22,13 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 
 @Testcontainers
 @KoraAppTest(Application.class)
-class SyncS3ClientTests implements KoraAppTestConfigModifier {
+class ReactorS3ClientTests implements KoraAppTestConfigModifier {
 
     @Container
     private static final MinIOContainer container = new MinIOContainer("minio/minio:RELEASE.2024-05-10T01-41-38Z");
 
     @TestComponent
-    private SyncS3Client client;
+    private ReactorS3Client client;
     @TestComponent
     private MinioClient s3Client;
 
@@ -52,7 +52,7 @@ class SyncS3ClientTests implements KoraAppTestConfigModifier {
         }
 
         try {
-            client.deleteObjects(List.of("pre-k1", "pre-k2"));
+            client.deleteObjects(List.of("pre-k1", "pre-k2")).block();
         } catch (Exception e) {
             // ignore
         }
@@ -63,15 +63,16 @@ class SyncS3ClientTests implements KoraAppTestConfigModifier {
         // given
         var key = "k1";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key, S3Body.ofBytes(value));
+        client.putObject(key, S3Body.ofBytes(value)).block();
 
         // when
-        var found = client.getObject(key);
+        var found = client.getObject(key).block();
         assertNotNull(found);
         assertTrue(Arrays.equals(value, found.body().asBytes()));
 
         // then
-        assertThrows(S3NotFoundException.class, () -> client.getObject("k2"));
+        Optional<S3Object> k2 = client.getObject("k2").blockOptional();
+        assertTrue(k2.isEmpty());
     }
 
     @Test
@@ -79,14 +80,15 @@ class SyncS3ClientTests implements KoraAppTestConfigModifier {
         // given
         var key = "k1";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key, S3Body.ofBytes(value));
+        client.putObject(key, S3Body.ofBytes(value)).block();
 
         // when
-        var found = client.getObjectMeta(key);
+        var found = client.getObjectMeta(key).block();
         assertNotNull(found);
 
         // then
-        assertThrows(S3NotFoundException.class, () -> client.getObjectMeta("k2"));
+        Optional<S3Object> k2 = client.getObject("k2").blockOptional();
+        assertTrue(k2.isEmpty());
     }
 
     @Test
@@ -95,11 +97,11 @@ class SyncS3ClientTests implements KoraAppTestConfigModifier {
         var key1 = "k1";
         var key2 = "k2";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key1, S3Body.ofBytes(value));
-        client.putObject(key2, S3Body.ofBytes(value));
+        client.putObject(key1, S3Body.ofBytes(value)).block();
+        client.putObject(key2, S3Body.ofBytes(value)).block();
 
         // when
-        var found = client.getObjects(List.of("pre-" + key1, "pre-" + key2));
+        var found = client.getObjects(List.of("pre-" + key1, "pre-" + key2)).block();
         assertEquals(2, found.size());
         for (S3Object object : found) {
             assertEquals("value", new String(object.body().asBytes(), StandardCharsets.UTF_8));
@@ -112,11 +114,11 @@ class SyncS3ClientTests implements KoraAppTestConfigModifier {
         var key1 = "k1";
         var key2 = "k2";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key1, S3Body.ofBytes(value));
-        client.putObject(key2, S3Body.ofBytes(value));
+        client.putObject(key1, S3Body.ofBytes(value)).block();
+        client.putObject(key2, S3Body.ofBytes(value)).block();
 
         // when
-        var found = client.getObjectMetas(List.of("pre-" + key1, "pre-" + key2));
+        var found = client.getObjectMetas(List.of("pre-" + key1, "pre-" + key2)).block();
         assertEquals(2, found.size());
     }
 
@@ -126,11 +128,11 @@ class SyncS3ClientTests implements KoraAppTestConfigModifier {
         var key1 = "k1";
         var key2 = "k2";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key1, S3Body.ofBytes(value));
-        client.putObject(key2, S3Body.ofBytes(value));
+        client.putObject(key1, S3Body.ofBytes(value)).block();
+        client.putObject(key2, S3Body.ofBytes(value)).block();
 
         // when
-        var found = client.listObject("k");
+        var found = client.listObject("k").block();
         assertEquals(2, found.metas().size());
         for (S3Object object : found.objects()) {
             assertEquals("value", new String(object.body().asBytes(), StandardCharsets.UTF_8));
@@ -143,11 +145,11 @@ class SyncS3ClientTests implements KoraAppTestConfigModifier {
         var key1 = "k1";
         var key2 = "k2";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key1, S3Body.ofBytes(value));
-        client.putObject(key2, S3Body.ofBytes(value));
+        client.putObject(key1, S3Body.ofBytes(value)).block();
+        client.putObject(key2, S3Body.ofBytes(value)).block();
 
         // when
-        var found = client.listObjectMeta("k");
+        var found = client.listObjectMeta("k").block();
         assertEquals(2, found.metas().size());
     }
 
@@ -156,13 +158,14 @@ class SyncS3ClientTests implements KoraAppTestConfigModifier {
         // given
         var key = "k1";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key, S3Body.ofBytes(value));
+        client.putObject(key, S3Body.ofBytes(value)).block();
 
         // when
-        client.deleteObject(key);
+        client.deleteObject(key).block();
 
         // then
-        assertThrows(S3NotFoundException.class, () -> client.getObject("k1"));
+        Optional<S3Object> k1 = client.getObject("k1").blockOptional();
+        assertTrue(k1.isEmpty());
     }
 
     @Test
@@ -171,12 +174,14 @@ class SyncS3ClientTests implements KoraAppTestConfigModifier {
         var key1 = "k1";
         var key2 = "k2";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key1, S3Body.ofBytes(value));
-        client.putObject(key2, S3Body.ofBytes(value));
+        client.putObject(key1, S3Body.ofBytes(value)).block();
+        client.putObject(key2, S3Body.ofBytes(value)).block();
 
         // when
-        client.deleteObjects(List.of("pre-k1", "pre-k2"));
-        assertThrows(S3NotFoundException.class, () -> client.getObject("k1"));
-        assertThrows(S3NotFoundException.class, () -> client.getObject("k2"));
+        client.deleteObjects(List.of("pre-k1", "pre-k2")).block();
+        Optional<S3Object> k1 = client.getObject("k1").blockOptional();
+        assertTrue(k1.isEmpty());
+        Optional<S3Object> k2 = client.getObject("k2").blockOptional();
+        assertTrue(k2.isEmpty());
     }
 }

@@ -12,7 +12,7 @@ public interface Application extends
         HoconConfigModule,
         LogbackModule,
         MinioS3ClientModule,
-        OkHttpClientModule  {
+        OkHttpClientModule {
 
     static void main(String[] args) {
         KoraApplication.run(ApplicationGraph::graph);

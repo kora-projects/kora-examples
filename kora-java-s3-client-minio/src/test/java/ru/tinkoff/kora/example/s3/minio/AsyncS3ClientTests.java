@@ -1,7 +1,13 @@
 package ru.tinkoff.kora.example.s3.minio;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MinIOContainer;
@@ -14,13 +20,6 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CompletionException;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @Testcontainers
 @KoraAppTest(Application.class)

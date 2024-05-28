@@ -23,11 +23,11 @@ public interface SyncS3Client {
     @S3.List("pre-{prefix}")
     S3ObjectList listObject(String prefix);
 
-    @S3.List("pre-{prefix}")
+    @S3.List(value = "pre-{prefix}", limit = 50)
     S3ObjectMetaList listObjectMeta(String prefix);
 
     @S3.Put("pre-{key}")
-    String putObject(String key, S3Body object);
+    S3ObjectUpload putObject(String key, S3Body object);
 
     @S3.Delete("pre-{key}")
     void deleteObject(String key);

@@ -25,11 +25,11 @@ public interface AsyncS3Client {
     @S3.List("pre-{prefix}")
     CompletionStage<S3ObjectList> listObject(String prefix);
 
-    @S3.List("pre-{prefix}")
+    @S3.List(value = "pre-{prefix}", limit = 50)
     CompletionStage<S3ObjectMetaList> listObjectMeta(String prefix);
 
     @S3.Put("pre-{key}")
-    CompletionStage<String> putObject(String key, S3Body object);
+    CompletionStage<S3ObjectUpload> putObject(String key, S3Body object);
 
     @S3.Delete("pre-{key}")
     CompletionStage<Void> deleteObject(String key);
