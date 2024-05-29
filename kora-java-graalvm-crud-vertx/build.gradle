@@ -9,7 +9,7 @@ plugins {
     id "jacoco"
     id "application"
 
-    id "org.openapi.generator" version "7.1.0"
+    id "org.openapi.generator" version "7.4.0"
     id "com.github.johnrengelman.shadow" version "8.1.1"
     id "org.flywaydb.flyway" version "8.4.2"
     id "org.graalvm.buildtools.native" version "0.10.1"

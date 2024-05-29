@@ -4,7 +4,9 @@ import jakarta.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import ru.tinkoff.kora.common.Mapping;
-import ru.tinkoff.kora.database.common.annotation.*;
+import ru.tinkoff.kora.database.common.annotation.Column;
+import ru.tinkoff.kora.database.common.annotation.Query;
+import ru.tinkoff.kora.database.common.annotation.Repository;
 import ru.tinkoff.kora.database.jdbc.JdbcRepository;
 import ru.tinkoff.kora.database.jdbc.mapper.parameter.JdbcParameterColumnMapper;
 

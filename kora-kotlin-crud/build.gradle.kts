@@ -9,7 +9,7 @@ buildscript {
 }
 
 plugins {
-    id("org.openapi.generator") version ("7.1.0")
+    id("org.openapi.generator") version ("7.4.0")
     id("application")
     kotlin("kapt") version ("1.9.10")
     kotlin("jvm") version ("1.9.10")

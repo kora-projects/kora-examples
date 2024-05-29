@@ -19,6 +19,7 @@ public final class RootService {
     private final JdbcIdRandomCompositeRepository jdbcIdRandomCompositeRepository;
     private final JdbcJsonbRepository jdbcJsonbRepository;
     private final JdbcCrudMacrosRepository jdbcCrudMacrosRepository;
+    private final JdbcCrudMacrosIdCompositeRepository jdbcCrudMacrosIdCompositeRepository;
 
     public RootService(JdbcCrudSyncRepository jdbcCrudSyncRepository,
                        JdbcCrudReactorRepository jdbcCrudReactorRepository,
@@ -31,7 +32,8 @@ public final class RootService {
                        JdbcIdSequenceCompositeRepository jdbcIdSequenceCompositeRepository,
                        JdbcIdRandomCompositeRepository jdbcIdRandomCompositeRepository,
                        JdbcJsonbRepository jdbcJsonbRepository,
-                       JdbcCrudMacrosRepository jdbcCrudMacrosRepository) {
+                       JdbcCrudMacrosRepository jdbcCrudMacrosRepository,
+                       JdbcCrudMacrosIdCompositeRepository jdbcCrudMacrosIdCompositeRepository) {
         this.jdbcCrudSyncRepository = jdbcCrudSyncRepository;
         this.jdbcCrudReactorRepository = jdbcCrudReactorRepository;
         this.jdbcMapperResultSetRepository = jdbcMapperResultSetRepository;
@@ -44,5 +46,6 @@ public final class RootService {
         this.jdbcIdRandomCompositeRepository = jdbcIdRandomCompositeRepository;
         this.jdbcJsonbRepository = jdbcJsonbRepository;
         this.jdbcCrudMacrosRepository = jdbcCrudMacrosRepository;
+        this.jdbcCrudMacrosIdCompositeRepository = jdbcCrudMacrosIdCompositeRepository;
     }
 }

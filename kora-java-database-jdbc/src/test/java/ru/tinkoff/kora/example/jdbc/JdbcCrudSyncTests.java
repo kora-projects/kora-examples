@@ -90,6 +90,22 @@ class JdbcCrudSyncTests implements KoraAppTestConfigModifier {
             }
         }
 
+        var foundCreatedByIds = repository.findAllByIds(List.of("1", "2"));
+        assertEquals(2, foundCreatedByIds.size());
+        for (var entity : foundCreatedByIds) {
+            if (entity.id().equals("1")) {
+                assertEquals("1", entity.id());
+                assertEquals(1, entity.field1());
+                assertEquals("2", entity.value2());
+                assertNull(entity.value3());
+            } else {
+                assertEquals("2", entity.id());
+                assertEquals(3, entity.field1());
+                assertEquals("4", entity.value2());
+                assertNull(entity.value3());
+            }
+        }
+
         // when
         var entityUpdate1 = new JdbcCrudSyncRepository.Entity("1", 5, "6", null);
         var entityUpdate2 = new JdbcCrudSyncRepository.Entity("2", 7, "8", null);

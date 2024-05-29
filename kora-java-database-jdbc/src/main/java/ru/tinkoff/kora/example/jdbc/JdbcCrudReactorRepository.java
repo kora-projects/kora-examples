@@ -4,7 +4,10 @@ import jakarta.annotation.Nullable;
 import java.util.List;
 import reactor.core.publisher.Mono;
 import ru.tinkoff.kora.database.common.UpdateCount;
-import ru.tinkoff.kora.database.common.annotation.*;
+import ru.tinkoff.kora.database.common.annotation.Batch;
+import ru.tinkoff.kora.database.common.annotation.Column;
+import ru.tinkoff.kora.database.common.annotation.Query;
+import ru.tinkoff.kora.database.common.annotation.Repository;
 import ru.tinkoff.kora.database.jdbc.JdbcRepository;
 
 @Repository
