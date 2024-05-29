@@ -14,7 +14,8 @@ public final class MyClientInterceptor implements ClientInterceptor {
     private final Logger logger = LoggerFactory.getLogger(MyClientInterceptor.class);
 
     @Override
-    public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
+    public <ReqT, RespT> ClientCall<ReqT, RespT>
+            interceptCall(MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
         logger.info("INTERCEPTED");
         return next.newCall(method, callOptions);
     }
