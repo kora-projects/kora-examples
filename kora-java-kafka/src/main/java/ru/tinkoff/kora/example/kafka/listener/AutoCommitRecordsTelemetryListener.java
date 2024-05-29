@@ -10,7 +10,8 @@ import ru.tinkoff.kora.kafka.common.consumer.telemetry.KafkaConsumerTelemetry;
 public final class AutoCommitRecordsTelemetryListener extends AbstractListener<String> {
 
     @KafkaListener("kafka.consumer.my-listener")
-    void process(ConsumerRecords<String, String> records, KafkaConsumerTelemetry.KafkaConsumerRecordsTelemetryContext<String, String> ctx) {
+    void process(ConsumerRecords<String, String> records,
+                 KafkaConsumerTelemetry.KafkaConsumerRecordsTelemetryContext<String, String> ctx) {
         for (ConsumerRecord<String, String> record : records) {
             var telemetryContext = ctx.get(record);
             success(record.value());
