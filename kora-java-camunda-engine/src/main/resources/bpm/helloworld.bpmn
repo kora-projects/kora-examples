@@ -17,11 +17,11 @@
       <bpmn:outgoing>SequenceFlow_1uip4un</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_0kvupiu" sourceRef="TimerEvent_Wait" targetRef="EndEvent_03gbeuf" />
-    <bpmn:intermediateCatchEvent id="TimerEvent_Wait" name="Wait ten seconds">
+    <bpmn:intermediateCatchEvent id="TimerEvent_Wait" name="Wait 5 seconds">
       <bpmn:incoming>SequenceFlow_1uip4un</bpmn:incoming>
       <bpmn:outgoing>Flow_0kvupiu</bpmn:outgoing>
       <bpmn:timerEventDefinition id="TimerEventDefinition_02fnuuq">
-        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT10S</bpmn:timeDuration>
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT5S</bpmn:timeDuration>
       </bpmn:timerEventDefinition>
     </bpmn:intermediateCatchEvent>
     <bpmn:textAnnotation id="TextAnnotation_0h50m82">
