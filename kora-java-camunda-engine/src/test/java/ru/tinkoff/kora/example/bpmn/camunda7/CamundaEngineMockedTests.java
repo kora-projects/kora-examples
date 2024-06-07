@@ -5,6 +5,7 @@ import org.camunda.bpm.engine.ProcessEngineConfiguration;
 import org.camunda.bpm.engine.impl.test.ProcessEngineAssert;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
+import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -59,6 +60,7 @@ class CamundaEngineMockedTests implements KoraAppTestGraphModifier, KoraAppTestC
         final ProcessInstance instance = processEngine.getRuntimeService().startProcessInstanceByKey("Onboarding", businessKey);
         assertNotNull(instance.getId());
 
+        BpmnAwareTests.assertThat(instance).isWaitingAt("ApproveOrderUserTaskId");
         assertDoesNotThrow(() -> processEngine.getRuntimeService().correlateMessage("MessageCustomerCancellation", instance.getBusinessKey()));
         ProcessEngineAssert.assertProcessEnded(processEngine, instance.getProcessInstanceId());
     }
@@ -69,6 +71,7 @@ class CamundaEngineMockedTests implements KoraAppTestGraphModifier, KoraAppTestC
         final ProcessInstance instance = processEngine.getRuntimeService().startProcessInstanceByKey("Onboarding", businessKey);
         assertNotNull(instance.getId());
 
+        BpmnAwareTests.assertThat(instance).isWaitingAt("ApproveOrderUserTaskId");
         final List<Task> tasks = processEngine.getTaskService().createTaskQuery().processInstanceId(instance.getProcessInstanceId()).active().list();
         processEngine.getFormService().submitTaskForm(tasks.get(0).getId(), Map.of("approved", true));
 
