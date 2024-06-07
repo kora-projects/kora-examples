@@ -1,19 +1,28 @@
 package ru.tinkoff.kora.example.camunda.engine.onboarding;
 
+import org.camunda.bpm.engine.FormService;
 import org.camunda.bpm.engine.RuntimeService;
+import org.camunda.bpm.engine.TaskService;
+import org.camunda.bpm.engine.task.Task;
 import ru.tinkoff.kora.common.Component;
 import ru.tinkoff.kora.http.common.HttpMethod;
 import ru.tinkoff.kora.http.common.annotation.HttpRoute;
 import ru.tinkoff.kora.http.common.annotation.Path;
 import ru.tinkoff.kora.http.server.common.annotation.HttpController;
 
+import java.util.Map;
+
 @Component
 @HttpController("/camunda/process/onboarding")
 public class OnboardingController {
 
+    private final FormService formService;
+    private final TaskService taskService;
     private final RuntimeService runtimeService;
 
-    public OnboardingController(RuntimeService runtimeService) {
+    public OnboardingController(FormService formService, TaskService taskService, RuntimeService runtimeService) {
+        this.formService = formService;
+        this.taskService = taskService;
         this.runtimeService = runtimeService;
     }
 
@@ -25,7 +34,8 @@ public class OnboardingController {
 
     @HttpRoute(path = "/order/{businessKey}", method = HttpMethod.GET)
     public String customerOrder(@Path String businessKey) {
-        this.runtimeService.correlateMessage("Message_Order", businessKey);
-        return "Ordered: " + businessKey;
+        Task task = taskService.createTaskQuery().processInstanceBusinessKey(businessKey).active().singleResult();
+        formService.submitTaskForm(task.getId(), Map.of("approved", true));
+        return "Approved: " + businessKey;
     }
 }
