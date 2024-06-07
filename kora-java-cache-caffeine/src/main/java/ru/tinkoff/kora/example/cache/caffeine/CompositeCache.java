@@ -4,6 +4,7 @@ import ru.tinkoff.kora.cache.annotation.Cache;
 import ru.tinkoff.kora.cache.caffeine.CaffeineCache;
 
 @Cache("my-cache")
-public interface MyCache extends CaffeineCache<String, Long> {
+public interface CompositeCache extends CaffeineCache<CompositeCache.Key, Long> {
 
+    record Key(String userId, String traceId) { }
 }

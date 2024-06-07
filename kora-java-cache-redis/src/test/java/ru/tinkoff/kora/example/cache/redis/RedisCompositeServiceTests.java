@@ -1,13 +1,9 @@
-package ru.tinkoff.kora.example.cache.caffeine;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+package ru.tinkoff.kora.example.cache.redis;
 
 import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.redis.ConnectionRedis;
 import io.goodforgod.testcontainers.extensions.redis.RedisConnection;
 import io.goodforgod.testcontainers.extensions.redis.TestcontainersRedis;
-import java.math.BigDecimal;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,17 +12,22 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 
+import java.math.BigDecimal;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
 @TestcontainersRedis(mode = ContainerMode.PER_RUN)
 @KoraAppTest(Application.class)
-class RedisCachedServiceTests implements KoraAppTestConfigModifier {
+class RedisCompositeServiceTests implements KoraAppTestConfigModifier {
 
     @ConnectionRedis
     private RedisConnection connection;
 
     @TestComponent
-    private CachedService service;
+    private CompositeService service;
     @TestComponent
-    private MyCache cache;
+    private CompositeCache cache;
 
     @NotNull
     @Override
@@ -38,7 +39,7 @@ class RedisCachedServiceTests implements KoraAppTestConfigModifier {
     }
 
     @BeforeEach
-    void cleanup() throws Exception {
+    void cleanup() throws InterruptedException {
         Thread.sleep(150);
         cache.invalidateAll();
     }
@@ -46,57 +47,70 @@ class RedisCachedServiceTests implements KoraAppTestConfigModifier {
     @Test
     void get() {
         // when
-        var origin = service.get("1");
+        var origin = service.get("1", "1");
 
         // then
-        var cached = service.get("1");
+        var cached = service.get("1", "1");
+        assertEquals(origin, cached);
+    }
+
+    @Test
+    void getMapping() {
+        // given
+        var context = new CompositeService.UserContext("1", "2");
+
+        // when
+        var origin = service.getMapping(context);
+
+        // then
+        var cached = service.getMapping(context);
         assertEquals(origin, cached);
     }
 
     @Test
     void put() {
         // when
-        var origin = service.put(BigDecimal.ONE, "12345", "1");
+        var origin = service.put(BigDecimal.ONE, "12345", "1", "1");
 
         // then
-        var cached = service.get("1");
+        var cached = service.get("1", "1");
         assertEquals(origin, cached);
     }
 
     @Test
     void delete() {
         // given
-        var origin = service.put(BigDecimal.ONE, "12345", "1");
-        var cached1 = service.get("1");
+        var origin = service.put(BigDecimal.ONE, "12345", "1", "1");
+        var cached1 = service.get("1", "1");
         assertEquals(origin, cached1);
 
         // when
-        service.delete("1");
+        service.delete("1", "1");
 
         // then
-        var newValue = service.get("1");
+        var newValue = service.get("1", "1");
         assertNotEquals(origin, newValue);
     }
 
     @Test
     void deleteAll() {
         // given
-        var origin1 = service.put(BigDecimal.ONE, "12345", "1");
-        var cached1 = service.get("1");
+        var origin1 = service.put(BigDecimal.ONE, "12345", "1", "1");
+        var cached1 = service.get("1", "1");
         assertEquals(origin1, cached1);
 
-        var origin2 = service.put(BigDecimal.ONE, "12345", "2");
-        var cached2 = service.get("2");
+        var origin2 = service.put(BigDecimal.ONE, "12345", "2", "2");
+        var cached2 = service.get("2", "2");
         assertEquals(origin2, cached2);
 
         // when
         service.deleteAll();
 
         // then
-        var newValue1 = service.get("1");
+        var newValue1 = service.get("1", "1");
         assertNotEquals(origin1, newValue1);
 
-        var newValue2 = service.get("2");
+        var newValue2 = service.get("2", "2");
         assertNotEquals(origin2, newValue2);
     }
 }

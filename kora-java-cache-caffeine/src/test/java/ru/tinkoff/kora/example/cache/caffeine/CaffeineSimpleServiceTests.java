@@ -10,12 +10,12 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 
 @KoraAppTest(Application.class)
-class CaffeineCachedServiceTests {
+class CaffeineSimpleServiceTests {
 
     @TestComponent
-    private CachedService service;
+    private SimpleService service;
     @TestComponent
-    private MyCache cache;
+    private SimpleCache cache;
 
     @BeforeEach
     void cleanup() {
@@ -35,7 +35,7 @@ class CaffeineCachedServiceTests {
     @Test
     void getMapping() {
         // given
-        var context = new CachedService.UserContext("1", "2");
+        var context = new SimpleService.UserContext("1", "2");
 
         // when
         var origin = service.getMapping(context);

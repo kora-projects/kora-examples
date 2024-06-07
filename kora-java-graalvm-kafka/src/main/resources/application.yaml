@@ -5,6 +5,7 @@ kafka:
       driverProperties:
         bootstrap:
           servers: ${KAFKA_BOOTSTRAP}
+      telemetry.logging.enabled: true
   listener:
     user:
       pollTimeout: 250ms
@@ -14,6 +15,7 @@ kafka:
         group.id: "users-gi"
         auto.offset.reset: "latest"
         enable.auto.commit: true
+      telemetry.logging.enabled: true
 
 
 logging:
