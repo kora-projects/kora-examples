@@ -40,6 +40,8 @@ dependencies {
     testImplementation "ru.tinkoff.kora:test-junit5"
     testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.9.6"
     testRuntimeOnly "com.h2database:h2:2.2.224"
+    testImplementation "org.camunda.bpm:camunda-bpm-assert:7.21.0"
+    testImplementation "org.assertj:assertj-core:3.26.0"
 }
 
 //noinspection GroovyAssignabilityCheck
@@ -78,13 +80,12 @@ test {
     }
 }
 
-jar.enabled = true
+jar.enabled = false
 shadowJar {
     mergeServiceFiles()
     manifest {
         attributes "Main-Class": mainClassName
         attributes "Implementation-Version": koraVersion
-        attributes "Build-Time": java.time.OffsetDateTime.now()
     }
 }
 
@@ -96,7 +97,7 @@ artifacts {
 compileJava {
     options.encoding("UTF-8")
     options.incremental(true)
-    options.fork = true
+    options.fork = false
 }
 
 check.dependsOn jacocoTestReport

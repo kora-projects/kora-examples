@@ -2,9 +2,10 @@ package ru.tinkoff.kora.example.bpmn.camunda7;
 
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.ProcessEngineConfiguration;
+import org.camunda.bpm.engine.impl.test.ProcessEngineAssert;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
+import org.camunda.bpm.engine.task.Task;
 import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -15,7 +16,12 @@ import ru.tinkoff.kora.example.camunda.engine.helloworld.LoggerDelegate;
 import ru.tinkoff.kora.test.extension.junit5.*;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @KoraAppTest(Application.class)
 class CamundaEngineMockedTests implements KoraAppTestGraphModifier, KoraAppTestConfigModifier {
@@ -49,29 +55,36 @@ class CamundaEngineMockedTests implements KoraAppTestGraphModifier, KoraAppTestC
 
     @Test
     void processOnboardingCancelSuccess() {
-        String businessKey = UUID.randomUUID().toString();
-        ProcessInstance instance = processEngine.getRuntimeService().startProcessInstanceByKey("Onboarding", businessKey);
-        Assertions.assertNotNull(instance.getId());
+        final String businessKey = UUID.randomUUID().toString();
+        final ProcessInstance instance = processEngine.getRuntimeService().startProcessInstanceByKey("Onboarding", businessKey);
+        assertNotNull(instance.getId());
 
-        Assertions.assertDoesNotThrow(() -> processEngine.getRuntimeService().correlateMessage("MessageCustomerCancellation", instance.getBusinessKey()));
+        assertDoesNotThrow(() -> processEngine.getRuntimeService().correlateMessage("MessageCustomerCancellation", instance.getBusinessKey()));
+        ProcessEngineAssert.assertProcessEnded(processEngine, instance.getProcessInstanceId());
     }
 
     @Test
     void processOnboardingOrderSuccess() {
-        String businessKey = UUID.randomUUID().toString();
-        ProcessInstance instance = processEngine.getRuntimeService().startProcessInstanceByKey("Onboarding", businessKey);
-        Assertions.assertNotNull(instance.getId());
+        final String businessKey = UUID.randomUUID().toString();
+        final ProcessInstance instance = processEngine.getRuntimeService().startProcessInstanceByKey("Onboarding", businessKey);
+        assertNotNull(instance.getId());
 
-        Assertions.assertDoesNotThrow(() -> processEngine.getRuntimeService().correlateMessage("Message_Order", instance.getBusinessKey()));
+        final List<Task> tasks = processEngine.getTaskService().createTaskQuery().processInstanceId(instance.getProcessInstanceId()).active().list();
+        processEngine.getFormService().submitTaskForm(tasks.get(0).getId(), Map.of("approved", true));
+
+        Awaitility.waitAtMost(Duration.ofSeconds(10)).until(() -> {
+            ProcessEngineAssert.assertProcessEnded(processEngine, instance.getProcessInstanceId());
+            return true;
+        });
     }
 
     @Test
     void processHelloWorldSuccess() {
-        String businessKey = UUID.randomUUID().toString();
-        ProcessInstance instance = processEngine.getRuntimeService().startProcessInstanceByKey("HelloWorld", businessKey);
-        Assertions.assertNotNull(instance.getId());
+        final String businessKey = UUID.randomUUID().toString();
+        final ProcessInstance instance = processEngine.getRuntimeService().startProcessInstanceByKey("HelloWorld", businessKey);
+        assertNotNull(instance.getId());
 
-        Awaitility.waitAtMost(Duration.ofSeconds(15)).until(() -> {
+        Awaitility.waitAtMost(Duration.ofSeconds(10)).until(() -> {
             Mockito.verify(loggerDelegate, Mockito.times(1)).execute(Mockito.any());
             return true;
         });

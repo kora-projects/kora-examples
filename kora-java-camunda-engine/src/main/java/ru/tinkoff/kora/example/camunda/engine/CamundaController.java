@@ -10,8 +10,8 @@ import ru.tinkoff.kora.http.common.annotation.HttpRoute;
 import ru.tinkoff.kora.http.server.common.annotation.HttpController;
 import ru.tinkoff.kora.json.common.annotation.Json;
 
-import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 @HttpController("/camunda")
@@ -33,11 +33,11 @@ public final class CamundaController {
     }
 
     @HttpRoute(method = HttpMethod.GET, path = "/definitions")
-    public HttpResponseEntity<List<String>> definitions() {
+    public HttpResponseEntity<String> definitions() {
         return HttpResponseEntity.of(200, processEngine.getRepositoryService().createProcessDefinitionQuery().list().stream()
                 .map(ResourceDefinition::getKey)
                 .sorted()
-                .toList());
+                .collect(Collectors.joining(", ", "[ ", " ]")));
     }
 
     @Json
