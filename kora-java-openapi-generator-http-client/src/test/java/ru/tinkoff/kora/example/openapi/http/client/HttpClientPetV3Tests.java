@@ -1,15 +1,9 @@
 package ru.tinkoff.kora.example.openapi.http.client;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
-
 import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.mockserver.ConnectionMockServer;
 import io.goodforgod.testcontainers.extensions.mockserver.MockServerConnection;
 import io.goodforgod.testcontainers.extensions.mockserver.TestcontainersMockServer;
-import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -24,6 +18,13 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
 
 @TestcontainersMockServer(mode = ContainerMode.PER_RUN)
 @KoraAppTest(Application.class)
@@ -60,9 +61,10 @@ class HttpClientPetV3Tests implements KoraAppTestConfigModifier {
                 .put("tags", tags);
 
         mockserverConnection.client().when(request()
-                .withMethod("GET")
-                .withPath("/v3/pet/{id}")
-                .withPathParameter("id", String.valueOf(responseBody.getLong("id"))))
+                        .withMethod("GET")
+                        .withPath("/v3/pet/{id}")
+                        .withHeader("X-API-KEY", "MyAuthApiKey")
+                        .withPathParameter("id", String.valueOf(responseBody.getLong("id"))))
                 .respond(response()
                         .withBody(responseBody.toString()));
 
@@ -95,9 +97,10 @@ class HttpClientPetV3Tests implements KoraAppTestConfigModifier {
                 .put("tags", tags);
 
         mockserverConnection.client().when(request()
-                .withMethod("POST")
-                .withPath("/v3/pet")
-                .withBody(new JsonBody(requestBody.toString())))
+                        .withMethod("POST")
+                        .withPath("/v3/pet")
+                        .withHeader("X-API-KEY", "MyAuthApiKey")
+                        .withBody(new JsonBody(requestBody.toString())))
                 .respond(response()
                         .withBody(new JsonBody(requestBody.toString())));
 

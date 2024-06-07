@@ -1,4 +1,4 @@
-package ru.tinkoff.kora.example.cache.caffeine;
+package ru.tinkoff.kora.example.cache.redis;
 
 import java.math.BigDecimal;
 import java.util.concurrent.ThreadLocalRandom;
@@ -10,21 +10,21 @@ import ru.tinkoff.kora.common.annotation.Root;
 
 @Root
 @Component
-public class CachedService {
+public class SimpleService {
 
-    @Cacheable(MyCache.class)
+    @Cacheable(SimpleCache.class)
     public Long get(String id) {
         return ThreadLocalRandom.current().nextLong(0, 100_000_000L);
     }
 
-    @CachePut(value = MyCache.class, parameters = { "id" })
+    @CachePut(value = SimpleCache.class, parameters = { "id" })
     public Long put(BigDecimal arg2, String arg3, String id) {
         return ThreadLocalRandom.current().nextLong(0, 100_000_000L);
     }
 
-    @CacheInvalidate(MyCache.class)
+    @CacheInvalidate(SimpleCache.class)
     public void delete(String id) {}
 
-    @CacheInvalidate(value = MyCache.class, invalidateAll = true)
+    @CacheInvalidate(value = SimpleCache.class, invalidateAll = true)
     public void deleteAll() {}
 }

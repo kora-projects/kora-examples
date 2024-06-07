@@ -1,4 +1,4 @@
-package ru.tinkoff.kora.example.cache.caffeine;
+package ru.tinkoff.kora.example.cache.redis;
 
 import ru.tinkoff.kora.application.graph.KoraApplication;
 import ru.tinkoff.kora.cache.redis.RedisCacheModule;

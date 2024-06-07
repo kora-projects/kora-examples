@@ -58,8 +58,8 @@ openApiGenerate {
     modelPackage = "ru.tinkoff.kora.example.openapi.petV2.model"
     invokerPackage = "ru.tinkoff.kora.example.openapi.petV2.invoker"
     configOptions = [
-            mode              : "java-client", // так же есть reactive_client вариация HTTP Server'а
-            clientConfigPrefix: "httpClient.petV2"
+            mode              : "java-client",
+            clientConfigPrefix: "httpClient.petV2",
     ]
 }
 
@@ -73,8 +73,10 @@ tasks.register('openApiGeneratePetV3', GenerateTask) {
     modelPackage = "ru.tinkoff.kora.example.openapi.petV3.model"
     invokerPackage = "ru.tinkoff.kora.example.openapi.petV3.invoker"
     configOptions = [
-            mode              : "java-reactive-client", // так же есть java_client вариация HTTP Server'а
-            clientConfigPrefix: "httpClient.petV3"
+            mode                : "java-reactive-client",
+            clientConfigPrefix  : "httpClient.petV3",
+            securityConfigPrefix: "openapiAuth",
+            primaryAuth         : "apiKeyAuth",
     ]
 }
 
