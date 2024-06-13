@@ -19,7 +19,7 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 
 @ZeebeProcessTest
 //@Testcontainers
-@KoraAppTest(Application.class)
+@KoraAppTest(value = Application.class, components = KoraZeebeJobWorkerEngine.class)
 class ZeebeMockedTests {
 
 //    @Container
