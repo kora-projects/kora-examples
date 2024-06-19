@@ -4,66 +4,17 @@ import jakarta.annotation.Nullable;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 import ru.tinkoff.kora.database.common.UpdateCount;
-import ru.tinkoff.kora.database.common.annotation.Batch;
-import ru.tinkoff.kora.database.common.annotation.Column;
-import ru.tinkoff.kora.database.common.annotation.Query;
-import ru.tinkoff.kora.database.common.annotation.Repository;
+import ru.tinkoff.kora.database.common.annotation.*;
 import ru.tinkoff.kora.database.jdbc.JdbcRepository;
 
 @Repository
 public interface JdbcCrudAsyncRepository extends JdbcRepository {
 
-    class Entity {
-
-        private String id;
-        @Column("value1")
-        private int field1;
-        private String value2;
-        @Nullable
-        private String value3;
-
-        public Entity() {}
-
-        public Entity(String id, int field1, String value2, @Nullable String value3) {
-            this.id = id;
-            this.field1 = field1;
-            this.value2 = value2;
-            this.value3 = value3;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public int getField1() {
-            return field1;
-        }
-
-        public void setField1(int field1) {
-            this.field1 = field1;
-        }
-
-        public String getValue2() {
-            return value2;
-        }
-
-        public void setValue2(String value2) {
-            this.value2 = value2;
-        }
-
-        @Nullable
-        public String getValue3() {
-            return value3;
-        }
-
-        public void setValue3(@Nullable String value3) {
-            this.value3 = value3;
-        }
-    }
+    @Table("entities")
+    record Entity(@Id String id,
+                  @Column("value1") int field1,
+                  String value2,
+                  @Nullable String value3) {}
 
     @Query("SELECT * FROM entities WHERE id = :id")
     CompletionStage<Entity> findById(String id);
