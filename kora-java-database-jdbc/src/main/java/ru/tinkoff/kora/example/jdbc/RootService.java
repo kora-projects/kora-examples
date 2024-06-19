@@ -8,6 +8,7 @@ import ru.tinkoff.kora.common.annotation.Root;
 public final class RootService {
 
     private final JdbcCrudSyncRepository jdbcCrudSyncRepository;
+    private final JdbcCrudAsyncRepository jdbcCrudAsyncRepository;
     private final JdbcCrudReactorRepository jdbcCrudReactorRepository;
     private final JdbcMapperResultSetRepository jdbcMapperResultSetRepository;
     private final JdbcMapperRowRepository jdbcMapperRowRepository;
@@ -22,6 +23,7 @@ public final class RootService {
     private final JdbcCrudMacrosIdCompositeRepository jdbcCrudMacrosIdCompositeRepository;
 
     public RootService(JdbcCrudSyncRepository jdbcCrudSyncRepository,
+                       JdbcCrudAsyncRepository jdbcCrudAsyncRepository,
                        JdbcCrudReactorRepository jdbcCrudReactorRepository,
                        JdbcMapperResultSetRepository jdbcMapperResultSetRepository,
                        JdbcMapperRowRepository jdbcMapperRowRepository,
@@ -35,6 +37,7 @@ public final class RootService {
                        JdbcCrudMacrosRepository jdbcCrudMacrosRepository,
                        JdbcCrudMacrosIdCompositeRepository jdbcCrudMacrosIdCompositeRepository) {
         this.jdbcCrudSyncRepository = jdbcCrudSyncRepository;
+        this.jdbcCrudAsyncRepository = jdbcCrudAsyncRepository;
         this.jdbcCrudReactorRepository = jdbcCrudReactorRepository;
         this.jdbcMapperResultSetRepository = jdbcMapperResultSetRepository;
         this.jdbcMapperRowRepository = jdbcMapperRowRepository;
