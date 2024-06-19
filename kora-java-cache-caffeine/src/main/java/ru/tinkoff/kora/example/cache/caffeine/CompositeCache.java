@@ -6,5 +6,5 @@ import ru.tinkoff.kora.cache.caffeine.CaffeineCache;
 @Cache("my-cache")
 public interface CompositeCache extends CaffeineCache<CompositeCache.Key, Long> {
 
-    record Key(String userId, String traceId) { }
+    record Key(String userId, String traceId) {}
 }

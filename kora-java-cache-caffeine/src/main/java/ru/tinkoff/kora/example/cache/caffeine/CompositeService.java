@@ -1,6 +1,8 @@
 package ru.tinkoff.kora.example.cache.caffeine;
 
 import jakarta.annotation.Nonnull;
+import java.math.BigDecimal;
+import java.util.concurrent.ThreadLocalRandom;
 import ru.tinkoff.kora.cache.CacheKeyMapper;
 import ru.tinkoff.kora.cache.annotation.CacheInvalidate;
 import ru.tinkoff.kora.cache.annotation.CachePut;
@@ -8,9 +10,6 @@ import ru.tinkoff.kora.cache.annotation.Cacheable;
 import ru.tinkoff.kora.common.Component;
 import ru.tinkoff.kora.common.Mapping;
 import ru.tinkoff.kora.common.annotation.Root;
-
-import java.math.BigDecimal;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Root
 @Component

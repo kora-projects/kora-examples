@@ -6,5 +6,5 @@ import ru.tinkoff.kora.cache.redis.RedisCache;
 @Cache("my-cache")
 public interface CompositeCache extends RedisCache<CompositeCache.Key, Long> {
 
-    record Key(String userId, String traceId) { }
+    record Key(String userId, String traceId) {}
 }
