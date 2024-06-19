@@ -16,7 +16,9 @@ public interface JdbcCrudAsyncRepository extends JdbcRepository {
                   String value2,
                   @Nullable String value3) {}
 
+    //TODO remove in next versions
     @Query("SELECT * FROM entities WHERE id = :id")
+    @Nullable
     CompletionStage<Entity> findById(String id);
 
     @Query("SELECT * FROM entities")
