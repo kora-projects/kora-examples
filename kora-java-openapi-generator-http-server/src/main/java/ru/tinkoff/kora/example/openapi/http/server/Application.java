@@ -1,5 +1,6 @@
 package ru.tinkoff.kora.example.openapi.http.server;
 
+import java.util.concurrent.CompletableFuture;
 import ru.tinkoff.kora.application.graph.KoraApplication;
 import ru.tinkoff.kora.common.KoraApp;
 import ru.tinkoff.kora.common.Principal;
@@ -12,8 +13,6 @@ import ru.tinkoff.kora.http.server.undertow.UndertowHttpServerModule;
 import ru.tinkoff.kora.json.module.JsonModule;
 import ru.tinkoff.kora.logging.logback.LogbackModule;
 import ru.tinkoff.kora.validation.module.ValidationModule;
-
-import java.util.concurrent.CompletableFuture;
 
 @KoraApp
 public interface Application extends
