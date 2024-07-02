@@ -1,18 +1,18 @@
-package ru.tinkoff.kora.example.jdbc;
+package ru.tinkoff.kora.example.cassandra;
 
 import jakarta.annotation.Nullable;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import ru.tinkoff.kora.database.common.UpdateCount;
-import ru.tinkoff.kora.database.common.annotation.*;
-import ru.tinkoff.kora.database.jdbc.JdbcRepository;
+import ru.tinkoff.kora.database.cassandra.CassandraRepository;
+import ru.tinkoff.kora.database.common.annotation.Batch;
+import ru.tinkoff.kora.database.common.annotation.Column;
+import ru.tinkoff.kora.database.common.annotation.Query;
+import ru.tinkoff.kora.database.common.annotation.Repository;
 
 @Repository
-public interface JdbcCrudAsyncRepository extends JdbcRepository {
+public interface CassandraCrudAsyncRepository extends CassandraRepository {
 
-    @Table("entities")
-    record Entity(@Id String id,
+    record Entity(String id,
                   @Column("value1") int field1,
                   String value2,
                   @Nullable String value3) {}
@@ -33,7 +33,7 @@ public interface JdbcCrudAsyncRepository extends JdbcRepository {
             INSERT INTO entities(id, value1, value2, value3)
             VALUES (:entity.id, :entity.field1, :entity.value2, :entity.value3)
             """)
-    CompletionStage<UpdateCount> insertBatch(@Batch List<Entity> entity);
+    CompletionStage<Void> insertBatch(@Batch List<Entity> entity);
 
     @Query("""
             UPDATE entities
@@ -47,11 +47,12 @@ public interface JdbcCrudAsyncRepository extends JdbcRepository {
             SET value1 = :entity.field1, value2 = :entity.value2, value3 = :entity.value3
             WHERE id = :entity.id
             """)
-    CompletionStage<UpdateCount> updateBatch(@Batch List<Entity> entity);
+    CompletionStage<Void> updateBatch(@Batch List<Entity> entity);
 
     @Query("DELETE FROM entities WHERE id = :id")
-    CompletableFuture<Void> deleteById(String id);
+    CompletionStage<Void> deleteById(String id);
 
-    @Query("DELETE FROM entities")
-    CompletableFuture<UpdateCount> deleteAll();
+    // TODO CompletableFuture in 1.1.5
+    @Query("TRUNCATE entities")
+    CompletionStage<Void> deleteAll();
 }

@@ -1,12 +1,12 @@
-package ru.tinkoff.kora.example.jdbc;
+package ru.tinkoff.kora.example.cassandra;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.goodforgod.testcontainers.extensions.ContainerMode;
-import io.goodforgod.testcontainers.extensions.jdbc.ConnectionPostgreSQL;
-import io.goodforgod.testcontainers.extensions.jdbc.JdbcConnection;
-import io.goodforgod.testcontainers.extensions.jdbc.Migration;
-import io.goodforgod.testcontainers.extensions.jdbc.TestcontainersPostgreSQL;
+import io.goodforgod.testcontainers.extensions.cassandra.CassandraConnection;
+import io.goodforgod.testcontainers.extensions.cassandra.ConnectionCassandra;
+import io.goodforgod.testcontainers.extensions.cassandra.Migration;
+import io.goodforgod.testcontainers.extensions.cassandra.TestcontainersCassandra;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
@@ -15,33 +15,37 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 
-@TestcontainersPostgreSQL(
+@TestcontainersCassandra(
         mode = ContainerMode.PER_RUN,
         migration = @Migration(
-                engine = Migration.Engines.FLYWAY,
+                engine = Migration.Engines.SCRIPTS,
+                locations = { "migrations" },
                 apply = Migration.Mode.PER_METHOD,
                 drop = Migration.Mode.PER_METHOD))
 @KoraAppTest(Application.class)
-class JdbcCrudAsyncTests implements KoraAppTestConfigModifier {
+class CassandraCrudAsyncTests implements KoraAppTestConfigModifier {
 
-    @ConnectionPostgreSQL
-    private JdbcConnection connection;
+    @ConnectionCassandra
+    private CassandraConnection connection;
 
     @TestComponent
-    private JdbcCrudAsyncRepository repository;
+    private CassandraCrudAsyncRepository repository;
 
     @NotNull
     @Override
     public KoraConfigModification config() {
-        return KoraConfigModification.ofSystemProperty("POSTGRES_JDBC_URL", connection.params().jdbcUrl())
-                .withSystemProperty("POSTGRES_USER", connection.params().username())
-                .withSystemProperty("POSTGRES_PASS", connection.params().password());
+        return KoraConfigModification
+                .ofSystemProperty("CASSANDRA_CONTACT_POINTS", connection.params().contactPoint())
+                .withSystemProperty("CASSANDRA_USER", connection.params().username())
+                .withSystemProperty("CASSANDRA_PASS", connection.params().password())
+                .withSystemProperty("CASSANDRA_DC", connection.params().datacenter())
+                .withSystemProperty("CASSANDRA_KEYSPACE", connection.params().keyspace());
     }
 
     @Test
-    void asyncSingle() {
+    void asyncSingleSuccess() {
         // given
-        var entityCreate = new JdbcCrudAsyncRepository.Entity("1", 1, "2", null);
+        var entityCreate = new CassandraCrudAsyncRepository.Entity("1", 1, "2", null);
         repository.insert(entityCreate).toCompletableFuture().join();
 
         var foundCreated = repository.findById("1").toCompletableFuture().join();
@@ -52,7 +56,7 @@ class JdbcCrudAsyncTests implements KoraAppTestConfigModifier {
         assertNull(foundCreated.value3());
 
         // when
-        var entityUpdate = new JdbcCrudAsyncRepository.Entity("1", 5, "6", null);
+        var entityUpdate = new CassandraCrudAsyncRepository.Entity("1", 5, "6", null);
         repository.update(entityUpdate).toCompletableFuture().join();
 
         var foundUpdated = repository.findById("1").toCompletableFuture().join();
@@ -63,16 +67,16 @@ class JdbcCrudAsyncTests implements KoraAppTestConfigModifier {
         assertNull(foundUpdated.value3());
 
         // then
-        repository.deleteById("1").join();
+        repository.deleteById("1").toCompletableFuture().join();
         assertNull(repository.findById("1").toCompletableFuture().join());
     }
 
     @Test
-    void asyncBatch() {
+    void asyncBatchSuccess() {
         // given
-        var entityCreate1 = new JdbcCrudAsyncRepository.Entity("1", 1, "2", null);
-        var entityCreate2 = new JdbcCrudAsyncRepository.Entity("2", 3, "4", null);
-        assertEquals(2L, repository.insertBatch(List.of(entityCreate1, entityCreate2)).toCompletableFuture().join().value());
+        var entityCreate1 = new CassandraCrudAsyncRepository.Entity("1", 1, "2", null);
+        var entityCreate2 = new CassandraCrudAsyncRepository.Entity("2", 3, "4", null);
+        repository.insertBatch(List.of(entityCreate1, entityCreate2)).toCompletableFuture().join();
 
         var foundCreated = repository.findAll().toCompletableFuture().join();
         assertNotNull(foundCreated);
@@ -92,9 +96,9 @@ class JdbcCrudAsyncTests implements KoraAppTestConfigModifier {
         }
 
         // when
-        var entityUpdate1 = new JdbcCrudAsyncRepository.Entity("1", 5, "6", null);
-        var entityUpdate2 = new JdbcCrudAsyncRepository.Entity("2", 7, "8", null);
-        assertEquals(2L, repository.updateBatch(List.of(entityUpdate1, entityUpdate2)).toCompletableFuture().join().value());
+        var entityUpdate1 = new CassandraCrudAsyncRepository.Entity("1", 5, "6", null);
+        var entityUpdate2 = new CassandraCrudAsyncRepository.Entity("2", 7, "8", null);
+        repository.updateBatch(List.of(entityUpdate1, entityUpdate2)).toCompletableFuture().join();
 
         var foundUpdated = repository.findAll().toCompletableFuture().join();
         assertEquals(2, foundUpdated.size());
@@ -113,7 +117,7 @@ class JdbcCrudAsyncTests implements KoraAppTestConfigModifier {
         }
 
         // then
-        assertEquals(2L, repository.deleteAll().join().value());
+        repository.deleteAll().toCompletableFuture().join();
         assertTrue(repository.findAll().toCompletableFuture().join().isEmpty());
     }
 }

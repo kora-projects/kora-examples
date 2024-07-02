@@ -293,3 +293,31 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Pet'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+    basicAuth:
+      type: http
+      scheme: basic
+    oAuth:
+      type: oauth2
+      description: This API uses OAuth 2 with the implicit grant flow. [More info](https://api.example.com/docs/auth)
+      flows:
+        implicit:
+          authorizationUrl: https://api.example.com/oauth2/authorize
+          scopes:
+            read_pets: read your pets
+            write_pets: modify pets in your account
+security:
+  - bearerAuth: []
+  - apiKeyAuth: []
+  - basicAuth: []
+  - oAuth:
+      - write_pets
+      - read_pets
