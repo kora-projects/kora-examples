@@ -1,10 +1,13 @@
 package ru.tinkoff.kora.example.cassandra;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.cassandra.CassandraConnection;
 import io.goodforgod.testcontainers.extensions.cassandra.ConnectionCassandra;
 import io.goodforgod.testcontainers.extensions.cassandra.Migration;
 import io.goodforgod.testcontainers.extensions.cassandra.TestcontainersCassandra;
+import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
@@ -12,15 +15,11 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 @TestcontainersCassandra(
         mode = ContainerMode.PER_RUN,
         migration = @Migration(
                 engine = Migration.Engines.SCRIPTS,
-                locations = {"migrations"},
+                locations = { "migrations" },
                 apply = Migration.Mode.PER_METHOD,
                 drop = Migration.Mode.PER_METHOD))
 @KoraAppTest(Application.class)
@@ -44,7 +43,7 @@ class CassandraCrudAsyncTests implements KoraAppTestConfigModifier {
     }
 
     @Test
-    void monoSingleSuccess() {
+    void asyncSingleSuccess() {
         // given
         var entityCreate = new CassandraCrudAsyncRepository.Entity("1", 1, "2", null);
         repository.insert(entityCreate).toCompletableFuture().join();
@@ -73,7 +72,7 @@ class CassandraCrudAsyncTests implements KoraAppTestConfigModifier {
     }
 
     @Test
-    void monoBatchSuccess() {
+    void asyncBatchSuccess() {
         // given
         var entityCreate1 = new CassandraCrudAsyncRepository.Entity("1", 1, "2", null);
         var entityCreate2 = new CassandraCrudAsyncRepository.Entity("2", 3, "4", null);

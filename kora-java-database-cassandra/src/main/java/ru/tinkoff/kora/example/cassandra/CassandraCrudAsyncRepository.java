@@ -1,18 +1,13 @@
 package ru.tinkoff.kora.example.cassandra;
 
 import jakarta.annotation.Nullable;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import java.util.List;
+import java.util.concurrent.CompletionStage;
 import ru.tinkoff.kora.database.cassandra.CassandraRepository;
-import ru.tinkoff.kora.database.common.UpdateCount;
 import ru.tinkoff.kora.database.common.annotation.Batch;
 import ru.tinkoff.kora.database.common.annotation.Column;
 import ru.tinkoff.kora.database.common.annotation.Query;
 import ru.tinkoff.kora.database.common.annotation.Repository;
-
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 @Repository
 public interface CassandraCrudAsyncRepository extends CassandraRepository {
@@ -57,7 +52,7 @@ public interface CassandraCrudAsyncRepository extends CassandraRepository {
     @Query("DELETE FROM entities WHERE id = :id")
     CompletionStage<Void> deleteById(String id);
 
-    //TODO CompletableFuture in 1.1.5
+    // TODO CompletableFuture in 1.1.5
     @Query("TRUNCATE entities")
     CompletionStage<Void> deleteAll();
 }

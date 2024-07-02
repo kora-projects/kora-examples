@@ -39,7 +39,7 @@ class JdbcCrudAsyncTests implements KoraAppTestConfigModifier {
     }
 
     @Test
-    void monoSingle() {
+    void asyncSingle() {
         // given
         var entityCreate = new JdbcCrudAsyncRepository.Entity("1", 1, "2", null);
         repository.insert(entityCreate).toCompletableFuture().join();
@@ -68,7 +68,7 @@ class JdbcCrudAsyncTests implements KoraAppTestConfigModifier {
     }
 
     @Test
-    void monoBatch() {
+    void asyncBatch() {
         // given
         var entityCreate1 = new JdbcCrudAsyncRepository.Entity("1", 1, "2", null);
         var entityCreate2 = new JdbcCrudAsyncRepository.Entity("2", 3, "4", null);
