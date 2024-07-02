@@ -2,6 +2,7 @@ package ru.tinkoff.kora.example.jdbc;
 
 import jakarta.annotation.Nullable;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import ru.tinkoff.kora.database.common.UpdateCount;
 import ru.tinkoff.kora.database.common.annotation.*;
@@ -49,8 +50,8 @@ public interface JdbcCrudAsyncRepository extends JdbcRepository {
     CompletionStage<UpdateCount> updateBatch(@Batch List<Entity> entity);
 
     @Query("DELETE FROM entities WHERE id = :id")
-    CompletionStage<Void> deleteById(String id);
+    CompletableFuture<Void> deleteById(String id);
 
     @Query("DELETE FROM entities")
-    CompletionStage<UpdateCount> deleteAll();
+    CompletableFuture<UpdateCount> deleteAll();
 }

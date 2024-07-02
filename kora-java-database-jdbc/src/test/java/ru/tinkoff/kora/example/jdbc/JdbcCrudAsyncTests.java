@@ -63,7 +63,7 @@ class JdbcCrudAsyncTests implements KoraAppTestConfigModifier {
         assertNull(foundUpdated.value3());
 
         // then
-        repository.deleteById("1").toCompletableFuture().join();
+        repository.deleteById("1").join();
         assertNull(repository.findById("1").toCompletableFuture().join());
     }
 
@@ -113,7 +113,7 @@ class JdbcCrudAsyncTests implements KoraAppTestConfigModifier {
         }
 
         // then
-        assertEquals(2L, repository.deleteAll().toCompletableFuture().join().value());
+        assertEquals(2L, repository.deleteAll().join().value());
         assertTrue(repository.findAll().toCompletableFuture().join().isEmpty());
     }
 }
