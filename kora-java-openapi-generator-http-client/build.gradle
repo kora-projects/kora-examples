@@ -141,7 +141,7 @@ artifacts {
 compileJava {
     options.encoding("UTF-8")
     options.incremental(true)
-    options.fork = true
+    options.fork = false
 }
 
 check.dependsOn tasks.jacocoTestReport
