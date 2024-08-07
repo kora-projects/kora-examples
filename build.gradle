@@ -45,3 +45,5 @@ subprojects {
         }
     }
 }
+
+apply from: "${project.rootDir}/grouping.gradle"
