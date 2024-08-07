@@ -8,6 +8,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        task: [ "database", "client", "server", "graalvm", "other" ]
+    name: Running tests for ${{ matrix.task }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
@@ -16,11 +20,11 @@ jobs:
           java-version: "17"
           distribution: "adopt"
 
-      - name: Build
-        run: "./gradlew classes"
+      - name: Build classes
+        run: "./gradlew classes-${{ matrix.task }}"
 
       - name: Build tests
-        run: "./gradlew testClasses"
+        run: "./gradlew testClasses-${{ matrix.task }}"
 
-      - name: Test
-        run: "./gradlew test jacocoTestReport --no-parallel"
+      - name: Run tests
+        run: "./gradlew test-${{ matrix.task }} jacocoTestReport --no-parallel"

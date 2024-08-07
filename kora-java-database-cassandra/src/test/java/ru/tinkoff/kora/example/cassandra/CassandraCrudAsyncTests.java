@@ -48,7 +48,7 @@ class CassandraCrudAsyncTests implements KoraAppTestConfigModifier {
         var entityCreate = new CassandraCrudAsyncRepository.Entity("1", 1, "2", null);
         repository.insert(entityCreate).toCompletableFuture().join();
 
-        var foundCreated = repository.findById("1").toCompletableFuture().join();
+        var foundCreated = repository.findById("1").join();
         assertNotNull(foundCreated);
         assertEquals("1", foundCreated.id());
         assertEquals(1, foundCreated.field1());
@@ -59,7 +59,7 @@ class CassandraCrudAsyncTests implements KoraAppTestConfigModifier {
         var entityUpdate = new CassandraCrudAsyncRepository.Entity("1", 5, "6", null);
         repository.update(entityUpdate).toCompletableFuture().join();
 
-        var foundUpdated = repository.findById("1").toCompletableFuture().join();
+        var foundUpdated = repository.findById("1").join();
         assertNotNull(foundUpdated);
         assertEquals("1", foundUpdated.id());
         assertEquals(5, foundUpdated.field1());
@@ -68,7 +68,7 @@ class CassandraCrudAsyncTests implements KoraAppTestConfigModifier {
 
         // then
         repository.deleteById("1").toCompletableFuture().join();
-        assertNull(repository.findById("1").toCompletableFuture().join());
+        assertNull(repository.findById("1").join());
     }
 
     @Test
@@ -117,7 +117,7 @@ class CassandraCrudAsyncTests implements KoraAppTestConfigModifier {
         }
 
         // then
-        repository.deleteAll().toCompletableFuture().join();
+        repository.deleteAll().join();
         assertTrue(repository.findAll().toCompletableFuture().join().isEmpty());
     }
 }

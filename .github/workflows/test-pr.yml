@@ -13,12 +13,13 @@ permissions:
 
 
 jobs:
-  test:
+  build-tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         java: [ "17" ]
-    name: Pull Request against Java ${{ matrix.java }}
+        task: [ "database", "client", "server", "graalvm", "other" ]
+    name: Pull Request Java ${{ matrix.java }} for ${{ matrix.task }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
@@ -27,17 +28,17 @@ jobs:
           java-version: ${{ matrix.java }}
           distribution: "adopt"
 
-      - name: Build
-        run: "./gradlew classes"
+      - name: Build classes
+        run: "./gradlew classes-${{ matrix.task }}"
 
       - name: Build tests
-        run: "./gradlew testClasses"
+        run: "./gradlew testClasses-${{ matrix.task }}"
 
-      - name: Test
-        run: "./gradlew test jacocoTestReport --no-parallel"
+      - name: Run tests
+        run: "./gradlew test-${{ matrix.task }} jacocoTestReport --no-parallel"
 
-      - name: Test Report
-        if: matrix.java == '17'
+      - name: Report tests
+        if: ${{ matrix.java }} == "17"
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: |
