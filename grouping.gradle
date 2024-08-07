@@ -6,7 +6,7 @@ def addDependency = { TaskProvider taskProvider, String dependency ->
 
 def addDependencyByType = { TaskProvider taskProvider, String type, String taskName ->
     rootProject.allprojects.forEach {
-        if(type == "other" && it.name != "kora-examples" && !nonOtherModules.contains(it.name)) {
+        if(type == "other" && it.name != rootProject.name && !nonOtherModules.contains(it.name)) {
             addDependency(taskProvider, ":${it.name}:${taskName}")
         } else if(it.name.contains(type)) {
             addDependency(taskProvider, ":${it.name}:${taskName}")
@@ -15,7 +15,7 @@ def addDependencyByType = { TaskProvider taskProvider, String type, String taskN
     }
 }
 
-def registerModulesByType = { String type ->
+def groupModulesByType = { String type ->
     def testByType = tasks.register("test-${type}") {
         group("verification")
         description("Run tests with ${type}")
@@ -36,11 +36,11 @@ def registerModulesByType = { String type ->
 }
 
 
-registerModulesByType("database")
-registerModulesByType("graalvm")
-registerModulesByType("server")
-registerModulesByType("client")
-registerModulesByType("other")
+groupModulesByType("database")
+groupModulesByType("graalvm")
+groupModulesByType("server")
+groupModulesByType("client")
+groupModulesByType("other")
 
 
 def jacocoRootReport = tasks.register("jacocoRootReport", JacocoReport) {
