@@ -10,7 +10,7 @@ public interface SyncS3Client {
     @S3.Get("pre-{key}")
     S3Object getObject(String key);
 
-    @S3.Get("pre-{key}")
+    @S3.Get
     S3ObjectMeta getObjectMeta(String key);
 
     @S3.Get

@@ -13,7 +13,7 @@ public interface AwsS3Client {
     @S3.Get("pre-{key}")
     ResponseInputStream<GetObjectResponse> getObject(String key);
 
-    @S3.Get("pre-{key}")
+    @S3.Get
     GetObjectResponse getObjectMeta(String key);
 
     @S3.List(value = "pre-{prefix}", limit = 50)

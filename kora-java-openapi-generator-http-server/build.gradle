@@ -38,7 +38,7 @@ dependencies {
     implementation "ru.tinkoff.kora:validation-module"
     implementation "ru.tinkoff.kora:http-server-undertow"
     implementation "ru.tinkoff.kora:json-module"
-    implementation "io.projectreactor:reactor-core:3.6.3" // For reactive examples (optional)
+    implementation "io.projectreactor:reactor-core:3.6.5" // For reactive examples (optional)
 
     implementation "ru.tinkoff.kora:logging-logback"
     implementation "ru.tinkoff.kora:config-hocon"

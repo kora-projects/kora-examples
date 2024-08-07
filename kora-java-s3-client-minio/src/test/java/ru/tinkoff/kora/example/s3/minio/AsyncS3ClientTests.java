@@ -10,7 +10,9 @@ import java.util.List;
 import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MinIOContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.tinkoff.kora.s3.client.S3NotFoundException;
@@ -26,7 +28,8 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 class AsyncS3ClientTests implements KoraAppTestConfigModifier {
 
     @Container
-    private static final MinIOContainer container = new MinIOContainer("minio/minio:RELEASE.2024-05-10T01-41-38Z");
+    private static final MinIOContainer container = new MinIOContainer("minio/minio:RELEASE.2024-08-03T04-33-23Z")
+            .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(MinIOContainer.class)));
 
     @TestComponent
     private AsyncS3Client client;
@@ -84,7 +87,7 @@ class AsyncS3ClientTests implements KoraAppTestConfigModifier {
         client.putObject(key, S3Body.ofBytes(value)).toCompletableFuture().join();
 
         // when
-        var found = client.getObjectMeta(key).join();
+        var found = client.getObjectMeta("pre-" + key).join();
         assertNotNull(found);
 
         // then

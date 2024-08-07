@@ -26,7 +26,7 @@ dependencies {
     koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
     annotationProcessor "ru.tinkoff.kora:annotation-processors"
 
-    implementation "ru.tinkoff.kora:s3-client-aws"
+    implementation "ru.tinkoff.kora.experimental:s3-client-aws"
     implementation "ru.tinkoff.kora:http-client-async"
     implementation "ru.tinkoff.kora:http-client-jdk"
     implementation "ru.tinkoff.kora:http-client-ok"

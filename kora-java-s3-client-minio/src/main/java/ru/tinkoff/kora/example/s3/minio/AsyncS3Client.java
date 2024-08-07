@@ -12,7 +12,7 @@ public interface AsyncS3Client {
     @S3.Get("pre-{key}")
     CompletableFuture<S3Object> getObject(String key);
 
-    @S3.Get("pre-{key}")
+    @S3.Get
     CompletableFuture<S3ObjectMeta> getObjectMeta(String key);
 
     @S3.Get

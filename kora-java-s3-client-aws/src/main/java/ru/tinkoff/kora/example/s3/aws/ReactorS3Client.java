@@ -12,7 +12,7 @@ public interface ReactorS3Client {
     @S3.Get("pre-{key}")
     Mono<S3Object> getObject(String key);
 
-    @S3.Get("pre-{key}")
+    @S3.Get
     Mono<S3ObjectMeta> getObjectMeta(String key);
 
     @S3.Get
