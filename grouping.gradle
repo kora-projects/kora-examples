@@ -1,0 +1,69 @@
+def nonOtherModules = new HashSet<String>()
+
+def addDependency = { TaskProvider taskProvider, String dependency ->
+    taskProvider.configure { Task task -> task.dependsOn(dependency) }
+}
+
+def addDependencyByType = { TaskProvider taskProvider, String type, String taskName ->
+    rootProject.allprojects.forEach {
+        if(type == "other" && it.name != "kora-examples" && !nonOtherModules.contains(it.name)) {
+            addDependency(taskProvider, ":${it.name}:${taskName}")
+        } else if(it.name.contains(type)) {
+            addDependency(taskProvider, ":${it.name}:${taskName}")
+            nonOtherModules.add(it.name)
+        }
+    }
+}
+
+def registerModulesByType = { String type ->
+    def testByType = tasks.register("test-${type}") {
+        group("verification")
+        description("Run tests with ${type}")
+    }
+    addDependencyByType(testByType, type, "test")
+
+    def classesByType = tasks.register("classes-${type}") {
+        group("build")
+        description("Build classes for ${type}")
+    }
+    addDependencyByType(classesByType, type, "classes")
+
+    def testClassesByType = tasks.register("testClasses-${type}") {
+        group("build")
+        description("Build testClasses for ${type}")
+    }
+    addDependencyByType(testClassesByType, type, "testClasses")
+}
+
+
+registerModulesByType("database")
+registerModulesByType("graalvm")
+registerModulesByType("server")
+registerModulesByType("client")
+registerModulesByType("other")
+
+
+def jacocoRootReport = tasks.register("jacocoRootReport", JacocoReport) {
+    group = 'verification'
+    executionData project.fileTree(dir: '.', include: '**/build/jacoco/test.exec')
+
+    reports {
+        xml.required.set(true)
+        xml.destination(file("$buildDir/reports/jacoco/test/jacocoTestReport.xml"))
+        csv.required.set(false)
+        html.required.set(false)
+    }
+}
+
+
+subprojects {
+    tasks.configureEach { task ->
+        if (task.name == "jacocoTestReport") {
+            def report = (JacocoReport) task
+            jacocoRootReport.configure { root ->
+                root.additionalClassDirs report.allClassDirs
+                root.additionalSourceDirs report.allSourceDirs
+            }
+        }
+    }
+}
