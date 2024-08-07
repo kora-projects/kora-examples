@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         task: [ "database", "client", "server", "graalvm", "other" ]
-    name: Running tests for ${{ matrix.task }} group
+    name: Running tests for ${{ matrix.task }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK

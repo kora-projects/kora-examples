@@ -19,7 +19,7 @@ jobs:
       matrix:
         java: [ "17" ]
         task: [ "database", "client", "server", "graalvm", "other" ]
-    name: Pull Request Java ${{ matrix.java }} for ${{ matrix.task }} group
+    name: Pull Request Java ${{ matrix.java }} for ${{ matrix.task }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
