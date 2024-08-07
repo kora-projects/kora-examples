@@ -38,7 +38,7 @@ jobs:
         run: "./gradlew test-${{ matrix.task }} jacocoTestReport --no-parallel"
 
       - name: Report tests
-        if: matrix.java == "17"
+        if: ${{ matrix.java }} == "17"
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: |
