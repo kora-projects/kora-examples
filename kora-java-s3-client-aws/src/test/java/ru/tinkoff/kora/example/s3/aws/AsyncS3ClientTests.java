@@ -78,7 +78,7 @@ class AsyncS3ClientTests implements KoraAppTestConfigModifier {
         // when
         var found = client.getObject(key).join();
         assertNotNull(found);
-        assertTrue(Arrays.equals(value, found.body().asBytes()));
+        assertArrayEquals(value, found.body().asBytes());
 
         // then
         var ex = assertThrows(CompletionException.class, () -> client.getObject("k2").join());
