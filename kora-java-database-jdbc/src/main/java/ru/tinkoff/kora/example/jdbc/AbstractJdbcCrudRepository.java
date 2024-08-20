@@ -28,10 +28,10 @@ public interface AbstractJdbcCrudRepository<K, V> extends JdbcRepository {
     @Query("UPDATE %{entity#table} SET %{entity#updates} WHERE %{entity#where = @id}")
     UpdateCount updateBatch(@Batch List<V> entity);
 
-    @Query("INSERT INTO %{entity#inserts} ON CONFLICT (a, b) DO UPDATE SET %{entity#updates}")
+    @Query("INSERT INTO %{entity#inserts} ON CONFLICT (%{entity#selects=@id}) DO UPDATE SET %{entity#updates}")
     UpdateCount upsert(V entity);
 
-    @Query("INSERT INTO %{entity#inserts} ON CONFLICT (a, b) DO UPDATE SET %{entity#updates}")
+    @Query("INSERT INTO %{entity#inserts} ON CONFLICT (%{entity#selects=@id}) DO UPDATE SET %{entity#updates}")
     UpdateCount upsertBatch(@Batch List<V> entity);
 
     @Query("DELETE FROM %{entity#table} WHERE %{entity#where = @id}")
