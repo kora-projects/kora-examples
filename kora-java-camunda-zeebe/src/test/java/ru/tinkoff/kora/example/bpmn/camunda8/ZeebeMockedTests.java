@@ -18,15 +18,15 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 
 @ZeebeProcessTest
-//@Testcontainers
+@Testcontainers
 @KoraAppTest(value = Application.class, components = KoraZeebeJobWorkerEngine.class)
 class ZeebeMockedTests {
 
-//    @Container
-//    private static final EngineContainer zeebeContainer = EngineContainer.getContainer();
-//
-//    private static ZeebeClient zeebeClientFromEngine;
-//    private static ContainerizedEngine zeebeEngine;
+    @Container
+    private static final EngineContainer zeebeContainer = EngineContainer.getContainer();
+
+    private static ZeebeClient zeebeClientFromEngine;
+    private static ContainerizedEngine zeebeEngine;
 
     @Mock
     @TestComponent
@@ -35,29 +35,29 @@ class ZeebeMockedTests {
     @TestComponent
     private ZeebeClient zeebeClient;
 
-//    @BeforeAll
-//    static void setup() {
-//        if (zeebeClientFromEngine == null) {
-//            Integer containerPort = zeebeContainer.getMappedPort(ContainerProperties.getContainerPort());
-//            Integer gatewayPort = zeebeContainer.getMappedPort(ContainerProperties.getGatewayPort());
-//            zeebeEngine = new ContainerizedEngine(zeebeContainer.getHost(), containerPort, gatewayPort);
-//            zeebeEngine.start();
-//            zeebeClientFromEngine = zeebeEngine.createClient();
-//        }
-//    }
-//
-//    @BeforeEach
-//    void setupTest() {
-//        zeebeEngine.start();
-//
-//        RecordStream recordStream = RecordStream.of(new RecordStreamSourceImpl(engine));
-//        BpmnAssert.initRecordStream(recordStream);
-//    }
-//
-//    @AfterEach
-//    void cleanup() {
-//        zeebeEngine.reset();
-//    }
+    @BeforeAll
+    static void setup() {
+        if (zeebeClientFromEngine == null) {
+            Integer containerPort = zeebeContainer.getMappedPort(ContainerProperties.getContainerPort());
+            Integer gatewayPort = zeebeContainer.getMappedPort(ContainerProperties.getGatewayPort());
+            zeebeEngine = new ContainerizedEngine(zeebeContainer.getHost(), containerPort, gatewayPort);
+            zeebeEngine.start();
+            zeebeClientFromEngine = zeebeEngine.createClient();
+        }
+    }
+
+    @BeforeEach
+    void setupTest() {
+        zeebeEngine.start();
+
+        RecordStream recordStream = RecordStream.of(new RecordStreamSourceImpl(zeebeEngine));
+        BpmnAssert.initRecordStream(recordStream);
+    }
+
+    @AfterEach
+    void cleanup() {
+        zeebeEngine.reset();
+    }
 
     @Test
     void processDemoSuccess() {
