@@ -53,7 +53,7 @@ dependencies {
     implementation "org.mapstruct:mapstruct:1.5.5.Final"
     implementation "io.vertx:vertx-pg-client:4.3.8"
     implementation "com.ongres.scram:client:2.1"
-    implementation "io.projectreactor:reactor-core:3.6.3" // For reactive examples (optional)
+    implementation "io.projectreactor:reactor-core:3.6.5" // For reactive examples (optional)
 
     testImplementation "org.json:json:20231013"
     testImplementation "org.skyscreamer:jsonassert:1.5.1"
