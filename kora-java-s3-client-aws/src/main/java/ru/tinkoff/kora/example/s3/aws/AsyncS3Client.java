@@ -1,11 +1,10 @@
 package ru.tinkoff.kora.example.s3.aws;
 
-import ru.tinkoff.kora.s3.client.annotation.S3;
-import ru.tinkoff.kora.s3.client.model.*;
-
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import ru.tinkoff.kora.s3.client.annotation.S3;
+import ru.tinkoff.kora.s3.client.model.*;
 
 @S3.Client("my")
 public interface AsyncS3Client {

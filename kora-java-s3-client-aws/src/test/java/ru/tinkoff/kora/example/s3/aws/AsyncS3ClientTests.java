@@ -1,5 +1,11 @@
 package ru.tinkoff.kora.example.s3.aws;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.net.http.HttpRequest;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
@@ -18,14 +24,6 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.BucketAlreadyExistsException;
 import software.amazon.awssdk.services.s3.model.BucketAlreadyOwnedByYouException;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
-
-import java.net.http.HttpRequest;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CompletionException;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @Testcontainers
 @KoraAppTest(Application.class)
@@ -73,7 +71,8 @@ class AsyncS3ClientTests implements KoraAppTestConfigModifier {
         // given
         var key = "k1";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key, S3Body.ofPublisher(HttpRequest.BodyPublishers.ofByteArray(value), value.length)).toCompletableFuture().join();
+        client.putObject(key, S3Body.ofPublisher(HttpRequest.BodyPublishers.ofByteArray(value), value.length))
+                .toCompletableFuture().join();
 
         // when
         var found = client.getObject(key).join();

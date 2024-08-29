@@ -1,9 +1,8 @@
 package ru.tinkoff.kora.example.s3.aws;
 
+import java.util.List;
 import ru.tinkoff.kora.s3.client.annotation.S3;
 import ru.tinkoff.kora.s3.client.model.*;
-
-import java.util.List;
 
 @S3.Client("my")
 public interface SyncS3Client {

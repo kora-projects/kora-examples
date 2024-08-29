@@ -1,11 +1,10 @@
 package ru.tinkoff.kora.example.s3.aws;
 
+import java.util.List;
 import ru.tinkoff.kora.s3.client.annotation.S3;
 import ru.tinkoff.kora.s3.client.model.S3Body;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.services.s3.model.*;
-
-import java.util.List;
 
 @S3.Client("my")
 public interface AwsS3Client {

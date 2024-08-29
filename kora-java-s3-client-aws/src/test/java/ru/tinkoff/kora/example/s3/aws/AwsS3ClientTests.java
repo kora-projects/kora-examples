@@ -1,5 +1,9 @@
 package ru.tinkoff.kora.example.s3.aws;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
@@ -7,7 +11,6 @@ import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import ru.tinkoff.kora.s3.client.S3NotFoundException;
 import ru.tinkoff.kora.s3.client.model.S3Body;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
@@ -18,11 +21,6 @@ import software.amazon.awssdk.services.s3.model.BucketAlreadyExistsException;
 import software.amazon.awssdk.services.s3.model.BucketAlreadyOwnedByYouException;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
-
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @Testcontainers
 @KoraAppTest(Application.class)

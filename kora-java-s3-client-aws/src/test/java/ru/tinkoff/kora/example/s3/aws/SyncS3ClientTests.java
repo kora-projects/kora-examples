@@ -1,5 +1,10 @@
 package ru.tinkoff.kora.example.s3.aws;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.net.http.HttpRequest;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
@@ -18,13 +23,6 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.BucketAlreadyExistsException;
 import software.amazon.awssdk.services.s3.model.BucketAlreadyOwnedByYouException;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
-
-import java.net.http.HttpRequest;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @Testcontainers
 @KoraAppTest(Application.class)

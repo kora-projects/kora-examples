@@ -12,7 +12,10 @@ public class RootService {
     private final ReactorS3Client reactorS3Client;
     private final AwsS3Client awsS3Client;
 
-    public RootService(SyncS3Client syncS3Client, AsyncS3Client asyncS3Client, ReactorS3Client reactorS3Client, AwsS3Client awsS3Client) {
+    public RootService(SyncS3Client syncS3Client,
+                       AsyncS3Client asyncS3Client,
+                       ReactorS3Client reactorS3Client,
+                       AwsS3Client awsS3Client) {
         this.syncS3Client = syncS3Client;
         this.asyncS3Client = asyncS3Client;
         this.reactorS3Client = reactorS3Client;
