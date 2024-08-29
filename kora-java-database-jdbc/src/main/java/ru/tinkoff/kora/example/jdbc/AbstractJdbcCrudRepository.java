@@ -1,17 +1,13 @@
 package ru.tinkoff.kora.example.jdbc;
 
+import java.util.List;
+import java.util.Optional;
 import ru.tinkoff.kora.database.common.UpdateCount;
 import ru.tinkoff.kora.database.common.annotation.Batch;
 import ru.tinkoff.kora.database.common.annotation.Query;
 import ru.tinkoff.kora.database.jdbc.JdbcRepository;
 
-import java.util.List;
-import java.util.Optional;
-
 public interface AbstractJdbcCrudRepository<K, V> extends JdbcRepository {
-
-    @Query("SELECT %{return#selects} FROM %{return#table} WHERE %{id#where}")
-    Optional<V> findById(K id);
 
     @Query("SELECT %{return#selects} FROM %{return#table}")
     List<V> findAll();

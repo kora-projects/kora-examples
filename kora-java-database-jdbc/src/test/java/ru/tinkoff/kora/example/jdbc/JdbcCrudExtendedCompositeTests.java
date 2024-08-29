@@ -1,20 +1,19 @@
 package ru.tinkoff.kora.example.jdbc;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.jdbc.ConnectionPostgreSQL;
 import io.goodforgod.testcontainers.extensions.jdbc.JdbcConnection;
 import io.goodforgod.testcontainers.extensions.jdbc.Migration;
 import io.goodforgod.testcontainers.extensions.jdbc.TestcontainersPostgreSQL;
+import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @TestcontainersPostgreSQL(
         mode = ContainerMode.PER_RUN,
