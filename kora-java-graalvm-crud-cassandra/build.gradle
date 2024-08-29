@@ -48,7 +48,7 @@ dependencies {
     implementation "ru.tinkoff.kora:openapi-management"
     implementation "ru.tinkoff.kora:logging-logback"
 
-    implementation "io.projectreactor:reactor-core:3.6.3" // For reactive examples (optional)
+    implementation "io.projectreactor:reactor-core:3.6.5" // For reactive examples (optional)
     implementation "org.mapstruct:mapstruct:1.5.5.Final"
 
     testImplementation "org.json:json:20231013"
