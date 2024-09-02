@@ -3,15 +3,14 @@ plugins {
     id "jacoco"
     id "application"
 
-    id "com.github.bjornvester.wsdl2java" version "2.0.2"
-    id "com.github.johnrengelman.shadow" version "8.1.1"
-}
+    id "com.github.bjornvester.wsdl2java" version "2.0.2"}
 
 repositories {
     mavenLocal()
     mavenCentral()
 }
 
+applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.soap.client.Application"
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -92,18 +91,8 @@ wsdl2java {
     ]
 }
 
-jar.enabled = false
-shadowJar {
-    mergeServiceFiles()
-    manifest {
-        attributes "Main-Class": mainClassName
-        attributes "Implementation-Version": koraVersion
-    }
-}
-
-
-artifacts {
-    archives shadowJar
+distTar {
+    archiveFileName = "application.tar"
 }
 
 compileJava {

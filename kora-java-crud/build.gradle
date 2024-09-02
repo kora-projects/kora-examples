@@ -12,7 +12,6 @@ plugins {
     id "application"
 
     id "org.openapi.generator" version "7.4.0"
-    id "com.github.johnrengelman.shadow" version "8.1.1"
     id "org.flywaydb.flyway" version "8.4.2"
 }
 
@@ -21,6 +20,7 @@ repositories {
     mavenCentral()
 }
 
+applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.crud.Application"
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -75,7 +75,11 @@ openApiGenerate {
 }
 
 compileJava.dependsOn tasks.openApiGenerate
-test.dependsOn tasks.shadowJar
+test.dependsOn tasks.distTar
+
+application {
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+}
 
 //noinspection GroovyAssignabilityCheck
 run {
@@ -126,17 +130,8 @@ flyway {
     locations = ["classpath:db/migration"]
 }
 
-jar.enabled = false
-shadowJar {
-    mergeServiceFiles()
-    manifest {
-        attributes "Main-Class": mainClassName
-        attributes "Implementation-Version": koraVersion
-    }
-}
-
-artifacts {
-    archives shadowJar
+distTar {
+    archiveFileName = "application.tar"
 }
 
 compileJava {

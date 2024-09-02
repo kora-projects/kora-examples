@@ -2,8 +2,6 @@ plugins {
     id "java"
     id "jacoco"
     id "application"
-
-    id "com.github.johnrengelman.shadow" version "8.1.1"
 }
 
 repositories {
@@ -11,6 +9,7 @@ repositories {
     mavenCentral()
 }
 
+applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.config.hocon.Application"
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -33,7 +32,11 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:1.17.6"
 }
 
-test.dependsOn tasks.shadowJar
+test.dependsOn tasks.distTar
+
+application {
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+}
 
 run {
     environment([
@@ -68,18 +71,8 @@ test {
     }
 }
 
-jar.enabled = false
-shadowJar {
-    mergeServiceFiles()
-    manifest {
-        attributes "Main-Class": mainClassName
-        attributes "Implementation-Version": koraVersion
-    }
-}
-
-
-artifacts {
-    archives shadowJar
+distTar {
+    archiveFileName = "application.tar"
 }
 
 compileJava {

@@ -10,7 +10,6 @@ plugins {
     id "application"
 
     id "org.openapi.generator" version "7.4.0"
-    id "com.github.johnrengelman.shadow" version "8.1.1"
     id "org.graalvm.buildtools.native" version "0.10.1"
 }
 
@@ -19,6 +18,7 @@ repositories {
     mavenCentral()
 }
 
+applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.graalvm.crud.cassandra.Application"
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -94,7 +94,11 @@ graalvmNative {
 
 compileJava.dependsOn tasks.openApiGenerate
 processResources.dependsOn tasks.collectReachabilityMetadata
-test.dependsOn tasks.shadowJar
+test.dependsOn tasks.distTar
+
+application {
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+}
 
 //noinspection GroovyAssignabilityCheck
 run {
@@ -144,17 +148,8 @@ sourceSets {
     }
 }
 
-jar.enabled = false
-shadowJar {
-    mergeServiceFiles()
-    manifest {
-        attributes "Main-Class": mainClassName
-        attributes "Implementation-Version": koraVersion
-    }
-}
-
-artifacts {
-    archives shadowJar
+distTar {
+    archiveFileName = "application.tar"
 }
 
 compileJava {

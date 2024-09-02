@@ -3,15 +3,14 @@ plugins {
     id "jacoco"
     id "application"
 
-    id "com.google.protobuf" version "0.9.4"
-    id "com.github.johnrengelman.shadow" version "8.1.1"
-}
+    id "com.google.protobuf" version "0.9.4"}
 
 repositories {
     mavenLocal()
     mavenCentral()
 }
 
+applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.grpc.server.Application"
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -58,7 +57,11 @@ run {
 }
 
 test.dependsOn tasks.generateProto
-test.dependsOn tasks.shadowJar
+test.dependsOn tasks.distTar
+
+application {
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+}
 
 test {
     jvmArgs += [
@@ -96,17 +99,8 @@ sourceSets {
     }
 }
 
-jar.enabled = false
-shadowJar {
-    mergeServiceFiles()
-    manifest {
-        attributes "Main-Class": mainClassName
-        attributes "Implementation-Version": koraVersion
-    }
-}
-
-artifacts {
-    archives shadowJar
+distTar {
+    archiveFileName = "application.tar"
 }
 
 compileJava {
