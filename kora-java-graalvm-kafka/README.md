@@ -13,7 +13,7 @@
 Собрать артефакт:
 
 ```shell
-./gradlew shadowJar
+./gradlew distTar
 docker build -t kora-java-graalvm-kafka .
 ```
 
