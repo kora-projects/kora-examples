@@ -108,6 +108,9 @@ sourceSets {
 distTar {
     archiveFileName = "application.tar"
 }
+distZip {
+    archiveFileName = "application.zip"
+}
 
 compileJava {
     options.encoding("UTF-8")
