@@ -35,6 +35,10 @@ dependencies {
     testImplementation "redis.clients:jedis:4.4.3"
 }
 
+application {
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+}
+
 //noinspection GroovyAssignabilityCheck
 run {
     environment([

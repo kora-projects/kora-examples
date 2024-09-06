@@ -34,6 +34,10 @@ dependencies {
     testImplementation "org.awaitility:awaitility:4.2.0"
 }
 
+application {
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+}
+
 //noinspection GroovyAssignabilityCheck
 run {
     environment([

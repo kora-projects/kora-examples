@@ -38,6 +38,10 @@ dependencies {
     testImplementation "org.postgresql:postgresql:42.7.2"
 }
 
+application {
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+}
+
 //noinspection GroovyAssignabilityCheck
 run {
     environment([

@@ -49,18 +49,18 @@ protobuf {
     }
 }
 
-//noinspection GroovyAssignabilityCheck
-run {
-    environment([
-            "": "",
-    ])
-}
-
 test.dependsOn tasks.generateProto
 test.dependsOn tasks.distTar
 
 application {
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+}
+
+//noinspection GroovyAssignabilityCheck
+run {
+    environment([
+            "": "",
+    ])
 }
 
 test {

@@ -86,6 +86,13 @@ application {
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 
+//noinspection GroovyAssignabilityCheck
+run {
+    environment([
+            "": ""
+    ])
+}
+
 test {
     jvmArgs += [
             "-XX:+TieredCompilation",

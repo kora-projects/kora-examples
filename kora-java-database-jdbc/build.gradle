@@ -36,6 +36,10 @@ dependencies {
     testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.11.0"
 }
 
+application {
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+}
+
 //noinspection GroovyAssignabilityCheck
 run {
     environment([

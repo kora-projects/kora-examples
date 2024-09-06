@@ -33,6 +33,10 @@ dependencies {
     testImplementation "ru.tinkoff.kora:test-junit5"
 }
 
+application {
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+}
+
 //noinspection GroovyAssignabilityCheck
 run {
     environment([

@@ -82,6 +82,10 @@ tasks.register('openApiGeneratePetV3', GenerateTask) {
 compileJava.dependsOn tasks.openApiGenerate
 compileJava.dependsOn tasks.openApiGeneratePetV3
 
+application {
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+}
+
 //noinspection GroovyAssignabilityCheck
 run {
     environment([

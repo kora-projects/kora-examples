@@ -38,6 +38,7 @@ application {
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 
+//noinspection GroovyAssignabilityCheck
 run {
     environment([
             "ENV_VALUE_REQUIRED": "valueRequired"
