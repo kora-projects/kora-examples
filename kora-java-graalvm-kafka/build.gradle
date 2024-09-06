@@ -2,6 +2,8 @@ plugins {
     id "java"
     id "jacoco"
     id "application"
+
+    id "com.github.johnrengelman.shadow" version "8.1.1"
     id "org.graalvm.buildtools.native" version "0.10.1"
 }
 
@@ -59,6 +61,7 @@ graalvmNative {
 }
 
 processResources.dependsOn tasks.collectReachabilityMetadata
+test.dependsOn tasks.shadowJar
 test.dependsOn tasks.distTar
 
 application {
@@ -108,8 +111,17 @@ sourceSets {
 distTar {
     archiveFileName = "application.tar"
 }
-distZip {
-    archiveFileName = "application.zip"
+
+shadowJar {
+    mergeServiceFiles()
+    manifest {
+        attributes "Main-Class": mainClassName
+        attributes "Implementation-Version": koraVersion
+    }
+}
+
+artifacts {
+    archives shadowJar
 }
 
 compileJava {

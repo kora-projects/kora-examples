@@ -21,7 +21,7 @@
 Собрать артефакт:
 
 ```shell
-./gradlew distTar
+./gradlew shadowJar
 docker build -t kora-java-graalvm-crud-r2dbc .
 ```
 

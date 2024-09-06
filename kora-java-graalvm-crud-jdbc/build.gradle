@@ -11,6 +11,7 @@ plugins {
 
     id "org.openapi.generator" version "7.4.0"
     id "org.flywaydb.flyway" version "8.4.2"
+    id "com.github.johnrengelman.shadow" version "8.1.1"
     id "org.graalvm.buildtools.native" version "0.10.1"
 }
 
@@ -152,8 +153,17 @@ flyway {
 distTar {
     archiveFileName = "application.tar"
 }
-distZip {
-    archiveFileName = "application.zip"
+
+shadowJar {
+    mergeServiceFiles()
+    manifest {
+        attributes "Main-Class": mainClassName
+        attributes "Implementation-Version": koraVersion
+    }
+}
+
+artifacts {
+    archives shadowJar
 }
 
 compileJava {

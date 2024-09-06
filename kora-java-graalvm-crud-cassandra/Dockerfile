@@ -1,12 +1,12 @@
 FROM ghcr.io/graalvm/native-image-community:21 as builder
 
 ARG TARGET_DIR=/opt/app
-ARG SOURCE_DIR=build/distributions
+ARG SOURCE_DIR=build/libs
 WORKDIR $TARGET_DIR
 
-COPY $SOURCE_DIR/*.zip application.zip
+COPY $SOURCE_DIR/*.jar $TARGET_DIR/application.jar
 
-RUN native-image --no-fallback -classpath $TARGET_DIR/application.zip
+RUN native-image --no-fallback -classpath $TARGET_DIR/application.jar
 
 FROM ubuntu:noble-20240212 as runner
 
