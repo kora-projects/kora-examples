@@ -15,11 +15,6 @@ plugins {
     id "org.flywaydb.flyway" version "8.4.2"
 }
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
 applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.crud.Application"
 

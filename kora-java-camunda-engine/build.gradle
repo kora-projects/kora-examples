@@ -4,11 +4,6 @@ plugins {
     id "application"
 }
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
 applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.camunda.engine.Application"
 
