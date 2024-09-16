@@ -4,7 +4,7 @@ ARG TARGET_DIR=/opt/app
 ARG SOURCE_DIR=build/libs
 WORKDIR $TARGET_DIR
 
-COPY $SOURCE_DIR/*.jar $TARGET_DIR/application.jar
+COPY $SOURCE_DIR/*-all.jar $TARGET_DIR/application.jar
 
 RUN native-image --no-fallback -classpath $TARGET_DIR/application.jar
 

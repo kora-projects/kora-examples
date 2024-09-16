@@ -96,7 +96,7 @@ graalvmNative {
 
 compileJava.dependsOn tasks.openApiGenerate
 processResources.dependsOn tasks.collectReachabilityMetadata
-test.dependsOn tasks.distTar
+test.dependsOn tasks.shadowJar
 
 application {
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]

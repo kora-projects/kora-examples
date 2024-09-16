@@ -62,7 +62,7 @@ graalvmNative {
 
 processResources.dependsOn tasks.collectReachabilityMetadata
 test.dependsOn tasks.shadowJar
-test.dependsOn tasks.distTar
+test.dependsOn tasks.shadowJar
 
 application {
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
