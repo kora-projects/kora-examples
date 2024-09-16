@@ -1,11 +1,10 @@
 package ru.tinkoff.kora.example.jdbc;
 
 import jakarta.annotation.Nullable;
+import java.util.Optional;
 import ru.tinkoff.kora.database.common.UpdateCount;
 import ru.tinkoff.kora.database.common.annotation.*;
 import ru.tinkoff.kora.example.jdbc.JdbcCrudExtendedRepository.Entity;
-
-import java.util.Optional;
 
 @Repository
 public interface JdbcCrudExtendedRepository extends AbstractJdbcCrudRepository<String, Entity> {

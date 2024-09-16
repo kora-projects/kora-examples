@@ -10,11 +10,12 @@ repositories {
 }
 
 application {
+    applicationName = "application"
     mainClass.set("ru.tinkoff.kora.kotlin.example.helloworld.ApplicationKt")
 }
 
 kotlin {
-    jvmToolchain { languageVersion.set(JavaLanguageVersion.of("17")) }
+    jvmToolchain { languageVersion.set(JavaLanguageVersion.of(17)) }
     sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
     sourceSets.test { kotlin.srcDir("build/generated/ksp/test/kotlin") }
 }
@@ -46,19 +47,11 @@ dependencies {
 }
 
 tasks.named("test") {
-    dependsOn("jar")
+    dependsOn("distTar")
 }
 
-tasks.jar {
-    manifest {
-        attributes["Main-Class"] = "ru.tinkoff.kora.kotlin.example.helloworld.ApplicationKt"
-    }
-    val dependencies = configurations
-        .runtimeClasspath
-        .get()
-        .map { zipTree(it) }
-    from(dependencies)
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+tasks.distTar {
+    archiveFileName.set("application.tar")
 }
 
 tasks.test {

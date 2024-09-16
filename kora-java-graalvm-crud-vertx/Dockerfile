@@ -1,19 +1,19 @@
 FROM ghcr.io/graalvm/native-image-community:21 as builder
 
-ARG APP_DIR=/opt/application
-ARG JAR_DIR=build/libs
-WORKDIR $APP_DIR
+ARG TARGET_DIR=/opt/app
+ARG SOURCE_DIR=build/libs
+WORKDIR $TARGET_DIR
 
-ADD $JAR_DIR/*.jar $APP_DIR/application.jar
+COPY $SOURCE_DIR/*-all.jar $TARGET_DIR/application.jar
 
-RUN native-image --no-fallback -classpath $APP_DIR/application.jar
+RUN native-image --no-fallback -classpath $TARGET_DIR/application.jar
 
 FROM ubuntu:noble-20240212 as runner
 
-ARG APP_DIR=/opt/application
-WORKDIR $APP_DIR
+ARG TARGET_DIR=/opt/app
+WORKDIR $TARGET_DIR
 
-COPY --from=builder $APP_DIR/application $APP_DIR/application
+COPY --from=builder $TARGET_DIR/application $TARGET_DIR/application
 
 ARG DOCKER_USER=app
 RUN groupadd -r $DOCKER_USER && useradd -rg $DOCKER_USER $DOCKER_USER
@@ -22,4 +22,4 @@ USER $DOCKER_USER
 
 EXPOSE 8080/tcp
 EXPOSE 8085/tcp
-CMD "/opt/application/application"
+CMD "/opt/app/application"

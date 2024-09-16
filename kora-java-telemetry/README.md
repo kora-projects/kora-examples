@@ -12,7 +12,7 @@
 Собрать артефакт:
 
 ```shell
-./gradlew shadowJar
+./gradlew distTar
 ```
 
 ## Run

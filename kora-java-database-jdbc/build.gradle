@@ -2,8 +2,6 @@ plugins {
     id "java"
     id "jacoco"
     id "application"
-
-    id "com.github.johnrengelman.shadow" version "8.1.1"
 }
 
 repositories {
@@ -11,6 +9,7 @@ repositories {
     mavenCentral()
 }
 
+applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.jdbc.Application"
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -35,6 +34,10 @@ dependencies {
 
     testImplementation "ru.tinkoff.kora:test-junit5"
     testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.11.0"
+}
+
+application {
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 
 //noinspection GroovyAssignabilityCheck
@@ -73,18 +76,8 @@ test {
     }
 }
 
-jar.enabled = false
-shadowJar {
-    mergeServiceFiles()
-    manifest {
-        attributes "Main-Class": mainClassName
-        attributes "Implementation-Version": koraVersion
-    }
-}
-
-
-artifacts {
-    archives shadowJar
+distTar {
+    archiveFileName = "application.tar"
 }
 
 compileJava {

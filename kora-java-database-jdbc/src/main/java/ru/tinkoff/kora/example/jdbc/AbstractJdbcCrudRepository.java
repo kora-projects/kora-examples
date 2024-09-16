@@ -1,7 +1,6 @@
 package ru.tinkoff.kora.example.jdbc;
 
 import java.util.List;
-import java.util.Optional;
 import ru.tinkoff.kora.database.common.UpdateCount;
 import ru.tinkoff.kora.database.common.annotation.Batch;
 import ru.tinkoff.kora.database.common.annotation.Query;
