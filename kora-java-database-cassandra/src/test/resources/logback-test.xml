@@ -20,5 +20,6 @@
     <logger level="DEBUG" name="ru.tinkoff.kora.example"/>
 
     <logger level="DEBUG" name="org.testcontainers.containers"/>
+    <logger level="WARN" name="org.testcontainers.containers.CassandraContainer"/>
     <logger level="DEBUG" name="io.goodforgod.testcontainers.extensions"/>
 </configuration>

@@ -22,11 +22,12 @@ repositories {
 }
 
 application {
+    applicationName = "application"
     mainClass.set("ru.tinkoff.kora.kotlin.example.crud.ApplicationKt")
 }
 
 kotlin {
-    jvmToolchain { languageVersion.set(JavaLanguageVersion.of("17")) }
+    jvmToolchain { languageVersion.set(JavaLanguageVersion.of(17)) }
     sourceSets.main { kotlin.srcDir("build/generated/openapi") }
     sourceSets.main { kotlin.srcDir("build/generated/source/kapt/main") }
     sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
@@ -96,7 +97,7 @@ tasks.withType<KotlinCompile>().configureEach {
     dependsOn(tasks.named("openApiGenerateHttpServer"))
 }
 tasks.named("test") {
-    dependsOn("jar")
+    dependsOn("distTar")
 }
 
 val postgresHost: String by project
@@ -112,16 +113,8 @@ tasks.withType<JavaExec> {
     )
 }
 
-tasks.jar {
-    manifest {
-        attributes["Main-Class"] = "ru.tinkoff.kora.kotlin.example.crud.ApplicationKt"
-    }
-    val dependencies = configurations
-        .runtimeClasspath
-        .get()
-        .map { zipTree(it) }
-    from(dependencies)
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+tasks.distTar {
+    archiveFileName.set("application.tar")
 }
 
 tasks.test {

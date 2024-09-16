@@ -2,8 +2,6 @@ plugins {
     id "java"
     id "jacoco"
     id "application"
-
-    id "com.github.johnrengelman.shadow" version "8.1.1"
 }
 
 repositories {
@@ -11,6 +9,7 @@ repositories {
     mavenCentral()
 }
 
+applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.s3.aws.Application"
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -37,6 +36,10 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
     testImplementation "org.testcontainers:minio:1.19.8"
     testImplementation "ru.tinkoff.kora:test-junit5"
+}
+
+application {
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 
 //noinspection GroovyAssignabilityCheck
@@ -73,19 +76,8 @@ test {
     }
 }
 
-jar.enabled = true
-shadowJar {
-    mergeServiceFiles()
-    manifest {
-        attributes "Main-Class": mainClassName
-        attributes "Implementation-Version": koraVersion
-        attributes "Build-Time": java.time.OffsetDateTime.now()
-    }
-}
-
-
-artifacts {
-    archives shadowJar
+distTar {
+    archiveFileName = "application.tar"
 }
 
 compileJava {
