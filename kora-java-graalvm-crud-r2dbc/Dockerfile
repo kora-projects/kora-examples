@@ -22,4 +22,4 @@ USER $DOCKER_USER
 
 EXPOSE 8080/tcp
 EXPOSE 8085/tcp
-CMD "/opt/application/application"
+CMD "/opt/app/application"

@@ -12,7 +12,6 @@ repositories {
     mavenCentral()
 }
 
-applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.graalvm.kafka.Application"
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -64,10 +63,6 @@ processResources.dependsOn tasks.collectReachabilityMetadata
 test.dependsOn tasks.shadowJar
 test.dependsOn tasks.shadowJar
 
-application {
-    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
-}
-
 //noinspection GroovyAssignabilityCheck
 run {
     environment([
@@ -108,10 +103,7 @@ sourceSets {
     }
 }
 
-distTar {
-    archiveFileName = "application.tar"
-}
-
+jar.enabled = false
 shadowJar {
     mergeServiceFiles()
     manifest {

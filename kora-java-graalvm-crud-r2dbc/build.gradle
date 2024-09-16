@@ -20,7 +20,6 @@ repositories {
     mavenCentral()
 }
 
-applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.graalvm.crud.r2dbc.Application"
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -98,10 +97,6 @@ compileJava.dependsOn tasks.openApiGenerate
 processResources.dependsOn tasks.collectReachabilityMetadata
 test.dependsOn tasks.shadowJar
 
-application {
-    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
-}
-
 //noinspection GroovyAssignabilityCheck
 run {
     environment([
@@ -152,10 +147,7 @@ flyway {
     locations = ["classpath:db/migration"]
 }
 
-distTar {
-    archiveFileName = "application.tar"
-}
-
+jar.enabled = false
 shadowJar {
     mergeServiceFiles()
     manifest {
