@@ -2,8 +2,6 @@ plugins {
     id "java"
     id "jacoco"
     id "application"
-
-    id "com.github.johnrengelman.shadow" version "8.1.1"
 }
 
 repositories {
@@ -11,6 +9,7 @@ repositories {
     mavenCentral()
 }
 
+applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.camunda.engine.Application"
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -27,8 +26,8 @@ dependencies {
     annotationProcessor "ru.tinkoff.kora:annotation-processors"
 
     implementation "ru.tinkoff.kora:http-server-undertow"
-    implementation "ru.tinkoff.kora:camunda-engine"
-    implementation "ru.tinkoff.kora:camunda-rest-undertow"
+    implementation "ru.tinkoff.kora.experimental:camunda-engine"
+    implementation "ru.tinkoff.kora.experimental:camunda-rest-undertow"
     implementation "ru.tinkoff.kora:json-module"
     implementation "org.postgresql:postgresql:42.6.0"
     implementation "ru.tinkoff.kora:database-jdbc"
@@ -38,10 +37,16 @@ dependencies {
 
     testImplementation "org.mockito:mockito-core:5.7.0"
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.9.6"
+    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.11.0"
     testRuntimeOnly "com.h2database:h2:2.2.224"
     testImplementation "org.camunda.bpm:camunda-bpm-assert:7.21.0"
     testImplementation "org.assertj:assertj-core:3.26.0"
+}
+
+test.dependsOn tasks.distTar
+
+application {
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 
 //noinspection GroovyAssignabilityCheck
@@ -80,18 +85,8 @@ test {
     }
 }
 
-jar.enabled = false
-shadowJar {
-    mergeServiceFiles()
-    manifest {
-        attributes "Main-Class": mainClassName
-        attributes "Implementation-Version": koraVersion
-    }
-}
-
-
-artifacts {
-    archives shadowJar
+distTar {
+    archiveFileName = "application.tar"
 }
 
 compileJava {
