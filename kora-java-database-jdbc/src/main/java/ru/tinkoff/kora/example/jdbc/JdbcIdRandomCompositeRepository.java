@@ -10,7 +10,6 @@ import ru.tinkoff.kora.database.jdbc.JdbcRepository;
 @Repository
 public interface JdbcIdRandomCompositeRepository extends JdbcRepository {
 
-    @Table("entities")
     record Entity(@Id @Embedded EntityId id,
                   @Column("name") String name) {
 
