@@ -68,7 +68,7 @@ class JdbcIdSequenceCompositeTests implements KoraAppTestConfigModifier {
         }
 
         // then
-        var foundCreated = repository.findByIdMacros(ids.get(0));
+        var foundCreated = repository.findById(ids.get(0));
         assertNotNull(foundCreated);
         assertEquals(entities.get(0).name(), foundCreated.name());
     }

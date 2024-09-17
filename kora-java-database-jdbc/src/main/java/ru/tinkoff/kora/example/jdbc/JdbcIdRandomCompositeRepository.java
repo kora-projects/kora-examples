@@ -10,6 +10,7 @@ import ru.tinkoff.kora.database.jdbc.JdbcRepository;
 @Repository
 public interface JdbcIdRandomCompositeRepository extends JdbcRepository {
 
+    @Table("entities")
     record Entity(@Id @Embedded EntityId id,
                   @Column("name") String name) {
 
@@ -23,10 +24,6 @@ public interface JdbcIdRandomCompositeRepository extends JdbcRepository {
     @Query("SELECT * FROM entities_composite_uuid WHERE a = :id.a AND b = :id.b")
     @Nullable
     Entity findById(Entity.EntityId id);
-
-    @Query("SELECT %{return#selects} FROM %{return#table} WHERE %{id#where}")
-    @Nullable
-    Entity findByIdMacros(Entity.EntityId id);
 
     @Query("""
             INSERT INTO entities_composite_uuid(a, b, name)

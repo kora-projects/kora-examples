@@ -62,7 +62,7 @@ class JdbcIdRandomCompositeTests implements KoraAppTestConfigModifier {
         var countMany = repository.insert(entities);
         assertEquals(2, countMany.value());
 
-        var foundCreated = repository.findByIdMacros(entities.get(0).id());
+        var foundCreated = repository.findById(entities.get(0).id());
         assertNotNull(foundCreated);
         assertEquals(entities.get(0).name(), foundCreated.name());
     }

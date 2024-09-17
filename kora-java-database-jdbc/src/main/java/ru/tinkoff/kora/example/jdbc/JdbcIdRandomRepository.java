@@ -22,10 +22,6 @@ public interface JdbcIdRandomRepository extends JdbcRepository {
     @Nullable
     Entity findById(UUID id);
 
-    @Query("SELECT %{return#selects} FROM %{return#table} WHERE %{id#where}")
-    @Nullable
-    Entity findByIdMacros(String id);
-
     @Query("""
             INSERT INTO entities_uuid(id, name)
             VALUES (:entity.id, :entity.name)
