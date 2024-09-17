@@ -7,11 +7,6 @@ plugins {
     id "org.graalvm.buildtools.native" version "0.10.1"
 }
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
 mainClassName = "ru.tinkoff.kora.example.graalvm.kafka.Application"
 
 sourceCompatibility = JavaVersion.VERSION_17

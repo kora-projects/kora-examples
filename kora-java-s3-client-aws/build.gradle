@@ -4,11 +4,6 @@ plugins {
     id "application"
 }
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
 applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.s3.aws.Application"
 
@@ -83,7 +78,7 @@ distTar {
 compileJava {
     options.encoding("UTF-8")
     options.incremental(true)
-    options.fork = true
+    options.fork = false
 }
 
 check.dependsOn jacocoTestReport

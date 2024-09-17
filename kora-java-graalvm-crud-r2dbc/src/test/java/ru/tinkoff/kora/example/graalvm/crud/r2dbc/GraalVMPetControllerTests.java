@@ -27,7 +27,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
                 engine = Migration.Engines.FLYWAY,
                 apply = Migration.Mode.PER_METHOD,
                 drop = Migration.Mode.PER_METHOD))
-class PetControllerTests {
+class GraalVMPetControllerTests {
 
     private static final AppContainer container = AppContainer.build()
             .withNetwork(org.testcontainers.containers.Network.SHARED);

@@ -13,11 +13,6 @@ plugins {
 
     id "org.openapi.generator" version "7.4.0"}
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
 applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.openapi.http.server.Application"
 

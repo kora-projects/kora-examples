@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
         network = @Network(shared = true),
         mode = ContainerMode.PER_RUN,
         topics = @Topics({ "tasks", "users" }))
-class UserListenerTests {
+class GraalVMUserListenerTests {
 
     private static final AppContainer container = AppContainer.build()
             .withNetwork(org.testcontainers.containers.Network.SHARED);
