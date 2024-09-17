@@ -1,5 +1,7 @@
 package ru.tinkoff.kora.example.camunda.engine;
 
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.repository.ResourceDefinition;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
@@ -10,16 +12,12 @@ import ru.tinkoff.kora.http.common.annotation.HttpRoute;
 import ru.tinkoff.kora.http.server.common.annotation.HttpController;
 import ru.tinkoff.kora.json.common.annotation.Json;
 
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 @Component
 @HttpController("/camunda")
 public final class CamundaController {
 
     @Json
-    public record CamundaProcess(String instanceId, String businessKey) {
-    }
+    public record CamundaProcess(String instanceId, String businessKey) {}
 
     private final ProcessEngine processEngine;
 

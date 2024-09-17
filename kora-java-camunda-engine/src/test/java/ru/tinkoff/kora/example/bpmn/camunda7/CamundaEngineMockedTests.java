@@ -1,5 +1,12 @@
 package ru.tinkoff.kora.example.bpmn.camunda7;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.ProcessEngineConfiguration;
 import org.camunda.bpm.engine.impl.test.ProcessEngineAssert;
@@ -11,25 +18,17 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
-import ru.tinkoff.kora.camunda.engine.bpmn.CamundaDataSource;
+import ru.tinkoff.kora.camunda.engine.bpmn.CamundaEngineDataSource;
 import ru.tinkoff.kora.example.camunda.engine.Application;
 import ru.tinkoff.kora.example.camunda.engine.helloworld.LoggerDelegate;
 import ru.tinkoff.kora.test.extension.junit5.*;
-
-import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @KoraAppTest(Application.class)
 class CamundaEngineMockedTests implements KoraAppTestGraphModifier, KoraAppTestConfigModifier {
 
     @Mock
     @TestComponent
-    private CamundaDataSource mockDataSource;
+    private CamundaEngineDataSource mockDataSource;
     @TestComponent
     private ProcessEngine processEngine;
 
@@ -61,7 +60,8 @@ class CamundaEngineMockedTests implements KoraAppTestGraphModifier, KoraAppTestC
         assertNotNull(instance.getId());
 
         BpmnAwareTests.assertThat(instance).isWaitingAt("ApproveOrderUserTaskId");
-        assertDoesNotThrow(() -> processEngine.getRuntimeService().correlateMessage("MessageCustomerCancellation", instance.getBusinessKey()));
+        assertDoesNotThrow(() -> processEngine.getRuntimeService().correlateMessage("MessageCustomerCancellation",
+                instance.getBusinessKey()));
         ProcessEngineAssert.assertProcessEnded(processEngine, instance.getProcessInstanceId());
     }
 
@@ -72,7 +72,8 @@ class CamundaEngineMockedTests implements KoraAppTestGraphModifier, KoraAppTestC
         assertNotNull(instance.getId());
 
         BpmnAwareTests.assertThat(instance).isWaitingAt("ApproveOrderUserTaskId");
-        final List<Task> tasks = processEngine.getTaskService().createTaskQuery().processInstanceId(instance.getProcessInstanceId()).active().list();
+        final List<Task> tasks = processEngine.getTaskService().createTaskQuery()
+                .processInstanceId(instance.getProcessInstanceId()).active().list();
         processEngine.getFormService().submitTaskForm(tasks.get(0).getId(), Map.of("approved", true));
 
         Awaitility.waitAtMost(Duration.ofSeconds(10)).until(() -> {

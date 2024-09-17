@@ -1,5 +1,6 @@
 package ru.tinkoff.kora.example.bpmn.camunda7;
 
+import java.util.ArrayList;
 import org.camunda.bpm.engine.ArtifactFactory;
 import org.camunda.bpm.engine.ProcessEngineConfiguration;
 import org.camunda.bpm.engine.impl.cfg.IdGenerator;
@@ -8,8 +9,6 @@ import org.camunda.bpm.engine.impl.el.JuelExpressionManager;
 import org.camunda.bpm.engine.impl.jobexecutor.JobExecutor;
 import ru.tinkoff.kora.camunda.engine.bpmn.KoraResolverFactory;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppGraph;
-
-import java.util.ArrayList;
 
 public class KoraAppTestInMemoryProcessEngineConfiguration extends StandaloneInMemProcessEngineConfiguration {
 

@@ -1,5 +1,6 @@
 package ru.tinkoff.kora.example.camunda.engine.onboarding;
 
+import java.util.Map;
 import org.camunda.bpm.engine.FormService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
@@ -9,8 +10,6 @@ import ru.tinkoff.kora.http.common.HttpMethod;
 import ru.tinkoff.kora.http.common.annotation.HttpRoute;
 import ru.tinkoff.kora.http.common.annotation.Path;
 import ru.tinkoff.kora.http.server.common.annotation.HttpController;
-
-import java.util.Map;
 
 @Component
 @HttpController("/camunda/process/onboarding")
