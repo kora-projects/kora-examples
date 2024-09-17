@@ -1,7 +1,7 @@
 package ru.tinkoff.kora.example.camunda.engine;
 
 import ru.tinkoff.kora.application.graph.KoraApplication;
-import ru.tinkoff.kora.camunda.engine.CamundaEngineModule;
+import ru.tinkoff.kora.camunda.engine.bpmn.CamundaEngineBpmnModule;
 import ru.tinkoff.kora.camunda.rest.undertow.CamundaRestUndertowModule;
 import ru.tinkoff.kora.common.KoraApp;
 import ru.tinkoff.kora.config.hocon.HoconConfigModule;
@@ -16,7 +16,7 @@ public interface Application extends
         LogbackModule,
         JsonModule,
         UndertowHttpServerModule,
-        CamundaEngineModule,
+        CamundaEngineBpmnModule,
         CamundaRestUndertowModule,
         JdbcDatabaseModule {
 

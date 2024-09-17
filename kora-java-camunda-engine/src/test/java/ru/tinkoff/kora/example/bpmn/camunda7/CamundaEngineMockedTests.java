@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
-import ru.tinkoff.kora.camunda.engine.CamundaDataSource;
+import ru.tinkoff.kora.camunda.engine.bpmn.CamundaDataSource;
 import ru.tinkoff.kora.example.camunda.engine.Application;
 import ru.tinkoff.kora.example.camunda.engine.helloworld.LoggerDelegate;
 import ru.tinkoff.kora.test.extension.junit5.*;
@@ -41,7 +41,7 @@ class CamundaEngineMockedTests implements KoraAppTestGraphModifier, KoraAppTestC
     @Override
     public KoraConfigModification config() {
         return KoraConfigModification.ofString("""
-                camunda.engine {
+                camunda.engine.bpmn {
                   deployment.resources = "classpath:bpm"
                 }
                 """);

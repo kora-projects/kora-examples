@@ -6,7 +6,7 @@ import org.camunda.bpm.engine.impl.cfg.IdGenerator;
 import org.camunda.bpm.engine.impl.cfg.StandaloneInMemProcessEngineConfiguration;
 import org.camunda.bpm.engine.impl.el.JuelExpressionManager;
 import org.camunda.bpm.engine.impl.jobexecutor.JobExecutor;
-import ru.tinkoff.kora.camunda.engine.KoraResolverFactory;
+import ru.tinkoff.kora.camunda.engine.bpmn.KoraResolverFactory;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppGraph;
 
 import java.util.ArrayList;

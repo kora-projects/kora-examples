@@ -21,7 +21,7 @@ dependencies {
     annotationProcessor "ru.tinkoff.kora:annotation-processors"
 
     implementation "ru.tinkoff.kora:http-server-undertow"
-    implementation "ru.tinkoff.kora.experimental:camunda-engine"
+    implementation "ru.tinkoff.kora.experimental:camunda-engine-bpmn"
     implementation "ru.tinkoff.kora.experimental:camunda-rest-undertow"
     implementation "ru.tinkoff.kora:json-module"
     implementation "org.postgresql:postgresql:42.6.0"
