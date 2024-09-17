@@ -1,16 +1,13 @@
-package ru.tinkoff.kora.example.graalvm.crud.cassandra;
+package ru.tinkoff.kora.example.graalvm.crud.vertx;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.Network;
-import io.goodforgod.testcontainers.extensions.cassandra.CassandraConnection;
-import io.goodforgod.testcontainers.extensions.cassandra.ConnectionCassandra;
-import io.goodforgod.testcontainers.extensions.cassandra.Migration;
-import io.goodforgod.testcontainers.extensions.cassandra.TestcontainersCassandra;
-import io.goodforgod.testcontainers.extensions.redis.ConnectionRedis;
-import io.goodforgod.testcontainers.extensions.redis.RedisConnection;
-import io.goodforgod.testcontainers.extensions.redis.TestcontainersRedis;
+import io.goodforgod.testcontainers.extensions.jdbc.ConnectionPostgreSQL;
+import io.goodforgod.testcontainers.extensions.jdbc.JdbcConnection;
+import io.goodforgod.testcontainers.extensions.jdbc.Migration;
+import io.goodforgod.testcontainers.extensions.jdbc.TestcontainersPostgreSQL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -23,41 +20,30 @@ import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-@TestcontainersCassandra(
+@TestcontainersPostgreSQL(
         network = @Network(shared = true),
         mode = ContainerMode.PER_RUN,
         migration = @Migration(
-                locations = "migrations",
-                engine = Migration.Engines.SCRIPTS,
+                engine = Migration.Engines.FLYWAY,
                 apply = Migration.Mode.PER_METHOD,
                 drop = Migration.Mode.PER_METHOD))
-@TestcontainersRedis(
-        network = @Network(shared = true),
-        mode = ContainerMode.PER_RUN)
-class PetControllerTests {
+class GraalVMPetControllerTests {
 
     private static final AppContainer container = AppContainer.build()
             .withNetwork(org.testcontainers.containers.Network.SHARED);
 
-    @ConnectionCassandra
-    private CassandraConnection connection;
+    @ConnectionPostgreSQL
+    private JdbcConnection connection;
 
     @BeforeEach
-    public void setup(@ConnectionCassandra CassandraConnection cassandraConnection,
-                      @ConnectionRedis RedisConnection redisConnection) {
+    public void setup(@ConnectionPostgreSQL JdbcConnection connection) {
         if (!container.isRunning()) {
-            var paramsCassandra = cassandraConnection.paramsInNetwork().orElseThrow();
-            var paramsRedis = redisConnection.paramsInNetwork().orElseThrow();
+            var params = connection.paramsInNetwork().orElseThrow();
             container.withEnv(Map.of(
-                    "CASSANDRA_CONTACT_POINTS", paramsCassandra.contactPoint(),
-                    "CASSANDRA_USER", paramsCassandra.username(),
-                    "CASSANDRA_PASS", paramsCassandra.password(),
-                    "CASSANDRA_DC", paramsCassandra.datacenter(),
-                    "CASSANDRA_KEYSPACE", paramsCassandra.keyspace(),
-                    "CACHE_EXPIRE_WRITE", "0s",
-                    "REDIS_URL", paramsRedis.uri().toString(),
-                    "REDIS_USER", paramsRedis.username(),
-                    "REDIS_PASS", paramsRedis.password()));
+                    "POSTGRES_VERTX_URL", "postgresql://%s:%s/%s".formatted(params.host(), params.port(), params.database()),
+                    "POSTGRES_USER", params.username(),
+                    "POSTGRES_PASS", params.password(),
+                    "CACHE_EXPIRE_WRITE", "0s"));
 
             container.start();
         }
@@ -89,6 +75,7 @@ class PetControllerTests {
 
         // then
         connection.assertCountsEquals(1, "pets");
+        connection.assertCountsEquals(1, "categories");
         var responseBody = new JSONObject(response.body());
         assertNotNull(responseBody.query("/id"));
         assertNotEquals(0L, responseBody.query("/id"));
@@ -117,6 +104,7 @@ class PetControllerTests {
         var createResponse = httpClient.send(createRequest, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, createResponse.statusCode(), createResponse.body());
         connection.assertCountsEquals(1, "pets");
+        connection.assertCountsEquals(1, "categories");
         var createResponseBody = new JSONObject(createResponse.body());
 
         // then
@@ -151,6 +139,7 @@ class PetControllerTests {
         var createResponse = httpClient.send(createRequest, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, createResponse.statusCode(), createResponse.body());
         connection.assertCountsEquals(1, "pets");
+        connection.assertCountsEquals(1, "categories");
         var createResponseBody = new JSONObject(createResponse.body());
 
         // when
@@ -202,6 +191,7 @@ class PetControllerTests {
         var createResponse = httpClient.send(createRequest, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, createResponse.statusCode(), createResponse.body());
         connection.assertCountsEquals(1, "pets");
+        connection.assertCountsEquals(1, "categories");
         var createResponseBody = new JSONObject(createResponse.body());
 
         // when

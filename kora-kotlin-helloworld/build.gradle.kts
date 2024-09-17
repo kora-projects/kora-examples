@@ -4,11 +4,6 @@ plugins {
     id("com.google.devtools.ksp") version ("1.9.10-1.0.13")
 }
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
 application {
     applicationName = "application"
     mainClass.set("ru.tinkoff.kora.kotlin.example.helloworld.ApplicationKt")

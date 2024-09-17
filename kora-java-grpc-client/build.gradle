@@ -6,11 +6,6 @@ plugins {
     id "com.google.protobuf" version "0.9.4"
 }
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
 applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.grpc.client.Application"
 
