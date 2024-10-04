@@ -50,7 +50,7 @@ dependencies {
     testImplementation "org.skyscreamer:jsonassert:1.5.1"
     testImplementation "redis.clients:jedis:4.4.3"
 
-    testImplementation "org.mockito:mockito-core:5.6.0"
+    testImplementation "org.mockito:mockito-core:5.7.0"
     testImplementation "ru.tinkoff.kora:test-junit5"
     testImplementation "io.goodforgod:testcontainers-extensions-cassandra:0.11.0"
     testImplementation "io.goodforgod:testcontainers-extensions-redis:0.11.0"
