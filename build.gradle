@@ -44,6 +44,8 @@ subprojects {
             }
         }
     }
+
+    task allDeps(type: DependencyReportTask) {}
 }
 
 apply from: "${project.rootDir}/grouping.gradle"
