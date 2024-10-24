@@ -11,7 +11,8 @@ plugins {
     id "jacoco"
     id "application"
 
-    id "org.openapi.generator" version "7.4.0"}
+    id "org.openapi.generator" version "7.4.0"
+}
 
 applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.openapi.http.client.Application"
@@ -21,13 +22,18 @@ targetCompatibility = JavaVersion.VERSION_17
 
 configurations {
     koraBom
-    implementation.extendsFrom(koraBom)
     annotationProcessor.extendsFrom(koraBom)
+    compileOnly.extendsFrom(koraBom)
+    implementation.extendsFrom(koraBom)
+    api.extendsFrom(koraBom)
 }
 
 dependencies {
     koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
     annotationProcessor "ru.tinkoff.kora:annotation-processors"
+
+    annotationProcessor "ru.tinkoff.kora:metrics-sage-annotation-processor:0.9.0-SNAPSHOT"
+    implementation "ru.tinkoff.kora:metrics-sage-module:0.9.0-SNAPSHOT"
 
     implementation "ru.tinkoff.kora:validation-module"
     implementation "ru.tinkoff.kora:http-client-jdk"
@@ -40,7 +46,7 @@ dependencies {
     testImplementation "org.json:json:20231013"
     testImplementation "org.skyscreamer:jsonassert:1.5.1"
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-mockserver:0.11.0"
+    testImplementation "io.goodforgod:testcontainers-extensions-mockserver:0.12.0"
 }
 
 // OpeAPI for V2
@@ -52,8 +58,9 @@ openApiGenerate {
     modelPackage = "ru.tinkoff.kora.example.openapi.petV2.model"
     invokerPackage = "ru.tinkoff.kora.example.openapi.petV2.invoker"
     configOptions = [
-            mode              : "java-client",
-            clientConfigPrefix: "httpClient.petV2",
+            mode                         : "java-client",
+            clientConfigPrefix           : "httpClient.petV2",
+            additionalContractAnnotations: """{ "*" : [ {"annotation": "@ru.tinkoff.kora.metrics.sage.module.annotation.SageMetric"} ] }""",
     ]
 }
 

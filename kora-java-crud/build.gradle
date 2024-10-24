@@ -1,5 +1,3 @@
-import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
-
 buildscript {
     dependencies {
         classpath("ru.tinkoff.kora:openapi-generator:$koraVersion")
@@ -23,8 +21,12 @@ targetCompatibility = JavaVersion.VERSION_17
 
 configurations {
     koraBom
-    implementation.extendsFrom(koraBom)
     annotationProcessor.extendsFrom(koraBom)
+    compileOnly.extendsFrom(koraBom)
+    implementation.extendsFrom(koraBom)
+    api.extendsFrom(koraBom)
+    testImplementation.extendsFrom(koraBom)
+    testAnnotationProcessor.extendsFrom(koraBom)
 }
 
 dependencies {
@@ -49,10 +51,12 @@ dependencies {
     testImplementation "org.json:json:20231013"
     testImplementation "org.skyscreamer:jsonassert:1.5.1"
 
+    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
+
     testImplementation "org.mockito:mockito-core:5.7.0"
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.11.0"
-    testImplementation "org.testcontainers:junit-jupiter:1.17.6"
+    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.12.0"
+    testImplementation "org.testcontainers:junit-jupiter:1.19.8"
 }
 
 openApiGenerate {
@@ -78,6 +82,11 @@ application {
 
 //noinspection GroovyAssignabilityCheck
 run {
+    jvmArgs += [
+            "-XX:+TieredCompilation",
+            "-XX:TieredStopAtLevel=1",
+    ]
+
     environment([
             "POSTGRES_JDBC_URL": "jdbc:postgresql://$postgresHost:$postgresPort/$postgresDatabase",
             "POSTGRES_USER"    : "$postgresUser",

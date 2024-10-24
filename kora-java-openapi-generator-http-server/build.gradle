@@ -11,7 +11,8 @@ plugins {
     id "jacoco"
     id "application"
 
-    id "org.openapi.generator" version "7.4.0"}
+    id "org.openapi.generator" version "7.4.0"
+}
 
 applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.openapi.http.server.Application"
@@ -21,8 +22,10 @@ targetCompatibility = JavaVersion.VERSION_17
 
 configurations {
     koraBom
-    implementation.extendsFrom(koraBom)
     annotationProcessor.extendsFrom(koraBom)
+    compileOnly.extendsFrom(koraBom)
+    implementation.extendsFrom(koraBom)
+    api.extendsFrom(koraBom)
 }
 
 dependencies {
@@ -40,7 +43,7 @@ dependencies {
     testImplementation "org.json:json:20231013"
     testImplementation "org.skyscreamer:jsonassert:1.5.1"
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "org.testcontainers:junit-jupiter:1.17.6"
+    testImplementation "org.testcontainers:junit-jupiter:1.19.8"
 }
 
 // OpeAPI for V2
@@ -53,8 +56,9 @@ openApiGenerate {
     modelPackage = "ru.tinkoff.kora.example.openapi.petV2.model"
     invokerPackage = "ru.tinkoff.kora.example.openapi.petV2.invoker"
     configOptions = [
-            mode                  : "java-server", // так же есть reactive_server вариация HTTP Server'а
-            enableServerValidation: "true"
+            mode                         : "java-server", // так же есть reactive_server вариация HTTP Server'а
+            enableServerValidation       : "true",
+            additionalContractAnnotations: """{ "*" : [ {"annotation": "@ru.tinkoff.kora.metrics.sage.module.annotation.SageMetric"} ] }""",
     ]
 }
 

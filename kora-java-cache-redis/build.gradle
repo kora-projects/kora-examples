@@ -11,9 +11,11 @@ sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
 configurations {
-    koraBom
-    implementation.extendsFrom(koraBom)
-    annotationProcessor.extendsFrom(koraBom)
+     koraBom
+     annotationProcessor.extendsFrom(koraBom)
+     compileOnly.extendsFrom(koraBom)
+     implementation.extendsFrom(koraBom)
+     api.extendsFrom(koraBom)
 }
 
 dependencies {
@@ -26,7 +28,7 @@ dependencies {
     implementation "ru.tinkoff.kora:config-hocon"
 
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-redis:0.11.0"
+    testImplementation "io.goodforgod:testcontainers-extensions-redis:0.12.0"
     testImplementation "redis.clients:jedis:4.4.3"
 }
 

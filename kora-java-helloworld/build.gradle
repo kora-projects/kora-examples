@@ -11,9 +11,11 @@ sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
 configurations {
-    koraBom
-    implementation.extendsFrom(koraBom)
-    annotationProcessor.extendsFrom(koraBom)
+     koraBom
+     annotationProcessor.extendsFrom(koraBom)
+     compileOnly.extendsFrom(koraBom)
+     implementation.extendsFrom(koraBom)
+     api.extendsFrom(koraBom)
 }
 
 dependencies {
@@ -26,7 +28,7 @@ dependencies {
     implementation "ru.tinkoff.kora:logging-logback"
 
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "org.testcontainers:junit-jupiter:1.17.6"
+    testImplementation "org.testcontainers:junit-jupiter:1.19.8"
     testImplementation "org.skyscreamer:jsonassert:1.5.1"
 }
 

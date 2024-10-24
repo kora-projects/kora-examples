@@ -11,14 +11,21 @@ sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
 configurations {
-    koraBom
-    implementation.extendsFrom(koraBom)
-    annotationProcessor.extendsFrom(koraBom)
+     koraBom
+     annotationProcessor.extendsFrom(koraBom)
+     compileOnly.extendsFrom(koraBom)
+     implementation.extendsFrom(koraBom)
+     api.extendsFrom(koraBom)
 }
 
 dependencies {
     koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
     annotationProcessor "ru.tinkoff.kora:annotation-processors"
+
+    implementation "io.swagger.core.v3:swagger-annotations:2.2.23"
+
+    implementation "ru.tinkoff.kora:micrometer-module"
+    implementation "ru.tinkoff.kora:opentelemetry-tracing-exporter-grpc"
 
     implementation "ru.tinkoff.kora:http-client-jdk"
     implementation "ru.tinkoff.kora:json-module"
@@ -28,7 +35,7 @@ dependencies {
     implementation "ru.tinkoff.kora:config-hocon"
 
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-mockserver:0.11.0"
+    testImplementation "io.goodforgod:testcontainers-extensions-mockserver:0.12.0"
 }
 
 test.dependsOn tasks.distTar
