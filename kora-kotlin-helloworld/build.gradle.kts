@@ -8,7 +8,7 @@ plugins {
 
 application {
     applicationName = "application"
-    mainClass.set("ru.tinkoff.kora.kotlin.example.crud.ApplicationKt")
+    mainClass.set("ru.tinkoff.kora.kotlin.example.helloworld.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 
