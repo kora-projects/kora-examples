@@ -56,9 +56,8 @@ openApiGenerate {
     modelPackage = "ru.tinkoff.kora.example.openapi.petV2.model"
     invokerPackage = "ru.tinkoff.kora.example.openapi.petV2.invoker"
     configOptions = [
-            mode                         : "java-server", // так же есть reactive_server вариация HTTP Server'а
-            enableServerValidation       : "true",
-            additionalContractAnnotations: """{ "*" : [ {"annotation": "@ru.tinkoff.kora.metrics.sage.module.annotation.SageMetric"} ] }""",
+            mode                  : "java-server", // так же есть reactive_server вариация HTTP Server'а
+            enableServerValidation: "true",
     ]
 }
 

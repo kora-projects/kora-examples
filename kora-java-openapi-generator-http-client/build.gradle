@@ -55,9 +55,8 @@ openApiGenerate {
     modelPackage = "ru.tinkoff.kora.example.openapi.petV2.model"
     invokerPackage = "ru.tinkoff.kora.example.openapi.petV2.invoker"
     configOptions = [
-            mode                         : "java-client",
-            clientConfigPrefix           : "httpClient.petV2",
-            additionalContractAnnotations: """{ "*" : [ {"annotation": "@ru.tinkoff.kora.metrics.sage.module.annotation.SageMetric"} ] }""",
+            mode              : "java-client",
+            clientConfigPrefix: "httpClient.petV2",
     ]
 }
 
