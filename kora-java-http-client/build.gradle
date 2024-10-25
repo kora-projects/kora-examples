@@ -22,11 +22,6 @@ dependencies {
     koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
     annotationProcessor "ru.tinkoff.kora:annotation-processors"
 
-    implementation "io.swagger.core.v3:swagger-annotations:2.2.23"
-
-    implementation "ru.tinkoff.kora:micrometer-module"
-    implementation "ru.tinkoff.kora:opentelemetry-tracing-exporter-grpc"
-
     implementation "ru.tinkoff.kora:http-client-jdk"
     implementation "ru.tinkoff.kora:json-module"
     implementation "io.projectreactor:reactor-core:3.6.5" // For reactive examples (optional)

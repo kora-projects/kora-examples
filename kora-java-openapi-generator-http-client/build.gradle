@@ -32,9 +32,6 @@ dependencies {
     koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
     annotationProcessor "ru.tinkoff.kora:annotation-processors"
 
-    annotationProcessor "ru.tinkoff.kora:metrics-sage-annotation-processor:0.9.0-SNAPSHOT"
-    implementation "ru.tinkoff.kora:metrics-sage-module:0.9.0-SNAPSHOT"
-
     implementation "ru.tinkoff.kora:validation-module"
     implementation "ru.tinkoff.kora:http-client-jdk"
     implementation "ru.tinkoff.kora:json-module"
