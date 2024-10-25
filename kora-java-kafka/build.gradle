@@ -16,11 +16,11 @@ sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
 configurations {
-     koraBom
-     annotationProcessor.extendsFrom(koraBom)
-     compileOnly.extendsFrom(koraBom)
-     implementation.extendsFrom(koraBom)
-     api.extendsFrom(koraBom)
+    koraBom
+    annotationProcessor.extendsFrom(koraBom)
+    compileOnly.extendsFrom(koraBom)
+    implementation.extendsFrom(koraBom)
+    api.extendsFrom(koraBom)
 }
 
 dependencies {
