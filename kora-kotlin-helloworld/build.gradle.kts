@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
 plugins {
     id("application")
     kotlin("jvm") version ("1.9.10")
@@ -7,6 +9,7 @@ plugins {
 application {
     applicationName = "application"
     mainClass.set("ru.tinkoff.kora.kotlin.example.helloworld.ApplicationKt")
+    applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 
 kotlin {
@@ -18,6 +21,7 @@ kotlin {
 val koraBom: Configuration by configurations.creating
 configurations {
     ksp.get().extendsFrom(koraBom)
+    compileOnly.get().extendsFrom(koraBom)
     api.get().extendsFrom(koraBom)
     implementation.get().extendsFrom(koraBom)
 }
@@ -38,25 +42,30 @@ dependencies {
 
     testImplementation("ru.tinkoff.kora:test-junit5")
     testImplementation("org.skyscreamer:jsonassert:1.5.1")
-    testImplementation("org.testcontainers:junit-jupiter:1.17.6")
-}
-
-tasks.named("test") {
-    dependsOn("distTar")
-}
-
-tasks.distTar {
-    archiveFileName.set("application.tar")
+    testImplementation("org.testcontainers:junit-jupiter:1.19.8")
 }
 
 tasks.test {
+    dependsOn("distTar")
+
+    jvmArgs(
+        "-XX:+TieredCompilation",
+        "-XX:TieredStopAtLevel=1",
+    )
+
     useJUnitPlatform()
     testLogging {
+        showStandardStreams = true
         events("passed", "skipped", "failed")
+        exceptionFormat = TestExceptionFormat.FULL
     }
 
     reports {
         html.required = false
         junitXml.required = false
     }
+}
+
+tasks.distTar {
+    archiveFileName.set("application.tar")
 }

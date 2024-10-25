@@ -2,16 +2,15 @@ package ru.tinkoff.kora.example.s3.aws;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.goodforgod.testcontainers.extensions.ContainerMode;
+import io.goodforgod.testcontainers.extensions.minio.Bucket;
+import io.goodforgod.testcontainers.extensions.minio.ConnectionMinio;
+import io.goodforgod.testcontainers.extensions.minio.MinioConnection;
+import io.goodforgod.testcontainers.extensions.minio.TestcontainersMinio;
 import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.MinIOContainer;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.tinkoff.kora.s3.client.S3NotFoundException;
 import ru.tinkoff.kora.s3.client.model.S3Body;
 import ru.tinkoff.kora.s3.client.model.S3Object;
@@ -20,17 +19,20 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.BucketAlreadyExistsException;
-import software.amazon.awssdk.services.s3.model.BucketAlreadyOwnedByYouException;
-import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
-@Testcontainers
+@TestcontainersMinio(
+        mode = ContainerMode.PER_RUN,
+        bucket = @Bucket(
+                value = SyncS3ClientTests.BUCKET,
+                create = Bucket.Mode.PER_METHOD,
+                drop = Bucket.Mode.PER_METHOD))
 @KoraAppTest(Application.class)
 class SyncS3ClientTests implements KoraAppTestConfigModifier {
 
-    @Container
-    private static final MinIOContainer container = new MinIOContainer("minio/minio:RELEASE.2024-08-03T04-33-23Z")
-            .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(MinIOContainer.class)));
+    static final String BUCKET = "simple";
+
+    @ConnectionMinio
+    private MinioConnection minioConnection;
 
     @TestComponent
     private SyncS3Client client;
@@ -40,29 +42,10 @@ class SyncS3ClientTests implements KoraAppTestConfigModifier {
     @Override
     public KoraConfigModification config() {
         return KoraConfigModification
-                .ofSystemProperty("S3_URL", container.getS3URL())
-                .withSystemProperty("S3_ACCESS_KEY", container.getUserName())
-                .withSystemProperty("S3_SECRET_KEY", container.getPassword())
-                .withSystemProperty("S3_BUCKET", "simple");
-    }
-
-    @BeforeEach
-    void cleanup() {
-        try {
-            s3Client.createBucket(CreateBucketRequest.builder()
-                    .bucket("simple")
-                    .build());
-        } catch (BucketAlreadyExistsException | BucketAlreadyOwnedByYouException e) {
-            // ignore
-        } catch (Exception e) {
-            throw e;
-        }
-
-        try {
-            client.deleteObjects(List.of("pre-k1", "pre-k2"));
-        } catch (Exception e) {
-            // ignore
-        }
+                .ofSystemProperty("S3_URL", minioConnection.params().uri().toString())
+                .withSystemProperty("S3_ACCESS_KEY", minioConnection.params().accessKey())
+                .withSystemProperty("S3_SECRET_KEY", minioConnection.params().secretKey())
+                .withSystemProperty("S3_BUCKET", BUCKET);
     }
 
     @Test

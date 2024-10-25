@@ -50,7 +50,7 @@ public interface JdbcMapperColumnRepository extends JdbcRepository {
                   String value2,
                   @Nullable String value3) {
 
-        enum FieldType {
+        public enum FieldType {
 
             UNKNOWN(-10),
             ONE(1),
