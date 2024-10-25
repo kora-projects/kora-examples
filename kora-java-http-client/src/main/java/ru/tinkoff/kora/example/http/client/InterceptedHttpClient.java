@@ -1,6 +1,5 @@
 package ru.tinkoff.kora.example.http.client;
 
-import java.util.concurrent.CompletionStage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.tinkoff.kora.common.Context;
@@ -12,6 +11,8 @@ import ru.tinkoff.kora.http.common.HttpMethod;
 import ru.tinkoff.kora.http.common.HttpResponseEntity;
 import ru.tinkoff.kora.http.common.annotation.HttpRoute;
 import ru.tinkoff.kora.http.common.annotation.InterceptWith;
+
+import java.util.concurrent.CompletionStage;
 
 @InterceptWith(InterceptedHttpClient.ClientInterceptor.class)
 @HttpClient(configPath = "httpClient.default")

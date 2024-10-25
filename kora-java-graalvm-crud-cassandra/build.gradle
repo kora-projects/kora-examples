@@ -21,8 +21,10 @@ targetCompatibility = JavaVersion.VERSION_17
 
 configurations {
     koraBom
-    implementation.extendsFrom(koraBom)
     annotationProcessor.extendsFrom(koraBom)
+    compileOnly.extendsFrom(koraBom)
+    implementation.extendsFrom(koraBom)
+    api.extendsFrom(koraBom)
 }
 
 dependencies {
@@ -52,9 +54,9 @@ dependencies {
 
     testImplementation "org.mockito:mockito-core:5.7.0"
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-cassandra:0.11.0"
-    testImplementation "io.goodforgod:testcontainers-extensions-redis:0.11.0"
-    testImplementation "org.testcontainers:junit-jupiter:1.17.6"
+    testImplementation "io.goodforgod:testcontainers-extensions-cassandra:0.12.0"
+    testImplementation "io.goodforgod:testcontainers-extensions-redis:0.12.0"
+    testImplementation "org.testcontainers:junit-jupiter:1.19.8"
 }
 
 openApiGenerate {

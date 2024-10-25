@@ -2,19 +2,17 @@ package ru.tinkoff.kora.example.s3.minio;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import io.minio.MakeBucketArgs;
+import io.goodforgod.testcontainers.extensions.ContainerMode;
+import io.goodforgod.testcontainers.extensions.minio.Bucket;
+import io.goodforgod.testcontainers.extensions.minio.ConnectionMinio;
+import io.goodforgod.testcontainers.extensions.minio.MinioConnection;
+import io.goodforgod.testcontainers.extensions.minio.TestcontainersMinio;
 import io.minio.MinioClient;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.MinIOContainer;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.tinkoff.kora.s3.client.model.S3Body;
 import ru.tinkoff.kora.s3.client.model.S3Object;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
@@ -22,13 +20,19 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 
-@Testcontainers
+@TestcontainersMinio(
+        mode = ContainerMode.PER_RUN,
+        bucket = @Bucket(
+                value = ReactorS3ClientTests.BUCKET,
+                create = Bucket.Mode.PER_METHOD,
+                drop = Bucket.Mode.PER_METHOD))
 @KoraAppTest(Application.class)
 class ReactorS3ClientTests implements KoraAppTestConfigModifier {
 
-    @Container
-    private static final MinIOContainer container = new MinIOContainer("minio/minio:RELEASE.2024-08-03T04-33-23Z")
-            .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(MinIOContainer.class)));
+    static final String BUCKET = "simple";
+
+    @ConnectionMinio
+    private MinioConnection minioConnection;
 
     @TestComponent
     private ReactorS3Client client;
@@ -38,27 +42,10 @@ class ReactorS3ClientTests implements KoraAppTestConfigModifier {
     @Override
     public KoraConfigModification config() {
         return KoraConfigModification
-                .ofSystemProperty("S3_URL", container.getS3URL())
-                .withSystemProperty("S3_ACCESS_KEY", container.getUserName())
-                .withSystemProperty("S3_SECRET_KEY", container.getPassword())
-                .withSystemProperty("S3_BUCKET", "simple");
-    }
-
-    @BeforeEach
-    void cleanup() {
-        try {
-            s3Client.makeBucket(MakeBucketArgs.builder()
-                    .bucket("simple")
-                    .build());
-        } catch (Exception e) {
-            // ignore
-        }
-
-        try {
-            client.deleteObjects(List.of("pre-k1", "pre-k2")).block();
-        } catch (Exception e) {
-            // ignore
-        }
+                .ofSystemProperty("S3_URL", minioConnection.params().uri().toString())
+                .withSystemProperty("S3_ACCESS_KEY", minioConnection.params().accessKey())
+                .withSystemProperty("S3_SECRET_KEY", minioConnection.params().secretKey())
+                .withSystemProperty("S3_BUCKET", BUCKET);
     }
 
     @Test

@@ -6,9 +6,9 @@ def addDependency = { TaskProvider taskProvider, String dependency ->
 
 def addDependencyByType = { TaskProvider taskProvider, String type, String taskName ->
     rootProject.allprojects.forEach {
-        if(type == "other" && it.name != rootProject.name && !nonOtherModules.contains(it.name)) {
+        if (type == "other" && it.name != rootProject.name && !nonOtherModules.contains(it.name)) {
             addDependency(taskProvider, ":${it.name}:${taskName}")
-        } else if(it.name.contains(type)) {
+        } else if (it.name.contains(type)) {
             addDependency(taskProvider, ":${it.name}:${taskName}")
             nonOtherModules.add(it.name)
         }

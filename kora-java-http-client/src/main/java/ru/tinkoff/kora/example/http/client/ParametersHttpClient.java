@@ -1,7 +1,6 @@
 package ru.tinkoff.kora.example.http.client;
 
 import jakarta.annotation.Nullable;
-import java.util.List;
 import ru.tinkoff.kora.http.client.common.annotation.HttpClient;
 import ru.tinkoff.kora.http.common.HttpMethod;
 import ru.tinkoff.kora.http.common.HttpResponseEntity;
@@ -9,6 +8,8 @@ import ru.tinkoff.kora.http.common.annotation.Header;
 import ru.tinkoff.kora.http.common.annotation.HttpRoute;
 import ru.tinkoff.kora.http.common.annotation.Path;
 import ru.tinkoff.kora.http.common.annotation.Query;
+
+import java.util.List;
 
 @HttpClient(configPath = "httpClient.default")
 public interface ParametersHttpClient {

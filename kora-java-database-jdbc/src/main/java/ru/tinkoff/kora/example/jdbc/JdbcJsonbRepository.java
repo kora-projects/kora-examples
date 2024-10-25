@@ -3,11 +3,11 @@ package ru.tinkoff.kora.example.jdbc;
 import jakarta.annotation.Nullable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
+import org.postgresql.util.PGobject;
 import ru.tinkoff.kora.common.Mapping;
 import ru.tinkoff.kora.database.common.annotation.Column;
 import ru.tinkoff.kora.database.common.annotation.Query;
@@ -51,12 +51,11 @@ public interface JdbcJsonbRepository extends JdbcRepository {
 
         @Override
         public void set(PreparedStatement stmt, int index, @Nullable Entity.JsonbValue value) throws SQLException {
-            try {
-                if (value != null) {
-                    stmt.setString(index, new String(writer.toByteArray(value), StandardCharsets.UTF_8));
-                }
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
+            if (value != null) {
+                PGobject jsonb = new PGobject();
+                jsonb.setType("jsonb");
+                jsonb.setValue(writer.toStringUnchecked(value));
+                stmt.setObject(index, jsonb);
             }
         }
     }
@@ -76,7 +75,7 @@ public interface JdbcJsonbRepository extends JdbcRepository {
 
     @Query("""
             INSERT INTO entities_jsonb(id, value)
-            VALUES (:entity.id, :entity.value::jsonb)
+            VALUES (:entity.id, :entity.value)
             """)
     void insert(Entity entity);
 }
