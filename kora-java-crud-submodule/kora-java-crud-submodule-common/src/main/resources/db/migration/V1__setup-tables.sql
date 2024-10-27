@@ -1,0 +1,25 @@
+CREATE TABLE IF NOT EXISTS categories
+(
+    id   BIGINT  NOT NULL GENERATED ALWAYS AS IDENTITY,
+    name VARCHAR NOT NULL,
+    PRIMARY KEY (id)
+);
+
+
+CREATE TABLE IF NOT EXISTS pets
+(
+    id          BIGINT   NOT NULL GENERATED ALWAYS AS IDENTITY,
+    name        VARCHAR  NOT NULL,
+    status      SMALLINT NOT NULL,
+    category_id BIGINT   NOT NULL REFERENCES categories (id),
+    PRIMARY KEY (id)
+);
+
+
+CREATE TABLE IF NOT EXISTS vets
+(
+    id      BIGINT  NOT NULL GENERATED ALWAYS AS IDENTITY,
+    name    VARCHAR NOT NULL,
+    surname VARCHAR NOT NULL,
+    PRIMARY KEY (id)
+);

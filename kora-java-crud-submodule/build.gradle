@@ -1,0 +1,75 @@
+plugins {
+    id "jacoco"
+}
+
+subprojects {
+    apply plugin: "jacoco"
+
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+
+    configurations {
+        koraBom
+        annotationProcessor.extendsFrom(koraBom)
+        compileOnly.extendsFrom(koraBom)
+        implementation.extendsFrom(koraBom)
+        api.extendsFrom(koraBom)
+        testImplementation.extendsFrom(koraBom)
+        testAnnotationProcessor.extendsFrom(koraBom)
+    }
+
+    dependencies {
+        koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
+        annotationProcessor "ru.tinkoff.kora:annotation-processors"
+
+        testImplementation "org.json:json:20231013"
+        testImplementation "org.skyscreamer:jsonassert:1.5.1"
+
+        testImplementation "org.mockito:mockito-core:5.7.0"
+        testImplementation "ru.tinkoff.kora:test-junit5"
+    }
+
+    test {
+        jvmArgs += [
+                "-XX:+TieredCompilation",
+                "-XX:TieredStopAtLevel=1",
+        ]
+
+        environment([
+                "": ""
+        ])
+
+        useJUnitPlatform()
+        testLogging {
+            showStandardStreams(true)
+            events("passed", "skipped", "failed")
+            exceptionFormat("full")
+        }
+
+        reports {
+            html.required = false
+            junitXml.required = false
+        }
+    }
+
+    compileJava {
+        options.encoding("UTF-8")
+        options.incremental(true)
+        options.fork = false
+    }
+
+    check.dependsOn jacocoTestReport
+    jacocoTestReport {
+        reports {
+            xml.required = true
+            html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
+        }
+    }
+
+    javadoc {
+        options.encoding = "UTF-8"
+        if (JavaVersion.current().isJava9Compatible()) {
+            options.addBooleanOption("html5", true)
+        }
+    }
+}
