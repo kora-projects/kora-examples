@@ -1,6 +1,7 @@
 # Kora Java GraalVM Kafka
 
-Пример модуля Kafka в Kora.
+Пример сервиса реализованного на Kora с использованием Kafka 
+и [GraalVM Native Image](https://www.graalvm.org/latest/reference-manual/native-image/).
 
 В примере использовались модули:
 - [Kafka](https://kora-projects.github.io/kora-docs/ru/documentation/kafka/)

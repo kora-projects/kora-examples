@@ -5,12 +5,14 @@ import java.util.Optional;
 import java.util.UUID;
 import ru.tinkoff.kora.database.common.UpdateCount;
 import ru.tinkoff.kora.database.common.annotation.*;
+import ru.tinkoff.kora.database.jdbc.EntityJdbc;
 import ru.tinkoff.kora.database.jdbc.JdbcRepository;
 import ru.tinkoff.kora.example.jdbc.JdbcCrudMacrosIdCompositeRepository.Entity.EntityId;
 
 @Repository
 public interface JdbcCrudMacrosIdCompositeRepository extends JdbcRepository {
 
+    @EntityJdbc
     @Table("entities_composite_uuid")
     record Entity(@Id @Embedded EntityId id,
                   @Column("name") String name) {

@@ -1,6 +1,7 @@
 # Kora Java GraalVM CRUD Cassandra Service
 
-Пример сервиса реализованного на Kora с HTTP [CRUD](https://github.com/swagger-api/swagger-petstore) API,
+Пример сервиса реализованного на Kora с HTTP [CRUD](https://github.com/swagger-api/swagger-petstore) API
+и использованием [GraalVM Native Image](https://www.graalvm.org/latest/reference-manual/native-image/),
 в качестве базы данных выступает Cassandra, используется кэш Redis, а также другие модули которые использовались бы в реальном приложении в бою.
 
 В примере использовались модули:
