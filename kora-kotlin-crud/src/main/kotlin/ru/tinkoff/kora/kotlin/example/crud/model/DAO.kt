@@ -4,9 +4,7 @@ import ru.tinkoff.kora.database.common.annotation.Column
 import ru.tinkoff.kora.database.common.annotation.Embedded
 import ru.tinkoff.kora.database.common.annotation.Id
 import ru.tinkoff.kora.database.common.annotation.Table
-import ru.tinkoff.kora.database.jdbc.EntityJdbc
 
-@EntityJdbc
 @Table("pets")
 data class Pet(
     @field:Column("id") @field:Id val id: Long,
@@ -21,14 +19,12 @@ data class Pet(
     }
 }
 
-@EntityJdbc
 @Table("categories")
 data class PetCategory(
     @field:Id val id: Long,
     val name: String
 )
 
-@EntityJdbc
 data class PetWithCategory(
     @field:Column("id") val id: Long,
     @field:Column("name") val name: String,

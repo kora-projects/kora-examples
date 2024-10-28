@@ -16,6 +16,10 @@ interface CategoryRepository : JdbcRepository {
     @Query("INSERT INTO categories(name) VALUES (:categoryName)")
     fun insert(categoryName: String): Long
 
+    @Id
+    @Query("INSERT INTO categories(name) VALUES (:categoryName)")
+    suspend fun insertSuspend(categoryName: String): Long
+
     @Query("DELETE FROM categories WHERE id = :id")
     fun deleteById(id: Long)
 }

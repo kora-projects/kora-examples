@@ -60,6 +60,7 @@ dependencies {
     implementation("ru.tinkoff.kora:config-hocon")
     implementation("ru.tinkoff.kora:openapi-management")
     implementation("ru.tinkoff.kora:logging-logback")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
 
     implementation("org.postgresql:postgresql:42.7.2")
     implementation("org.mapstruct:mapstruct:1.5.5.Final")
