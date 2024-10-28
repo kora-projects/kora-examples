@@ -1,4 +1,4 @@
-package ru.tinkoff.kora.example.graalvm.crud.r2dbc;
+package ru.tinkoff.kora.example.graalvm.crud.vertx;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,7 +27,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
                 engine = Migration.Engines.FLYWAY,
                 apply = Migration.Mode.PER_METHOD,
                 drop = Migration.Mode.PER_METHOD))
-class GraalVMPetControllerTests {
+class BlackBoxTests {
 
     private static final AppContainer container = AppContainer.build()
             .withNetwork(org.testcontainers.containers.Network.SHARED);
@@ -40,11 +40,11 @@ class GraalVMPetControllerTests {
         if (!container.isRunning()) {
             var params = connection.paramsInNetwork().orElseThrow();
             container.withEnv(Map.of(
-                    "POSTGRES_R2DBC_URL",
-                    "r2dbc:postgresql://%s:%s/%s".formatted(params.host(), params.port(), params.database()),
+                    "POSTGRES_VERTX_URL", "postgresql://%s:%s/%s".formatted(params.host(), params.port(), params.database()),
                     "POSTGRES_USER", params.username(),
                     "POSTGRES_PASS", params.password(),
-                    "CACHE_EXPIRE_WRITE", "0s"));
+                    "CACHE_EXPIRE_WRITE", "0s",
+                    "RETRY_ATTEMPTS", "0"));
 
             container.start();
         }
@@ -120,6 +120,23 @@ class GraalVMPetControllerTests {
 
         var getResponseBody = new JSONObject(getResponse.body());
         JSONAssert.assertEquals(createResponseBody.toString(), getResponseBody.toString(), JSONCompareMode.LENIENT);
+    }
+
+    @Test
+    void getPetNotFound() throws Exception {
+        // given
+        var httpClient = HttpClient.newHttpClient();
+
+        // when
+        var getRequest = HttpRequest.newBuilder()
+                .GET()
+                .uri(container.getURI().resolve("/v3/pets/1"))
+                .timeout(Duration.ofSeconds(5))
+                .build();
+
+        // then
+        var getResponse = httpClient.send(getRequest, HttpResponse.BodyHandlers.ofString());
+        assertEquals(404, getResponse.statusCode(), getResponse.body());
     }
 
     @Test

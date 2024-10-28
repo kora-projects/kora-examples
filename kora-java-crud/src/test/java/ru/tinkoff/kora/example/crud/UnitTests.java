@@ -1,4 +1,4 @@
-package ru.tinkoff.kora.example.graalvm.crud.jdbc;
+package ru.tinkoff.kora.example.crud;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -10,20 +10,20 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import ru.tinkoff.kora.example.graalvm.crud.jdbc.repository.CategoryRepository;
-import ru.tinkoff.kora.example.graalvm.crud.jdbc.repository.PetRepository;
-import ru.tinkoff.kora.example.graalvm.crud.jdbc.service.PetCache;
-import ru.tinkoff.kora.example.graalvm.crud.jdbc.service.PetService;
-import ru.tinkoff.kora.example.graalvm.crud.openapi.server.model.CategoryCreateTO;
-import ru.tinkoff.kora.example.graalvm.crud.openapi.server.model.PetCreateTO;
-import ru.tinkoff.kora.example.graalvm.crud.openapi.server.model.PetUpdateTO;
+import ru.tinkoff.kora.example.crud.openapi.http.server.model.CategoryCreateTO;
+import ru.tinkoff.kora.example.crud.openapi.http.server.model.PetCreateTO;
+import ru.tinkoff.kora.example.crud.openapi.http.server.model.PetUpdateTO;
+import ru.tinkoff.kora.example.crud.repository.CategoryRepository;
+import ru.tinkoff.kora.example.crud.repository.PetRepository;
+import ru.tinkoff.kora.example.crud.service.PetCache;
+import ru.tinkoff.kora.example.crud.service.PetService;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 
 @KoraAppTest(Application.class)
-class PetServiceTests implements KoraAppTestConfigModifier {
+class UnitTests implements KoraAppTestConfigModifier {
 
     @Mock
     @TestComponent

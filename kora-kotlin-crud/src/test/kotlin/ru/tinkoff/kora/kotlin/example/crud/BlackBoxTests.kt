@@ -10,11 +10,10 @@ import org.json.JSONObject
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
-import org.testcontainers.containers.Network.*
+import org.testcontainers.containers.Network.SHARED
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
@@ -29,7 +28,7 @@ import java.time.Duration
         drop = Migration.Mode.PER_METHOD
     )
 )
-class PetControllerTests(@ConnectionPostgreSQL val connection: JdbcConnection) {
+class BlackBoxTests(@ConnectionPostgreSQL val connection: JdbcConnection) {
 
     companion object {
 
@@ -44,7 +43,8 @@ class PetControllerTests(@ConnectionPostgreSQL val connection: JdbcConnection) {
                     "POSTGRES_JDBC_URL" to params.jdbcUrl(),
                     "POSTGRES_USER" to params.username(),
                     "POSTGRES_PASS" to params.password(),
-                    "CACHE_EXPIRE_WRITE" to "0s"
+                    "CACHE_EXPIRE_WRITE" to "0s",
+                    "RETRY_ATTEMPTS" to "0",
                 )
             )
             container.start()
@@ -120,6 +120,23 @@ class PetControllerTests(@ConnectionPostgreSQL val connection: JdbcConnection) {
 
         val getResponseBody = JSONObject(getResponse.body())
         JSONAssert.assertEquals(createResponseBody.toString(), getResponseBody.toString(), JSONCompareMode.LENIENT)
+    }
+
+    @Test
+    fun getPetNotFound() {
+        // given
+        val httpClient = HttpClient.newHttpClient()
+
+        // when
+        val getRequest = HttpRequest.newBuilder()
+            .GET()
+            .uri(container.uri.resolve("/v3/pets/1"))
+            .timeout(Duration.ofSeconds(5))
+            .build()
+
+        // then
+        val getResponse = httpClient.send(getRequest, HttpResponse.BodyHandlers.ofString())
+        assertEquals(404, getResponse.statusCode(), getResponse.body())
     }
 
     @Test

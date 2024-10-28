@@ -1,4 +1,4 @@
-package ru.tinkoff.kora.example.graalvm.crud.vertx;
+package ru.tinkoff.kora.example.crud;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -15,7 +15,7 @@ import java.time.Duration;
 import java.util.Map;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -27,7 +27,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
                 engine = Migration.Engines.FLYWAY,
                 apply = Migration.Mode.PER_METHOD,
                 drop = Migration.Mode.PER_METHOD))
-class GraalVMPetControllerTests {
+class BlackBoxTests {
 
     private static final AppContainer container = AppContainer.build()
             .withNetwork(org.testcontainers.containers.Network.SHARED);
@@ -35,18 +35,16 @@ class GraalVMPetControllerTests {
     @ConnectionPostgreSQL
     private JdbcConnection connection;
 
-    @BeforeEach
-    public void setup(@ConnectionPostgreSQL JdbcConnection connection) {
-        if (!container.isRunning()) {
-            var params = connection.paramsInNetwork().orElseThrow();
-            container.withEnv(Map.of(
-                    "POSTGRES_VERTX_URL", "postgresql://%s:%s/%s".formatted(params.host(), params.port(), params.database()),
-                    "POSTGRES_USER", params.username(),
-                    "POSTGRES_PASS", params.password(),
-                    "CACHE_EXPIRE_WRITE", "0s"));
+    @BeforeAll
+    public static void setup(@ConnectionPostgreSQL JdbcConnection connection) {
+        var params = connection.paramsInNetwork().orElseThrow();
+        container.withEnv(Map.of(
+                "POSTGRES_JDBC_URL", params.jdbcUrl(),
+                "POSTGRES_USER", params.username(),
+                "POSTGRES_PASS", params.password(),
+                "CACHE_EXPIRE_WRITE", "0s"));
 
-            container.start();
-        }
+        container.start();
     }
 
     @AfterAll
@@ -119,6 +117,23 @@ class GraalVMPetControllerTests {
 
         var getResponseBody = new JSONObject(getResponse.body());
         JSONAssert.assertEquals(createResponseBody.toString(), getResponseBody.toString(), JSONCompareMode.LENIENT);
+    }
+
+    @Test
+    void getPetNotFound() throws Exception {
+        // given
+        var httpClient = HttpClient.newHttpClient();
+
+        // when
+        var getRequest = HttpRequest.newBuilder()
+                .GET()
+                .uri(container.getURI().resolve("/v3/pets/1"))
+                .timeout(Duration.ofSeconds(5))
+                .build();
+
+        // then
+        var getResponse = httpClient.send(getRequest, HttpResponse.BodyHandlers.ofString());
+        assertEquals(404, getResponse.statusCode(), getResponse.body());
     }
 
     @Test
