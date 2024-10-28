@@ -78,6 +78,56 @@ class SuspendTests(
     @Test
     fun check2() {
         try {
+            categoryRepository.jdbcConnectionFactory.inTx(
+                SqlRunnable {
+                    categoryRepository.insert("Foo")
+                    categoryRepository.insert("Bar")
+                    categoryRepository.insert("Baz")
+
+                    if (true) {
+                        throw IllegalStateException("OPS")
+                    }
+                }
+            )
+
+            fail<Unit>("OPS")
+        } catch (e: Exception) {
+            assertEquals("OPS", e.message)
+        }
+
+        assertNull(categoryRepository.findByName("Foo"))
+        assertNull(categoryRepository.findByName("Bar"))
+        assertNull(categoryRepository.findByName("Baz"))
+    }
+
+    @Test
+    fun check3() {
+        try {
+            categoryRepository.jdbcConnectionFactory.inTx(
+                SqlRunnable {
+                    categoryRepository.insert("Foo")
+                    categoryRepository.insert("Bar")
+                    categoryRepository.insert("Baz")
+
+                    if (true) {
+                        throw IllegalStateException("OPS")
+                    }
+                }
+            )
+
+            fail<Unit>("OPS")
+        } catch (e: Exception) {
+            assertEquals("OPS", e.message)
+        }
+
+        assertNull(categoryRepository.findByName("Foo"))
+        assertNull(categoryRepository.findByName("Bar"))
+        assertNull(categoryRepository.findByName("Baz"))
+    }
+
+    @Test
+    fun check4() {
+        try {
             runBlocking {
                 categoryRepository.jdbcConnectionFactory.inTxSuspend {
                     categoryRepository.insertSuspend("Foo")
@@ -101,7 +151,7 @@ class SuspendTests(
     }
 
     @Test
-    fun check3() {
+    fun check5() {
         try {
             runBlocking {
                 GlobalScope.async {
@@ -128,19 +178,19 @@ class SuspendTests(
     }
 
     @Test
-    fun check4() {
+    fun check6() {
         try {
-            categoryRepository.jdbcConnectionFactory.inTx(
-                SqlRunnable {
-                    categoryRepository.insert("Foo")
-                    categoryRepository.insert("Bar")
-                    categoryRepository.insert("Baz")
+            runBlocking {
+                categoryRepository.jdbcConnectionFactory.inTxSuspendContext {
+                    categoryRepository.insertSuspend("Foo")
+                    categoryRepository.insertSuspend("Bar")
+                    categoryRepository.insertSuspend("Baz")
 
                     if (true) {
                         throw IllegalStateException("OPS")
                     }
                 }
-            )
+            }
 
             fail<Unit>("OPS")
         } catch (e: Exception) {
@@ -153,19 +203,21 @@ class SuspendTests(
     }
 
     @Test
-    fun check5() {
+    fun check7() {
         try {
-            categoryRepository.jdbcConnectionFactory.inTx(
-                SqlRunnable {
-                    categoryRepository.insert("Foo")
-                    categoryRepository.insert("Bar")
-                    categoryRepository.insert("Baz")
+            runBlocking {
+                GlobalScope.async {
+                    categoryRepository.jdbcConnectionFactory.inTxSuspendContext(Dispatchers.IO) {
+                        categoryRepository.insertSuspend("Foo")
+                        categoryRepository.insertSuspend("Bar")
+                        categoryRepository.insertSuspend("Baz")
 
-                    if (true) {
-                        throw IllegalStateException("OPS")
+                        if (true) {
+                            throw IllegalStateException("OPS")
+                        }
                     }
-                }
-            )
+                }.await()
+            }
 
             fail<Unit>("OPS")
         } catch (e: Exception) {
