@@ -1,20 +1,14 @@
 package ru.tinkoff.kora.kotlin.example.crud
 
-import com.typesafe.config.ConfigFactory
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.impl.annotations.SpyK
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
-import ru.tinkoff.kora.config.common.Config
-import ru.tinkoff.kora.config.common.origin.SimpleConfigOrigin
-import ru.tinkoff.kora.config.hocon.HoconConfigFactory
 import ru.tinkoff.kora.example.crud.openapi.http.server.model.CategoryCreateTO
 import ru.tinkoff.kora.example.crud.openapi.http.server.model.PetCreateTO
 import ru.tinkoff.kora.example.crud.openapi.http.server.model.PetUpdateTO
-import ru.tinkoff.kora.kotlin.example.crud.model.PetCategory
 import ru.tinkoff.kora.kotlin.example.crud.model.PetWithCategory
 import ru.tinkoff.kora.kotlin.example.crud.repository.CategoryRepository
 import ru.tinkoff.kora.kotlin.example.crud.repository.PetRepository
@@ -31,9 +25,11 @@ class PetServiceTests : KoraAppTestConfigModifier {
     @field:MockK
     @TestComponent
     lateinit var petCache: PetCache
+
     @field:MockK
     @TestComponent
     lateinit var petRepository: PetRepository
+
     @field:MockK
     @TestComponent
     lateinit var categoryRepository: CategoryRepository
@@ -41,7 +37,8 @@ class PetServiceTests : KoraAppTestConfigModifier {
     @TestComponent
     lateinit var petService: PetService
 
-    override fun config(): KoraConfigModification = KoraConfigModification.ofString("""
+    override fun config(): KoraConfigModification = KoraConfigModification.ofString(
+        """
            resilient {
               circuitbreaker.pet {
                 slidingWindowSize = 2
@@ -58,7 +55,8 @@ class PetServiceTests : KoraAppTestConfigModifier {
                 attempts = 2
               }
             }
-    """.trimIndent())
+    """.trimIndent()
+    )
 
     @Test
     fun updatePetWithNewCategoryCreated() {
@@ -117,7 +115,7 @@ class PetServiceTests : KoraAppTestConfigModifier {
 
     private fun mockCache() {
         every { petCache.get(any<Long>()) } returns null
-        every { petCache.put(any<Long>(), any()) } returnsArgument(1)
+        every { petCache.put(any<Long>(), any()) } returnsArgument (1)
         every { petCache.get(any<Collection<Long>>()) } returns emptyMap<Long, PetWithCategory>()
     }
 

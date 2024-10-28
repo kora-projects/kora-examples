@@ -1,6 +1,6 @@
 # Kora Java Submodule CRUD Service
 
-Пример сервиса реализованного на Kora с HTTP [CRUD](https://github.com/swagger-api/swagger-petstore) API
+Пример сервиса реализованного на Kora с упрощенным HTTP [CRUD](https://github.com/swagger-api/swagger-petstore) API
 использующий разделение сервиса на проектные модули по функциональности, 
 в качестве базы данных выступает Postgres, используется кэш Caffeine, а также другие модули которые использовались бы в реальном приложении в бою.
 

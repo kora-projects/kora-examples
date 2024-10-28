@@ -6,7 +6,7 @@ import ru.tinkoff.kora.config.hocon.HoconConfigModule;
 import ru.tinkoff.kora.example.submodule.pet.service.PetService;
 
 @KoraApp
-public interface PetApplication extends
+public interface TestPetApplication extends
         HoconConfigModule,
         PetModule {
 

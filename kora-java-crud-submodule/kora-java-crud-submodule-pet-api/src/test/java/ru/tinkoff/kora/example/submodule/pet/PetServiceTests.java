@@ -20,7 +20,7 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 
-@KoraAppTest(PetApplication.class)
+@KoraAppTest(TestPetApplication.class)
 class PetServiceTests implements KoraAppTestConfigModifier {
 
     @Mock

@@ -6,7 +6,7 @@ import ru.tinkoff.kora.config.hocon.HoconConfigModule;
 import ru.tinkoff.kora.example.submodule.vet.service.VetService;
 
 @KoraApp
-public interface VetApplication extends
+public interface TestVetApplication extends
         HoconConfigModule,
         VetModule {
 

@@ -32,6 +32,9 @@ dependencies {
     koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
     annotationProcessor "ru.tinkoff.kora:annotation-processors"
 
+    annotationProcessor "ru.tinkoff.kora:telemetry-sage-annotation-processor:0.9.0-SNAPSHOT"
+    implementation "ru.tinkoff.kora:telemetry-sage:0.9.0-SNAPSHOT"
+
     implementation "ru.tinkoff.kora:validation-module"
     implementation "ru.tinkoff.kora:http-server-undertow"
     implementation "ru.tinkoff.kora:json-module"
@@ -71,8 +74,9 @@ tasks.register("openApiGeneratePetV3", GenerateTask) {
     modelPackage = "ru.tinkoff.kora.example.openapi.petV3.model"
     invokerPackage = "ru.tinkoff.kora.example.openapi.petV3.invoker"
     configOptions = [
-            mode                  : "java-reactive-server", // так же есть java-server вариация HTTP Server'а
-            enableServerValidation: "true"
+            mode                           : "java-reactive-server", // так же есть java-server вариация HTTP Server'а
+            enableServerValidation         : "true",
+            "additionalContractAnnotations": """{ "*" : [ {"annotation": "@ru.tinkoff.kora.telemetry.sage.common.annotation.SageTelemetry"} ] }"""
     ]
 }
 
