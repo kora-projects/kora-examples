@@ -19,11 +19,16 @@
 
 ## Build
 
-Собрать артефакт:
+Собрать классы:
+
+```shell
+./gradlew classes
+```
+
+Собрать Java артефакт:
 
 ```shell
 ./gradlew shadowJar
-docker build -t kora-java-graalvm-crud-jdbc .
 ```
 
 ### Generate
@@ -33,9 +38,22 @@ docker build -t kora-java-graalvm-crud-jdbc .
 ./gradlew openApiGenerateHttpServer
 ```
 
+### Image
+
+Собрать образ приложения:
+```shell
+docker build -t kora-java-graalvm-crud-jdbc .
+```
+
+Получить GraalVM Native Image артефакт:
+
+```shell
+docker run --rm --entrypoint cat kora-java-graalvm-crud-jdbc /opt/app/application > application
+```
+
 ## Run
 
-Запустить локально:
+Запустить Java локально:
 ```shell
 ./gradlew run
 ```

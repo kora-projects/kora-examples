@@ -16,10 +16,16 @@
 
 ## Build
 
+Собрать классы:
+
+```shell
+./gradlew classes
+```
+
 Собрать артефакт:
 
 ```shell
-./gradlew jar
+./gradlew distTar
 ```
 
 ### Generate
@@ -27,6 +33,13 @@
 Сгенерировать API для HTTP Server:
 ```shell
 ./gradlew openApiGenerateHttpServer
+```
+
+### Image
+
+Собрать образ приложения:
+```shell
+docker build -t kora-kotlin-crud .
 ```
 
 ## Run

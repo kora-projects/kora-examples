@@ -8,10 +8,23 @@
 
 ## Build
 
+Собрать классы:
+
+```shell
+./gradlew classes
+```
+
 Собрать артефакт:
 
 ```shell
-./gradlew jar
+./gradlew distTar
+```
+
+### Image
+
+Собрать образ приложения:
+```shell
+docker build -t kora-kotlin-helloworld .
 ```
 
 ## Run

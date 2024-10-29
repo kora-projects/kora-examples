@@ -19,6 +19,12 @@
 
 ## Build
 
+Собрать классы:
+
+```shell
+./gradlew classes
+```
+
 Собрать артефакт:
 
 ```shell
@@ -30,6 +36,13 @@
 Сгенерировать API для HTTP Server:
 ```shell
 ./gradlew openApiGenerateHttpServer
+```
+
+### Image
+
+Собрать образ приложения:
+```shell
+docker build -t kora-java-crud .
 ```
 
 ## Run
