@@ -12,12 +12,10 @@ import ru.tinkoff.kora.http.server.common.auth.HttpServerPrincipalExtractor;
 import ru.tinkoff.kora.http.server.undertow.UndertowHttpServerModule;
 import ru.tinkoff.kora.json.module.JsonModule;
 import ru.tinkoff.kora.logging.logback.LogbackModule;
-import ru.tinkoff.kora.telemetry.sage.TelemetrySageModule;
 import ru.tinkoff.kora.validation.module.ValidationModule;
 
 @KoraApp
 public interface Application extends
-        TelemetrySageModule,
         HoconConfigModule,
         LogbackModule,
         ValidationModule,
