@@ -18,6 +18,7 @@
 
     <logger level="INFO" name="ru.tinkoff.kora"/>
     <logger level="DEBUG" name="ru.tinkoff.kora.example"/>
+    <logger level="TRACE" name="ru.tinkoff.kora.example.generated.soap.SimpleService"/>
 
     <logger level="DEBUG" name="org.testcontainers.containers"/>
     <logger level="DEBUG" name="io.goodforgod.testcontainers.extensions"/>

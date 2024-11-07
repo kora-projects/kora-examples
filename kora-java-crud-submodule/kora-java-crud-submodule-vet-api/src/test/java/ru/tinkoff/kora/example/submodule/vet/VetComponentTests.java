@@ -18,7 +18,7 @@ import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 
 @KoraAppTest(TestVetApplication.class)
-class VetServiceTests implements KoraAppTestConfigModifier {
+class VetComponentTests implements KoraAppTestConfigModifier {
 
     @Mock
     @TestComponent
@@ -47,7 +47,7 @@ class VetServiceTests implements KoraAppTestConfigModifier {
                    }
                    retry.vet {
                      delay = 100ms
-                     attempts = 2
+                     attempts = 0
                    }
                  }
                  """);

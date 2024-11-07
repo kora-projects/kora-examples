@@ -13,7 +13,7 @@ import java.time.Duration
 
 
 @Testcontainers
-class HelloWorldControllerTests {
+class BlackBoxTests {
 
     @Container
     private val container = AppContainer.build()

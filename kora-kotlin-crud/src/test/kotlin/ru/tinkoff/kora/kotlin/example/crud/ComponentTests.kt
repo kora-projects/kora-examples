@@ -20,7 +20,7 @@ import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification
 import ru.tinkoff.kora.test.extension.junit5.TestComponent
 
 @KoraAppTest(Application::class)
-class UnitTests : KoraAppTestConfigModifier {
+class ComponentTests : KoraAppTestConfigModifier {
 
     @field:MockK
     @TestComponent
@@ -52,7 +52,7 @@ class UnitTests : KoraAppTestConfigModifier {
               }
               retry.pet {
                 delay = 100ms
-                attempts = 2
+                attempts = 0
               }
             }
     """.trimIndent()

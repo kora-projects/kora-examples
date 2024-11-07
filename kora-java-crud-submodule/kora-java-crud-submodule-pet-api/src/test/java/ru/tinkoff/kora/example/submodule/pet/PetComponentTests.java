@@ -1,29 +1,27 @@
-package ru.tinkoff.kora.example.graalvm.crud.vertx;
+package ru.tinkoff.kora.example.submodule.pet;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import reactor.core.publisher.Mono;
-import ru.tinkoff.kora.example.graalvm.crud.openapi.server.model.CategoryCreateTO;
-import ru.tinkoff.kora.example.graalvm.crud.openapi.server.model.PetCreateTO;
-import ru.tinkoff.kora.example.graalvm.crud.openapi.server.model.PetUpdateTO;
-import ru.tinkoff.kora.example.graalvm.crud.vertx.repository.CategoryRepository;
-import ru.tinkoff.kora.example.graalvm.crud.vertx.repository.PetRepository;
-import ru.tinkoff.kora.example.graalvm.crud.vertx.service.PetCache;
-import ru.tinkoff.kora.example.graalvm.crud.vertx.service.PetService;
+import ru.tinkoff.kora.example.submodule.pet.model.dao.Pet;
+import ru.tinkoff.kora.example.submodule.pet.repository.CategoryRepository;
+import ru.tinkoff.kora.example.submodule.pet.repository.PetRepository;
+import ru.tinkoff.kora.example.submodule.pet.service.PetCache;
+import ru.tinkoff.kora.example.submodule.pet.service.PetService;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 
-@KoraAppTest(Application.class)
-class UnitTests implements KoraAppTestConfigModifier {
+@KoraAppTest(TestPetApplication.class)
+class PetComponentTests implements KoraAppTestConfigModifier {
 
     @Mock
     @TestComponent
@@ -55,7 +53,7 @@ class UnitTests implements KoraAppTestConfigModifier {
                    }
                    retry.pet {
                      delay = 100ms
-                     attempts = 2
+                     attempts = 0
                    }
                  }
                  """);
@@ -67,16 +65,13 @@ class UnitTests implements KoraAppTestConfigModifier {
         mockCache();
         mockRepository(Map.of("dog", 1L, "cat", 2L));
 
-        var added = petService.add(new PetCreateTO("dog", new CategoryCreateTO("dog"))).block();
+        var added = petService.add("dog", "dog");
         assertEquals(1, added.id());
         assertEquals(1, added.category().id());
 
         // when
-        Mockito.when(petRepository.findById(anyLong())).thenReturn(Mono.just(added));
-        Mockito.when(petRepository.update(any())).thenReturn(Mono.empty());
-        var updated = petService.update(added.id(),
-                new PetUpdateTO(PetUpdateTO.StatusEnum.PENDING, "cat", new CategoryCreateTO("cat")))
-                .blockOptional();
+        Mockito.when(petRepository.findById(anyLong())).thenReturn(Optional.of(added));
+        var updated = petService.update(added.id(), "cat", "cat", Pet.Status.PENDING);
         assertTrue(updated.isPresent());
         assertEquals(1, updated.get().id());
         assertEquals(2, updated.get().category().id());
@@ -92,17 +87,14 @@ class UnitTests implements KoraAppTestConfigModifier {
         mockCache();
         mockRepository(Map.of("dog", 1L));
 
-        var added = petService.add(new PetCreateTO("dog", new CategoryCreateTO("dog"))).block();
+        var added = petService.add("dog", "dog");
         assertEquals(1, added.id());
         assertEquals(1, added.category().id());
 
         // when
-        Mockito.when(petRepository.findById(anyLong())).thenReturn(Mono.just(added));
-        Mockito.when(petRepository.update(any())).thenReturn(Mono.empty());
-        Mockito.when(categoryRepository.findByName(any())).thenReturn(Mono.just(added.category()));
-        var updated = petService.update(added.id(),
-                new PetUpdateTO(PetUpdateTO.StatusEnum.PENDING, "cat", new CategoryCreateTO("dog")))
-                .blockOptional();
+        Mockito.when(petRepository.findById(anyLong())).thenReturn(Optional.of(added));
+        Mockito.when(categoryRepository.findByName(any())).thenReturn(Optional.of(added.category()));
+        var updated = petService.update(added.id(), "cat", "cat", Pet.Status.PENDING);
         assertTrue(updated.isPresent());
         assertNotEquals(0, updated.get().id());
         assertNotEquals(0, updated.get().category().id());
@@ -119,9 +111,9 @@ class UnitTests implements KoraAppTestConfigModifier {
     }
 
     private void mockRepository(Map<String, Long> categoryNameToId) {
-        categoryNameToId.forEach((k, v) -> Mockito.when(categoryRepository.insert(k)).thenReturn(Mono.just(v)));
-        Mockito.when(categoryRepository.findByName(any())).thenReturn(Mono.empty());
-        Mockito.when(petRepository.insert(any())).thenReturn(Mono.just(1L));
-        Mockito.when(petRepository.findById(anyLong())).thenReturn(Mono.empty());
+        categoryNameToId.forEach((k, v) -> Mockito.when(categoryRepository.insert(k)).thenReturn(v));
+        Mockito.when(categoryRepository.findByName(any())).thenReturn(Optional.empty());
+        Mockito.when(petRepository.insert(any())).thenReturn(1L);
+        Mockito.when(petRepository.findById(anyLong())).thenReturn(Optional.empty());
     }
 }

@@ -13,6 +13,7 @@ plugins {
     id("org.openapi.generator") version ("7.4.0")
     id("application")
     id("jacoco")
+    id("java")
     kotlin("kapt") version ("1.9.10")
     kotlin("jvm") version ("1.9.10")
     id("com.google.devtools.ksp") version ("1.9.10-1.0.13")
@@ -46,7 +47,6 @@ dependencies {
 
     kapt("org.mapstruct:mapstruct-processor:1.5.5.Final")
     ksp("ru.tinkoff.kora:symbol-processors")
-    ksp("org.slf4j:slf4j-simple:2.0.11")
 
     implementation("ru.tinkoff.kora:http-server-undertow")
     implementation("ru.tinkoff.kora:http-client-ok")
@@ -63,7 +63,9 @@ dependencies {
 
     implementation("org.postgresql:postgresql:42.7.2")
     implementation("org.mapstruct:mapstruct:1.5.5.Final")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.3")
 
+    kspTest("ru.tinkoff.kora:symbol-processors")
     testImplementation("org.json:json:20231013")
     testImplementation("org.skyscreamer:jsonassert:1.5.1")
 
@@ -89,6 +91,7 @@ tasks.register("openApiGenerateHttpServer", GenerateTask::class) {
 
 ksp {
     allowSourcesFromOtherPlugins = true
+    arg("kora.app.submodule.enabled", "true") // Only for integration tests
 }
 tasks.withType<KspTask> {
     dependsOn(tasks.named("kaptKotlin").get())

@@ -89,3 +89,9 @@ flyway {
 distTar {
     archiveFileName = "application.tar"
 }
+
+compileJava {
+    options.compilerArgs += [
+            "-Akora.app.submodule.enabled=true", // Only for integration tests
+    ]
+}

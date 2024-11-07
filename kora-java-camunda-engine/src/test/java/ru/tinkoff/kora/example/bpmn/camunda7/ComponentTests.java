@@ -24,7 +24,7 @@ import ru.tinkoff.kora.example.camunda.engine.helloworld.LoggerDelegate;
 import ru.tinkoff.kora.test.extension.junit5.*;
 
 @KoraAppTest(Application.class)
-class CamundaEngineMockedTests implements KoraAppTestGraphModifier, KoraAppTestConfigModifier {
+class ComponentTests implements KoraAppTestGraphModifier, KoraAppTestConfigModifier {
 
     @Mock
     @TestComponent

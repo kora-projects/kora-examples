@@ -50,6 +50,8 @@ dependencies {
     implementation "org.mapstruct:mapstruct:1.5.5.Final"
     implementation "org.postgresql:postgresql:42.7.2"
 
+    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
+
     testImplementation "org.json:json:20231013"
     testImplementation "org.skyscreamer:jsonassert:1.5.1"
 
@@ -137,6 +139,9 @@ compileJava {
     options.encoding("UTF-8")
     options.incremental(true)
     options.fork = false
+    options.compilerArgs += [
+            "-Akora.app.submodule.enabled=true", // Only for integration tests
+    ]
 }
 
 check.dependsOn jacocoTestReport
