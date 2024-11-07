@@ -6,10 +6,12 @@ import org.testcontainers.containers.output.Slf4jLogConsumer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.images.builder.ImageFromDockerfile
 import org.testcontainers.utility.DockerImageName
+import ru.tinkoff.kora.test.extension.junit5.KoraAppTest
 import java.net.URI
 import java.nio.file.Paths
 import java.time.Duration
 import java.util.concurrent.Future
+
 
 class AppContainer : GenericContainer<AppContainer> {
 

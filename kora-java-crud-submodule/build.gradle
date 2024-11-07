@@ -39,6 +39,8 @@ subprojects {
                 "": ""
         ])
 
+        exclude(["**/\$*"])
+
         useJUnitPlatform()
         testLogging {
             showStandardStreams(true)

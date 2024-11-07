@@ -108,6 +108,8 @@ test {
         exceptionFormat("full")
     }
 
+    exclude(["**/\$*"])
+
     jacoco {
         excludes += ["**/Application*"]
     }
