@@ -79,7 +79,7 @@ tasks.register("openApiGenerateHttpServer", GenerateTask::class) {
     generatorName = "kora"
     group = "openapi tools"
     inputSpec = "$projectDir/src/main/resources/openapi/http-server.yaml"
-    outputDir = "${layout.buildDirectory}/generated/openapi"
+    outputDir = "$buildDir/generated/openapi"
     apiPackage = "ru.tinkoff.kora.example.crud.openapi.http.server.api"
     modelPackage = "ru.tinkoff.kora.example.crud.openapi.http.server.model"
     invokerPackage = "ru.tinkoff.kora.example.crud.openapi.http.server.invoker"
