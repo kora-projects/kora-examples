@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        task: [ "database", "client", "server", "graalvm", "other" ]
+        task: [ "database", "client", "server", "graalvm", "kotlin", "other" ]
     name: Running tests for ${{ matrix.task }}
     steps:
       - uses: actions/checkout@v4

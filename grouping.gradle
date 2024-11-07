@@ -51,6 +51,7 @@ groupModulesByType("database")
 groupModulesByType("graalvm")
 groupModulesByType("server")
 groupModulesByType("client")
+groupModulesByType("kotlin")
 groupModulesByType("other")
 
 
