@@ -5,11 +5,13 @@ import java.util.UUID;
 import ru.tinkoff.kora.database.common.annotation.Column;
 import ru.tinkoff.kora.database.common.annotation.Query;
 import ru.tinkoff.kora.database.common.annotation.Repository;
+import ru.tinkoff.kora.database.jdbc.EntityJdbc;
 import ru.tinkoff.kora.database.jdbc.JdbcRepository;
 
 @Repository
 public interface JdbcIdRandomRepository extends JdbcRepository {
 
+    @EntityJdbc
     record Entity(UUID id,
                   @Column("name") String name) {
 

@@ -31,14 +31,11 @@ dependencies {
     koraBom(platform("ru.tinkoff.kora:kora-parent:$koraVersion"))
 
     ksp("ru.tinkoff.kora:symbol-processors")
-    ksp("org.slf4j:slf4j-simple:2.0.11")
 
     implementation("ru.tinkoff.kora:http-server-undertow")
     implementation("ru.tinkoff.kora:json-module")
     implementation("ru.tinkoff.kora:config-hocon")
     implementation("ru.tinkoff.kora:logging-logback")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.7.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.3")
 
     testImplementation("ru.tinkoff.kora:test-junit5")
     testImplementation("org.skyscreamer:jsonassert:1.5.1")

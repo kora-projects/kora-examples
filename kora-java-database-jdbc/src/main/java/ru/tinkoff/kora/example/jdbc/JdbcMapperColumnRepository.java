@@ -9,6 +9,7 @@ import ru.tinkoff.kora.common.Mapping;
 import ru.tinkoff.kora.database.common.annotation.Column;
 import ru.tinkoff.kora.database.common.annotation.Query;
 import ru.tinkoff.kora.database.common.annotation.Repository;
+import ru.tinkoff.kora.database.jdbc.EntityJdbc;
 import ru.tinkoff.kora.database.jdbc.JdbcRepository;
 import ru.tinkoff.kora.database.jdbc.mapper.parameter.JdbcParameterColumnMapper;
 import ru.tinkoff.kora.database.jdbc.mapper.result.JdbcResultColumnMapper;
@@ -43,6 +44,7 @@ public interface JdbcMapperColumnRepository extends JdbcRepository {
         }
     }
 
+    @EntityJdbc
     record Entity(String id,
                   @Mapping(EntityFieldTypeResultMapper.class)
                   @Mapping(EntityFieldTypeParameterMapper.class)

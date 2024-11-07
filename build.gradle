@@ -14,9 +14,26 @@ repositories {
 }
 
 subprojects {
+    if (!project.childProjects.isEmpty()) {
+        return
+    }
+
     apply plugin: "java"
-    apply plugin: "com.diffplug.spotless"
     apply plugin: "com.asarkar.gradle.build-time-tracker"
+
+    if (!project.name.contains("kotlin")) {
+        apply plugin: "com.diffplug.spotless"
+
+        spotless {
+            java {
+                encoding("UTF-8")
+                importOrder()
+                removeUnusedImports()
+                eclipse("4.21").configFile("${rootDir}/config/codestyle.xml")
+                targetExclude("**/proto/**", "**/generated/openapi/**", "**/generated/soap/**", "**/generated/grpc/**",)
+            }
+        }
+    }
 
     group = groupId
     version = koraVersion
@@ -25,16 +42,6 @@ subprojects {
         mavenLocal()
         mavenCentral()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
-    }
-
-    spotless {
-        java {
-            encoding("UTF-8")
-            importOrder()
-            removeUnusedImports()
-            eclipse("4.21").configFile("${rootDir}/config/codestyle.xml")
-            targetExclude("**/proto/**", "**/generated/openapi/**", "**/generated/soap/**", "**/generated/grpc/**",)
-        }
     }
 
     configurations {

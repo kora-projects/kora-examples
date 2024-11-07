@@ -1,0 +1,97 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+buildscript {
+    dependencies {
+        classpath("ru.tinkoff.kora:openapi-generator:$koraVersion")
+    }
+}
+
+plugins {
+    id "java"
+    id "application"
+
+    id "org.openapi.generator" version "7.4.0"
+    id "org.flywaydb.flyway" version "8.4.2"
+}
+
+applicationName = "application"
+mainClassName = "ru.tinkoff.kora.example.submodule.app.Application"
+
+dependencies {
+    annotationProcessor "org.mapstruct:mapstruct-processor:1.5.5.Final"
+
+    implementation project(":kora-java-crud-submodule:kora-java-crud-submodule-pet-api")
+    implementation project(":kora-java-crud-submodule:kora-java-crud-submodule-vet-api")
+
+    implementation "ru.tinkoff.kora:http-server-undertow"
+    implementation "ru.tinkoff.kora:config-hocon"
+    implementation "ru.tinkoff.kora:logging-logback"
+    implementation "ru.tinkoff.kora:json-module"
+    implementation "ru.tinkoff.kora:micrometer-module"
+    implementation "ru.tinkoff.kora:validation-module"
+    implementation "ru.tinkoff.kora:openapi-management"
+
+    implementation "org.mapstruct:mapstruct:1.5.5.Final"
+    implementation "org.postgresql:postgresql:42.7.2"
+
+    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
+
+    // access to flyway migrations in tests
+    testRuntimeOnly project(":kora-java-crud-submodule:kora-java-crud-submodule-common")
+
+    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.12.0"
+    testImplementation "org.testcontainers:junit-jupiter:1.19.8"
+}
+
+tasks.register("openApiGenerateHttpServer", GenerateTask) {
+    generatorName = "kora"
+    group = "openapi tools"
+    inputSpec = "$projectDir/src/main/resources/openapi/http-server.yaml"
+    outputDir = "$buildDir/generated/openapi"
+    apiPackage = "ru.tinkoff.kora.example.submodule.openapi.http.server.api"
+    modelPackage = "ru.tinkoff.kora.example.submodule.openapi.http.server.model"
+    invokerPackage = "ru.tinkoff.kora.example.submodule.openapi.http.server.invoker"
+    configOptions = [
+            mode                  : "java-server", // так же есть java-server вариация HTTP Server"а
+            enableServerValidation: "true"
+    ]
+}
+
+compileJava.dependsOn tasks.openApiGenerateHttpServer
+test.dependsOn tasks.distTar
+
+application {
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+}
+
+//noinspection GroovyAssignabilityCheck
+run {
+    environment([
+            "POSTGRES_JDBC_URL": "jdbc:postgresql://$postgresHost:$postgresPort/$postgresDatabase",
+            "POSTGRES_USER"    : "$postgresUser",
+            "POSTGRES_PASS"    : "$postgresPassword",
+    ])
+}
+
+sourceSets {
+    main {
+        java.srcDirs += "$buildDir/generated/openapi"
+    }
+}
+
+flyway {
+    url = "jdbc:postgresql://$postgresHost:$postgresPort/$postgresDatabase"
+    user = "$postgresUser"
+    password = "$postgresPassword"
+    locations = ["classpath:db/migration"]
+}
+
+distTar {
+    archiveFileName = "application.tar"
+}
+
+compileJava {
+    options.compilerArgs += [
+            "-Akora.app.submodule.enabled=true", // Only for integration tests
+    ]
+}

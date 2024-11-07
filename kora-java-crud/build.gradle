@@ -1,3 +1,5 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
 buildscript {
     dependencies {
         classpath("ru.tinkoff.kora:openapi-generator:$koraVersion")
@@ -48,10 +50,10 @@ dependencies {
     implementation "org.mapstruct:mapstruct:1.5.5.Final"
     implementation "org.postgresql:postgresql:42.7.2"
 
+    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
+
     testImplementation "org.json:json:20231013"
     testImplementation "org.skyscreamer:jsonassert:1.5.1"
-
-    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
 
     testImplementation "org.mockito:mockito-core:5.7.0"
     testImplementation "ru.tinkoff.kora:test-junit5"
@@ -59,7 +61,7 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
 }
 
-openApiGenerate {
+tasks.register("openApiGenerateHttpServer", GenerateTask) {
     generatorName = "kora"
     group = "openapi tools"
     inputSpec = "$projectDir/src/main/resources/openapi/http-server.yaml"
@@ -73,7 +75,7 @@ openApiGenerate {
     ]
 }
 
-compileJava.dependsOn tasks.openApiGenerate
+compileJava.dependsOn tasks.openApiGenerateHttpServer
 test.dependsOn tasks.distTar
 
 application {
@@ -106,6 +108,8 @@ test {
         exceptionFormat("full")
     }
 
+    exclude(["**/\$*"])
+
     jacoco {
         excludes += ["**/Application*"]
     }
@@ -137,6 +141,9 @@ compileJava {
     options.encoding("UTF-8")
     options.incremental(true)
     options.fork = false
+    options.compilerArgs += [
+            "-Akora.app.submodule.enabled=true", // Only for integration tests
+    ]
 }
 
 check.dependsOn jacocoTestReport

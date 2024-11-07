@@ -1,6 +1,6 @@
 # Kora Kotlin CRUD Service
 
-Пример сервиса реализованного на Kora с HTTP [CRUD](https://github.com/swagger-api/swagger-petstore) API,
+Пример сервиса реализованного на Kora с упрощенным HTTP [CRUD](https://github.com/swagger-api/swagger-petstore) API,
 в качестве базы данных выступает Postgres, используется кэш Caffeine, а также другие модули которые использовались бы в реальном приложении в бою.
 
 В примере использовались модули:
@@ -16,10 +16,16 @@
 
 ## Build
 
+Собрать классы:
+
+```shell
+./gradlew classes
+```
+
 Собрать артефакт:
 
 ```shell
-./gradlew jar
+./gradlew distTar
 ```
 
 ### Generate
@@ -27,6 +33,13 @@
 Сгенерировать API для HTTP Server:
 ```shell
 ./gradlew openApiGenerateHttpServer
+```
+
+### Image
+
+Собрать образ приложения:
+```shell
+docker build -t kora-kotlin-crud .
 ```
 
 ## Run

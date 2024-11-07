@@ -12,6 +12,8 @@ buildscript {
 plugins {
     id("org.openapi.generator") version ("7.4.0")
     id("application")
+    id("jacoco")
+    id("java")
     kotlin("kapt") version ("1.9.10")
     kotlin("jvm") version ("1.9.10")
     id("com.google.devtools.ksp") version ("1.9.10-1.0.13")
@@ -45,7 +47,6 @@ dependencies {
 
     kapt("org.mapstruct:mapstruct-processor:1.5.5.Final")
     ksp("ru.tinkoff.kora:symbol-processors")
-    ksp("org.slf4j:slf4j-simple:2.0.11")
 
     implementation("ru.tinkoff.kora:http-server-undertow")
     implementation("ru.tinkoff.kora:http-client-ok")
@@ -62,7 +63,9 @@ dependencies {
 
     implementation("org.postgresql:postgresql:42.7.2")
     implementation("org.mapstruct:mapstruct:1.5.5.Final")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.3")
 
+    kspTest("ru.tinkoff.kora:symbol-processors")
     testImplementation("org.json:json:20231013")
     testImplementation("org.skyscreamer:jsonassert:1.5.1")
 
@@ -86,22 +89,9 @@ tasks.register("openApiGenerateHttpServer", GenerateTask::class) {
     )
 }
 
-tasks.register("openApiGenerateHttpClient", GenerateTask::class) {
-    generatorName = "kora"
-    group = "openapi tools"
-    inputSpec = "$projectDir/src/main/resources/openapi/http-server.yaml"
-    outputDir = "$buildDir/generated/openapi"
-    apiPackage = "ru.tinkoff.kora.example.crud.openapi.http.client.api"
-    modelPackage = "ru.tinkoff.kora.example.crud.openapi.http.client.model"
-    invokerPackage = "ru.tinkoff.kora.example.crud.openapi.http.client.invoker"
-    configOptions = mapOf(
-        "mode" to "kotlin-client",
-        "enableServerValidation" to "true",
-    )
-}
-
 ksp {
     allowSourcesFromOtherPlugins = true
+    arg("kora.app.submodule.enabled", "true") // Only for integration tests
 }
 tasks.withType<KspTask> {
     dependsOn(tasks.named("kaptKotlin").get())
@@ -109,7 +99,6 @@ tasks.withType<KspTask> {
 }
 tasks.withType<KotlinCompile>().configureEach {
     dependsOn(tasks.named("openApiGenerateHttpServer"))
-    dependsOn(tasks.named("openApiGenerateHttpClient"))
 }
 
 val postgresHost: String by project
@@ -133,6 +122,8 @@ tasks.test {
         "-XX:TieredStopAtLevel=1",
     )
 
+    exclude(listOf("**/\$*"))
+
     useJUnitPlatform()
     testLogging {
         showStandardStreams = true
@@ -155,4 +146,11 @@ flyway {
 
 tasks.distTar {
     archiveFileName.set("application.tar")
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required = true
+        html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
+    }
 }

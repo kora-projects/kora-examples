@@ -13,6 +13,7 @@ import ru.tinkoff.kora.database.common.annotation.Batch;
 import ru.tinkoff.kora.database.common.annotation.Column;
 import ru.tinkoff.kora.database.common.annotation.Query;
 import ru.tinkoff.kora.database.common.annotation.Repository;
+import ru.tinkoff.kora.database.jdbc.EntityJdbc;
 import ru.tinkoff.kora.database.jdbc.JdbcRepository;
 import ru.tinkoff.kora.database.jdbc.mapper.parameter.JdbcParameterColumnMapper;
 
@@ -35,6 +36,7 @@ public interface JdbcCrudSyncRepository extends JdbcRepository {
         }
     }
 
+    @EntityJdbc
     record Entity(String id,
                   @Column("value1") int field1,
                   String value2,

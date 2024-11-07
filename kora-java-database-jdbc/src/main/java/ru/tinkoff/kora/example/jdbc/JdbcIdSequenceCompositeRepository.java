@@ -4,11 +4,13 @@ import jakarta.annotation.Nullable;
 import java.util.List;
 import ru.tinkoff.kora.database.common.UpdateCount;
 import ru.tinkoff.kora.database.common.annotation.*;
+import ru.tinkoff.kora.database.jdbc.EntityJdbc;
 import ru.tinkoff.kora.database.jdbc.JdbcRepository;
 
 @Repository
 public interface JdbcIdSequenceCompositeRepository extends JdbcRepository {
 
+    @EntityJdbc
     record Entity(@Id @Embedded EntityId id,
                   @Column("name") String name) {
 

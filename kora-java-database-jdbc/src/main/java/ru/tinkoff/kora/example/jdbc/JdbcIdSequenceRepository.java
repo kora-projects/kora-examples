@@ -3,11 +3,13 @@ package ru.tinkoff.kora.example.jdbc;
 import jakarta.annotation.Nullable;
 import java.util.List;
 import ru.tinkoff.kora.database.common.annotation.*;
+import ru.tinkoff.kora.database.jdbc.EntityJdbc;
 import ru.tinkoff.kora.database.jdbc.JdbcRepository;
 
 @Repository
 public interface JdbcIdSequenceRepository extends JdbcRepository {
 
+    @EntityJdbc
     record Entity(@Id Long id,
                   @Column("name") String name) {
 

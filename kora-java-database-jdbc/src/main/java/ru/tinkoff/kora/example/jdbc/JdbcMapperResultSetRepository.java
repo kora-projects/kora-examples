@@ -9,12 +9,14 @@ import java.util.Map;
 import ru.tinkoff.kora.common.Mapping;
 import ru.tinkoff.kora.database.common.annotation.Query;
 import ru.tinkoff.kora.database.common.annotation.Repository;
+import ru.tinkoff.kora.database.jdbc.EntityJdbc;
 import ru.tinkoff.kora.database.jdbc.JdbcRepository;
 import ru.tinkoff.kora.database.jdbc.mapper.result.JdbcResultSetMapper;
 
 @Repository
 public interface JdbcMapperResultSetRepository extends JdbcRepository {
 
+    @EntityJdbc
     record EntityPart(String id, int field1) {}
 
     final class EntityPartResultSetMapper implements JdbcResultSetMapper<Map<Integer, List<EntityPart>>> {
