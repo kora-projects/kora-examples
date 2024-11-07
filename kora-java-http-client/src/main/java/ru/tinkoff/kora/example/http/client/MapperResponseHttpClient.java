@@ -1,5 +1,9 @@
 package ru.tinkoff.kora.example.http.client;
 
+import static ru.tinkoff.kora.http.client.common.annotation.ResponseCodeMapper.DEFAULT;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import ru.tinkoff.kora.http.client.common.HttpClientDecoderException;
 import ru.tinkoff.kora.http.client.common.annotation.HttpClient;
 import ru.tinkoff.kora.http.client.common.annotation.ResponseCodeMapper;
@@ -8,11 +12,6 @@ import ru.tinkoff.kora.http.client.common.response.HttpClientResponseMapper;
 import ru.tinkoff.kora.http.common.HttpMethod;
 import ru.tinkoff.kora.http.common.annotation.HttpRoute;
 import ru.tinkoff.kora.http.common.annotation.Path;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
-import static ru.tinkoff.kora.http.client.common.annotation.ResponseCodeMapper.DEFAULT;
 
 @HttpClient(configPath = "httpClient.default")
 public interface MapperResponseHttpClient {

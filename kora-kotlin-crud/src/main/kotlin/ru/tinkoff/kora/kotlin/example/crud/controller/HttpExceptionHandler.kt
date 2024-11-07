@@ -1,6 +1,7 @@
 package ru.tinkoff.kora.kotlin.example.crud.controller
 
 import io.micrometer.core.instrument.config.validate.ValidationException
+import org.slf4j.LoggerFactory
 import ru.tinkoff.kora.common.Component
 import ru.tinkoff.kora.common.Context
 import ru.tinkoff.kora.common.Tag
@@ -14,6 +15,10 @@ import java.util.concurrent.TimeoutException
 @Tag(HttpServerModule::class)
 @Component
 class HttpExceptionHandler(private val errorJsonWriter: JsonWriter<MessageTO>) : HttpServerInterceptor {
+
+    companion object {
+        val logger = LoggerFactory.getLogger(HttpExceptionHandler::class.java)!!
+    }
 
     override fun intercept(
         context: Context,
@@ -30,7 +35,10 @@ class HttpExceptionHandler(private val errorJsonWriter: JsonWriter<MessageTO>) :
                 is ValidationException -> HttpServerResponse.of(400, body)
                 is IllegalArgumentException -> HttpServerResponse.of(400, body)
                 is TimeoutException -> HttpServerResponse.of(408, body)
-                else -> HttpServerResponse.of(500, body)
+                else -> {
+                    logger.error("Request '{} {}' failed", request.method(), request.path(), e)
+                    HttpServerResponse.of(500, body)
+                }
             }
         }
     }

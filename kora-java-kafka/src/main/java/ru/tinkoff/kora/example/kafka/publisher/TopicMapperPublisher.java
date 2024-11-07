@@ -7,6 +7,7 @@ import ru.tinkoff.kora.common.Tag;
 import ru.tinkoff.kora.json.common.JsonWriter;
 import ru.tinkoff.kora.json.common.annotation.Json;
 import ru.tinkoff.kora.kafka.common.annotation.KafkaPublisher;
+import ru.tinkoff.kora.kafka.common.annotation.KafkaPublisher.Topic;
 
 @KafkaPublisher("kafka.producer.my-publisher")
 public interface TopicMapperPublisher {
@@ -34,6 +35,6 @@ public interface TopicMapperPublisher {
         }
     }
 
-    @KafkaPublisher.Topic("kafka.producer.my-topic")
+    @Topic("kafka.producer.my-topic")
     void send(@Tag(MyEvent.class) MyEvent value);
 }

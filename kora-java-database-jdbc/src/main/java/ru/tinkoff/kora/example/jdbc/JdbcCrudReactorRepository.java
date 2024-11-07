@@ -8,11 +8,13 @@ import ru.tinkoff.kora.database.common.annotation.Batch;
 import ru.tinkoff.kora.database.common.annotation.Column;
 import ru.tinkoff.kora.database.common.annotation.Query;
 import ru.tinkoff.kora.database.common.annotation.Repository;
+import ru.tinkoff.kora.database.jdbc.EntityJdbc;
 import ru.tinkoff.kora.database.jdbc.JdbcRepository;
 
 @Repository
 public interface JdbcCrudReactorRepository extends JdbcRepository {
 
+    @EntityJdbc
     class Entity {
 
         private String id;

@@ -11,12 +11,14 @@ import ru.tinkoff.kora.kotlin.example.crud.model.PetWithCategory
 @Repository
 interface PetRepository : JdbcRepository {
 
-    @Query("""
+    @Query(
+        """
         SELECT p.id, p.name, p.status, p.category_id, c.name as category_name 
         FROM pets p 
         JOIN categories c on c.id = p.category_id 
         WHERE p.id = :id
-        """)
+        """
+    )
     fun findById(id: Long): PetWithCategory?
 
     @Id

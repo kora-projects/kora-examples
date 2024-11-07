@@ -18,24 +18,30 @@ jobs:
     strategy:
       matrix:
         java: [ "17" ]
-        task: [ "database", "client", "server", "graalvm", "other" ]
+        task: [ "database", "client", "server", "graalvm", "kotlin", "other" ]
     name: Pull Request Java ${{ matrix.java }} for ${{ matrix.task }}
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK
-        uses: actions/setup-java@v3
+      - uses: actions/checkout@v4
+      - name: JDK setup
+        uses: actions/setup-java@v4
         with:
           java-version: ${{ matrix.java }}
           distribution: "adopt"
 
-      - name: Build classes
-        run: "./gradlew classes-${{ matrix.task }}"
+      - name: Gradle setup
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/master' }}
+          gradle-home-cache-cleanup: ${{ github.ref == 'refs/heads/master' }}
 
-      - name: Build tests
-        run: "./gradlew testClasses-${{ matrix.task }}"
+      - name: Gradle classes
+        run: "./gradlew classes-${{ matrix.task }} --scan"
 
-      - name: Run tests
-        run: "./gradlew test-${{ matrix.task }} jacocoTestReport --no-parallel"
+      - name: Gradle tests classes
+        run: "./gradlew testClasses-${{ matrix.task }} --scan"
+
+      - name: Gradle tests
+        run: "./gradlew test-${{ matrix.task }} jacocoTestReport --no-parallel --scan"
 
       - name: Report tests
         if: ${{ matrix.java }} == "17"

@@ -1,6 +1,7 @@
 # Kora Java GraalVM CRUD JDBC Service
 
-Пример сервиса реализованного на Kora с HTTP [CRUD](https://github.com/swagger-api/swagger-petstore) API, 
+Пример сервиса реализованного на Kora с упрощенным HTTP [CRUD](https://github.com/swagger-api/swagger-petstore) API
+и использованием [GraalVM Native Image](https://www.graalvm.org/latest/reference-manual/native-image/),
 в качестве базы данных выступает Postgres, используется кэш Caffeine, а также другие модули которые использовались бы в реальном приложении в бою.
 
 В примере использовались модули:
@@ -18,11 +19,16 @@
 
 ## Build
 
-Собрать артефакт:
+Собрать классы:
+
+```shell
+./gradlew classes
+```
+
+Собрать Java артефакт:
 
 ```shell
 ./gradlew shadowJar
-docker build -t kora-java-graalvm-crud-jdbc .
 ```
 
 ### Generate
@@ -32,9 +38,22 @@ docker build -t kora-java-graalvm-crud-jdbc .
 ./gradlew openApiGenerateHttpServer
 ```
 
+### Image
+
+Собрать образ приложения:
+```shell
+docker build -t kora-java-graalvm-crud-jdbc .
+```
+
+Получить GraalVM Native Image артефакт:
+
+```shell
+docker run --rm --entrypoint cat kora-java-graalvm-crud-jdbc /opt/app/application > application
+```
+
 ## Run
 
-Запустить локально:
+Запустить Java локально:
 ```shell
 ./gradlew run
 ```

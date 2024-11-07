@@ -72,7 +72,7 @@ tasks.register("openApiGeneratePetV3", GenerateTask) {
     invokerPackage = "ru.tinkoff.kora.example.openapi.petV3.invoker"
     configOptions = [
             mode                  : "java-reactive-server", // так же есть java-server вариация HTTP Server'а
-            enableServerValidation: "true"
+            enableServerValidation: "true",
     ]
 }
 

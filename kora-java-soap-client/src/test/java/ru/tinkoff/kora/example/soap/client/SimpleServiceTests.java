@@ -33,7 +33,7 @@ class SimpleServiceTests implements KoraAppTestConfigModifier {
     private SimpleService service;
 
     @Test
-    void simpleServiceSuccess() throws Exception {
+    void simpleServiceSyncSuccess() throws Exception {
         // given
         mockserverConnection.client().when(
                 org.mockserver.model.HttpRequest.request()
