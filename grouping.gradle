@@ -4,12 +4,23 @@ def addDependency = { TaskProvider taskProvider, String dependency ->
     taskProvider.configure { Task task -> task.dependsOn(dependency) }
 }
 
+def getProjectFullName = { Project pj ->
+    def fullName = pj.name
+    def parent = pj.parent
+    while (parent != null && parent.name != rootProject.name) {
+        fullName = parent.name + ":" + fullName
+        parent = parent.parent
+    }
+    return fullName
+}
+
 def addDependencyByType = { TaskProvider taskProvider, String type, String taskName ->
     rootProject.allprojects.forEach {
-        if (type == "other" && it.name != rootProject.name && !nonOtherModules.contains(it.name)) {
-            addDependency(taskProvider, ":${it.name}:${taskName}")
+        def fullName = getProjectFullName(it)
+        if (type == "other" && it.name != rootProject.name && !nonOtherModules.contains(it.name) && it.childProjects.isEmpty()) {
+            addDependency(taskProvider, ":${fullName}:${taskName}")
         } else if (it.name.contains(type)) {
-            addDependency(taskProvider, ":${it.name}:${taskName}")
+            addDependency(taskProvider, ":${fullName}:${taskName}")
             nonOtherModules.add(it.name)
         }
     }
