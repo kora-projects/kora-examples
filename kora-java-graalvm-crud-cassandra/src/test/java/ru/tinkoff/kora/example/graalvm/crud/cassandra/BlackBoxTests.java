@@ -57,7 +57,7 @@ class BlackBoxTests {
                     "REDIS_URL", paramsRedis.uri().toString(),
                     "REDIS_USER", paramsRedis.username(),
                     "REDIS_PASS", paramsRedis.password(),
-                    "CACHE_EXPIRE_WRITE", "0s",
+                    "CACHE_MAX_SIZE", "0",
                     "RETRY_ATTEMPTS", "0"));
 
             container.start();

@@ -44,7 +44,7 @@ class BlackBoxTests {
                     "r2dbc:postgresql://%s:%s/%s".formatted(params.host(), params.port(), params.database()),
                     "POSTGRES_USER", params.username(),
                     "POSTGRES_PASS", params.password(),
-                    "CACHE_EXPIRE_WRITE", "0s",
+                    "CACHE_MAX_SIZE", "0",
                     "RETRY_ATTEMPTS", "0"));
 
             container.start();
