@@ -43,7 +43,7 @@ class BlackBoxTests(@ConnectionPostgreSQL val connection: JdbcConnection) {
                     "POSTGRES_JDBC_URL" to params.jdbcUrl(),
                     "POSTGRES_USER" to params.username(),
                     "POSTGRES_PASS" to params.password(),
-                    "CACHE_EXPIRE_WRITE" to "0s",
+                    "CACHE_MAX_SIZE" to "0",
                     "RETRY_ATTEMPTS" to "0",
                 )
             )
