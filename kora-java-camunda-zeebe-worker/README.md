@@ -1,16 +1,22 @@
-# Kora Java Database JDBC
+# Kora Java Camunda Zeebe
 
-Пример модуля Database JDBC в Kora.
+Пример модуля Camunda Zeebe в Kora.
 
 В примере использовались модули:
-- [Jdbc Database](https://kora-projects.github.io/kora-docs/ru/documentation/database-jdbc)
+- [Camunda Zeebe](https://kora-projects.github.io/kora-docs/ru/documentation/camunda8-zeebe/)
 
 ## Build
+
+Собрать классы:
+
+```shell
+./gradlew classes
+```
 
 Собрать артефакт:
 
 ```shell
-./gradlew shadowJar
+./gradlew distTar
 ```
 
 ## Run
