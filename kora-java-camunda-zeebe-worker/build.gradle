@@ -1,0 +1,100 @@
+plugins {
+    id "java"
+    id "jacoco"
+    id "application"
+}
+
+applicationName = "application"
+mainClassName = "ru.tinkoff.kora.example.camunda.zeebe.Application"
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+configurations {
+    koraBom
+    annotationProcessor.extendsFrom(koraBom)
+    compileOnly.extendsFrom(koraBom)
+    implementation.extendsFrom(koraBom)
+    api.extendsFrom(koraBom)
+}
+
+dependencies {
+    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
+    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+
+    implementation "ru.tinkoff.kora.experimental:camunda-zeebe-worker"
+    implementation "ru.tinkoff.kora:scheduling-jdk"
+    implementation "ru.tinkoff.kora:logging-logback"
+    implementation "ru.tinkoff.kora:config-hocon"
+//    implementation "ru.tinkoff.kora:json-module"
+
+    testImplementation "org.mockito:mockito-core:5.7.0"
+    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "io.camunda:zeebe-process-test-extension-testcontainer:8.6.7"
+    testImplementation "org.testcontainers:junit-jupiter:1.19.8"
+}
+
+test.dependsOn tasks.distTar
+
+application {
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+}
+
+//noinspection GroovyAssignabilityCheck
+run {
+    environment([
+            "ZEEBE_GRPC_URL": "http://$zeebeHost:$zeebePort",
+    ])
+}
+
+test {
+    jvmArgs += [
+            "-XX:+TieredCompilation",
+            "-XX:TieredStopAtLevel=1",
+    ]
+
+    environment([
+            "": ""
+    ])
+
+    useJUnitPlatform()
+    testLogging {
+        showStandardStreams(true)
+        events("passed", "skipped", "failed")
+        exceptionFormat("full")
+    }
+
+    jacoco {
+        excludes += ["**/Application*"]
+    }
+
+    reports {
+        html.required = false
+        junitXml.required = false
+    }
+}
+
+distTar {
+    archiveFileName = "application.tar"
+}
+
+compileJava {
+    options.encoding("UTF-8")
+    options.incremental(true)
+    options.fork = false
+}
+
+check.dependsOn jacocoTestReport
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
+    }
+}
+
+javadoc {
+    options.encoding = "UTF-8"
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption("html5", true)
+    }
+}
