@@ -8,8 +8,6 @@ import ru.tinkoff.kora.camunda.zeebe.worker.annotation.JobVariable;
 import ru.tinkoff.kora.camunda.zeebe.worker.annotation.JobWorker;
 import ru.tinkoff.kora.common.Component;
 
-import java.util.Map;
-
 import static ru.tinkoff.kora.example.camunda.zeebe.WorkerUtils.logJob;
 
 @Component

@@ -1,18 +1,13 @@
 package ru.tinkoff.kora.example.camunda.zeebe;
 
-import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.tinkoff.kora.camunda.zeebe.worker.JobContext;
 import ru.tinkoff.kora.camunda.zeebe.worker.annotation.JobVariable;
 import ru.tinkoff.kora.camunda.zeebe.worker.annotation.JobWorker;
 import ru.tinkoff.kora.common.Component;
-import ru.tinkoff.kora.json.common.JsonWriter;
-import ru.tinkoff.kora.json.common.annotation.Json;
 
 import java.util.Map;
-import java.util.Objects;
-import java.util.Stack;
 
 import static ru.tinkoff.kora.example.camunda.zeebe.WorkerUtils.logJob;
 

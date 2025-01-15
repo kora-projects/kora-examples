@@ -8,8 +8,7 @@ import java.time.Instant;
 
 public final class WorkerUtils {
 
-    private WorkerUtils() {
-    }
+    private WorkerUtils() { }
 
     public static void logJob(Logger logger, ActivatedJob job) {
         logger.info("""
