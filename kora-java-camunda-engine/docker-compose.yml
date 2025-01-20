@@ -12,6 +12,7 @@ services:
 
   application:
     image: kora-java-camunda-engine
+    build: .
     restart: unless-stopped
     ports:
       - '8080:8080'
