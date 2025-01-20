@@ -27,6 +27,15 @@
 ./gradlew run
 ```
 
+## Run Docker-Compose
+
+Требуется сначала собрать артефакт.
+
+Запустить как docker-compose:
+```shell
+docker-compose up
+```
+
 ## Test
 
 Тесты используют [Testcontainers](https://java.testcontainers.org/), требуется [Docker](https://docs.docker.com/engine/install/) окружение для запуска тестов или аналогичные контейнерные окружения ([colima](https://github.com/abiosoft/colima) / итп)

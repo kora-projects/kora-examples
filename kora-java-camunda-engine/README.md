@@ -19,6 +19,13 @@
 ./gradlew distTar
 ```
 
+### Image
+
+Собрать образ приложения:
+```shell
+docker build -t kora-java-camunda-engine .
+```
+
 ## Run
 
 Запустить локально:

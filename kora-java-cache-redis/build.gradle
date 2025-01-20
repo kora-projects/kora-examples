@@ -5,7 +5,7 @@ plugins {
 }
 
 applicationName = "application"
-mainClassName = "ru.tinkoff.kora.example.resilient.Application"
+mainClassName = "ru.tinkoff.kora.example.cache.redis.Application"
 
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
