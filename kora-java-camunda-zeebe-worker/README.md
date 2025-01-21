@@ -3,7 +3,7 @@
 Пример модуля Camunda Zeebe в Kora.
 
 В примере использовались модули:
-- [Camunda Zeebe](https://kora-projects.github.io/kora-docs/ru/documentation/camunda8-zeebe/)
+- [Camunda Zeebe](https://kora-projects.github.io/kora-docs/ru/documentation/camunda8-worker/)
 
 ## Build
 
@@ -19,11 +19,29 @@
 ./gradlew distTar
 ```
 
+### Image
+
+Собрать образ приложения:
+```shell
+docker build -t kora-java-camunda-zeebe-worker .
+```
+
 ## Run
+
+Перед запуском локально требуется запустить Zeebe оркестратор.
 
 Запустить локально:
 ```shell
 ./gradlew run
+```
+
+## Run Docker-Compose
+
+Требуется сначала собрать артефакт.
+
+Запустить как docker-compose:
+```shell
+docker-compose up
 ```
 
 ## Test
