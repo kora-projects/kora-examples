@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:16.4-alpine
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_DATABASE: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+
+  flyway:
+    image: flyway/flyway:10.2-alpine
+    restart: no
+    command: -url=jdbc:postgresql://postgres:5432/postgres -schemas=public -user=postgres -password=postgres -connectRetries=60 migrate
+    volumes:
+      - ./src/main/resources/db/migration:/flyway/sql
+    depends_on:
+      - postgres
+
+
+# Можно закомментировать секцию application и использовать docker-compose
+# как окружения для запуска сервиса через gradle run
+  application:
+    image: kora-java-graalvm-crud-r2dbc
+    build: .
+    restart: unless-stopped
+    ports:
+      - '8080:8080'
+      - '8085:8085'
+    environment:
+      POSTGRES_R2DBC_URL: jdbc:postgresql://postgres:5432/postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASS: postgres
+    depends_on:
+      - postgres
+      - flyway

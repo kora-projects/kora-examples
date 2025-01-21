@@ -51,11 +51,27 @@ docker build -t kora-java-graalvm-crud-jdbc .
 docker run --rm --entrypoint cat kora-java-graalvm-crud-jdbc /opt/app/application > application
 ```
 
+## Migration
+
+Миграции вызываются с помощью Flyway Gradle Plugin:
+```shell
+./gradlew flywayMigrate
+```
+
 ## Run
 
 Запустить Java локально:
 ```shell
 ./gradlew run
+```
+
+## Run Docker-Compose
+
+Требуется сначала собрать артефакт.
+
+Запустить как docker-compose:
+```shell
+docker-compose up
 ```
 
 ## Test
