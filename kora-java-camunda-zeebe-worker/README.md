@@ -1,10 +1,9 @@
-# Kora Java Camunda BPMN
+# Kora Java Camunda Zeebe
 
-Пример модуля Camunda BPMN & REST в Kora.
+Пример модуля Camunda Zeebe в Kora.
 
 В примере использовались модули:
-- [Camunda BPMN](https://kora-projects.github.io/kora-docs/ru/documentation/camunda7-bpmn/)
-- [Camunda REST](https://kora-projects.github.io/kora-docs/ru/documentation/camunda7-rest/)
+- [Camunda Zeebe](https://kora-projects.github.io/kora-docs/ru/documentation/camunda8-zeebe/)
 
 ## Build
 
@@ -18,13 +17,6 @@
 
 ```shell
 ./gradlew distTar
-```
-
-### Image
-
-Собрать образ приложения:
-```shell
-docker build -t kora-java-camunda-engine .
 ```
 
 ## Run
