@@ -4,12 +4,7 @@ plugins {
     id "application"
 }
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-    maven { url = "https://s01.oss.sonatype.org/content/repositories/snapshots/" }
-}
-
+applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.kafka.Application"
 
 sourceCompatibility = JavaVersion.VERSION_17

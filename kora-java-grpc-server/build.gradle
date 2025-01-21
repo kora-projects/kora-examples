@@ -25,7 +25,7 @@ dependencies {
     annotationProcessor "ru.tinkoff.kora:annotation-processors"
 
     implementation "ru.tinkoff.kora:grpc-server"
-    implementation "io.grpc:grpc-protobuf:1.58.0"
+    implementation "io.grpc:grpc-protobuf:1.62.2"
     implementation "javax.annotation:javax.annotation-api:1.3.2"
 
     implementation "ru.tinkoff.kora:logging-logback"
@@ -36,9 +36,9 @@ dependencies {
 }
 
 protobuf {
-    protoc { artifact = "com.google.protobuf:protoc:3.24.4" }
+    protoc { artifact = "com.google.protobuf:protoc:3.25.3" }
     plugins {
-        grpc { artifact = "io.grpc:protoc-gen-grpc-java:1.58.0" }
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:1.62.2" }
     }
 
     generateProtoTasks {

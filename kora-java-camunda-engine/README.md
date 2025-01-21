@@ -1,9 +1,10 @@
-# Kora Java Database JDBC
+# Kora Java Camunda BPMN
 
-Пример модуля Database JDBC в Kora.
+Пример модуля Camunda BPMN & REST в Kora.
 
 В примере использовались модули:
-- [Jdbc Database](https://kora-projects.github.io/kora-docs/ru/documentation/database-jdbc)
+- [Camunda BPMN](https://kora-projects.github.io/kora-docs/ru/documentation/camunda7-bpmn/)
+- [Camunda REST](https://kora-projects.github.io/kora-docs/ru/documentation/camunda7-rest/)
 
 ## Build
 
@@ -17,6 +18,13 @@
 
 ```shell
 ./gradlew distTar
+```
+
+### Image
+
+Собрать образ приложения:
+```shell
+docker build -t kora-java-camunda-engine .
 ```
 
 ## Run

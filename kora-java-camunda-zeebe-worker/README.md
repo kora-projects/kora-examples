@@ -1,10 +1,9 @@
-# Kora Java Kafka
+# Kora Java Camunda Zeebe
 
-Пример модуля Kafka в Kora.
+Пример модуля Camunda Zeebe в Kora.
 
 В примере использовались модули:
-- [Kafka](https://kora-projects.github.io/kora-docs/ru/documentation/kafka/)
-- [JSON](https://kora-projects.github.io/kora-docs/ru/documentation/json/)
+- [Camunda Zeebe](https://kora-projects.github.io/kora-docs/ru/documentation/camunda8-worker/)
 
 ## Build
 
@@ -20,7 +19,16 @@
 ./gradlew distTar
 ```
 
+### Image
+
+Собрать образ приложения:
+```shell
+docker build -t kora-java-camunda-zeebe-worker .
+```
+
 ## Run
+
+Перед запуском локально требуется запустить Zeebe оркестратор.
 
 Запустить локально:
 ```shell
