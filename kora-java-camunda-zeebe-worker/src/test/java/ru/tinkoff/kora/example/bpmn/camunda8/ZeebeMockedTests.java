@@ -8,22 +8,19 @@ import io.camunda.zeebe.process.test.assertions.BpmnAssert;
 import io.camunda.zeebe.process.test.assertions.DeploymentAssert;
 import io.camunda.zeebe.process.test.assertions.ProcessInstanceAssert;
 import io.camunda.zeebe.process.test.extension.testcontainer.ZeebeProcessTest;
+import java.time.Duration;
+import java.util.Date;
+import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Spy;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 import ru.tinkoff.kora.camunda.zeebe.worker.KoraZeebeJobWorkerEngine;
 import ru.tinkoff.kora.example.camunda.zeebe.Application;
-import ru.tinkoff.kora.example.camunda.zeebe.Step2JobWorker;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
-
-import java.time.Duration;
-import java.util.Date;
-import java.util.UUID;
 
 @ZeebeProcessTest
 @KoraAppTest(value = Application.class, components = KoraZeebeJobWorkerEngine.class)

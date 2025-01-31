@@ -2,13 +2,12 @@ package ru.tinkoff.kora.example.camunda.zeebe;
 
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
+import java.util.Date;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.tinkoff.kora.common.Component;
 import ru.tinkoff.kora.scheduling.jdk.annotation.ScheduleAtFixedRate;
-
-import java.util.Date;
-import java.util.UUID;
 
 @Component
 public final class ProcessScheduler {
