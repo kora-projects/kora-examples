@@ -13,26 +13,14 @@ import ru.tinkoff.kora.example.openapi.petV2.api.PetApiDelegate;
 import ru.tinkoff.kora.example.openapi.petV2.api.PetApiResponses;
 import ru.tinkoff.kora.example.openapi.petV2.model.Message;
 import ru.tinkoff.kora.example.openapi.petV2.model.Pet;
-import ru.tinkoff.kora.validation.common.Validator;
 
 @Component
 public final class PetV2Delegate implements PetApiDelegate {
 
     private final Map<Long, Pet> petMap = new ConcurrentHashMap<>();
 
-    private final Validator<Pet> petValidator;
-
-    public PetV2Delegate(Validator<Pet> petValidator) {
-        this.petValidator = petValidator;
-    }
-
     @Override
     public PetApiResponses.AddPetApiResponse addPet(Pet body) {
-        var violations = petValidator.validate(body);
-        if (!violations.isEmpty()) {
-            return new PetApiResponses.AddPetApiResponse.AddPet405ApiResponse();
-        }
-
         petMap.put(body.id(), body);
         return new PetApiResponses.AddPetApiResponse.AddPet200ApiResponse(new Message("OK"));
     }
@@ -60,6 +48,7 @@ public final class PetV2Delegate implements PetApiDelegate {
     public PetApiResponses.FindPetsByTagsApiResponse findPetsByTags(List<String> tags) {
         final Set<String> petTags = new HashSet<>(tags);
         final List<Pet> pets = petMap.values().stream()
+                .filter(p -> p.tags() != null)
                 .filter(p -> p.tags().stream().allMatch(tag -> petTags.contains(tag.name())))
                 .toList();
 
@@ -87,11 +76,6 @@ public final class PetV2Delegate implements PetApiDelegate {
     @Override
     public PetApiResponses.UpdatePetApiResponse updatePet(Pet body) {
         if (!petMap.containsKey(body.id())) {
-            return new PetApiResponses.UpdatePetApiResponse.UpdatePet404ApiResponse();
-        }
-
-        var violations = petValidator.validate(body);
-        if (!violations.isEmpty()) {
             return new PetApiResponses.UpdatePetApiResponse.UpdatePet404ApiResponse();
         }
 
