@@ -12,26 +12,14 @@ import ru.tinkoff.kora.example.openapi.petV3.api.PetApiDelegate;
 import ru.tinkoff.kora.example.openapi.petV3.api.PetApiResponses;
 import ru.tinkoff.kora.example.openapi.petV3.model.Message;
 import ru.tinkoff.kora.example.openapi.petV3.model.Pet;
-import ru.tinkoff.kora.validation.common.Validator;
 
 @Component
 public final class PetV3Delegate implements PetApiDelegate {
 
     private final Map<Long, Pet> petMap = new ConcurrentHashMap<>();
 
-    private final Validator<Pet> petValidator;
-
-    public PetV3Delegate(Validator<Pet> petValidator) {
-        this.petValidator = petValidator;
-    }
-
     @Override
     public Mono<PetApiResponses.AddPetApiResponse> addPet(Pet body) {
-        var violations = petValidator.validate(body);
-        if (!violations.isEmpty()) {
-            return Mono.just(new PetApiResponses.AddPetApiResponse.AddPet405ApiResponse());
-        }
-
         petMap.put(body.id(), body);
         return Mono.just(new PetApiResponses.AddPetApiResponse.AddPet200ApiResponse(body));
     }
@@ -60,6 +48,7 @@ public final class PetV3Delegate implements PetApiDelegate {
     public Mono<PetApiResponses.FindPetsByTagsApiResponse> findPetsByTags(List<String> tags) {
         final Set<String> petTags = new HashSet<>(tags);
         final List<Pet> pets = petMap.values().stream()
+                .filter(p -> p.tags() != null)
                 .filter(p -> p.tags().stream().allMatch(tag -> petTags.contains(tag.name())))
                 .toList();
 
@@ -87,11 +76,6 @@ public final class PetV3Delegate implements PetApiDelegate {
     @Override
     public Mono<PetApiResponses.UpdatePetApiResponse> updatePet(Pet body) {
         if (!petMap.containsKey(body.id())) {
-            return Mono.just(new PetApiResponses.UpdatePetApiResponse.UpdatePet404ApiResponse());
-        }
-
-        var violations = petValidator.validate(body);
-        if (!violations.isEmpty()) {
             return Mono.just(new PetApiResponses.UpdatePetApiResponse.UpdatePet404ApiResponse());
         }
 
