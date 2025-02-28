@@ -9,6 +9,7 @@ import ru.tinkoff.kora.example.crud.openapi.http.server.model.MessageTO
 import ru.tinkoff.kora.http.common.body.HttpBody
 import ru.tinkoff.kora.http.server.common.*
 import ru.tinkoff.kora.json.common.JsonWriter
+import java.util.concurrent.CompletionException
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.TimeoutException
 
@@ -26,17 +27,18 @@ class HttpExceptionHandler(private val errorJsonWriter: JsonWriter<MessageTO>) :
         chain: HttpServerInterceptor.InterceptChain
     ): CompletionStage<HttpServerResponse> {
         return chain.process(context, request).exceptionally { e ->
-            if (e is HttpServerResponseException) {
-                return@exceptionally e
+            val error = if (e is CompletionException) e.cause!! else e
+            if (error is HttpServerResponseException) {
+                return@exceptionally error
             }
 
-            val body = HttpBody.json(errorJsonWriter.toByteArrayUnchecked(MessageTO(e.message)))
-            when (e) {
+            val body = HttpBody.json(errorJsonWriter.toByteArrayUnchecked(MessageTO(error.message)))
+            when (error) {
                 is ValidationException -> HttpServerResponse.of(400, body)
                 is IllegalArgumentException -> HttpServerResponse.of(400, body)
                 is TimeoutException -> HttpServerResponse.of(408, body)
                 else -> {
-                    logger.error("Request '{} {}' failed", request.method(), request.path(), e)
+                    logger.error("Request '{} {}' failed", request.method(), request.path(), error)
                     HttpServerResponse.of(500, body)
                 }
             }

@@ -1,6 +1,8 @@
 package ru.tinkoff.kora.example.submodule.app.controller;
 
 import io.micrometer.core.instrument.config.validate.ValidationException;
+
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
@@ -29,6 +31,9 @@ public final class HttpExceptionHandler implements HttpServerInterceptor {
     public CompletionStage<HttpServerResponse> intercept(Context context, HttpServerRequest request, InterceptChain chain)
             throws Exception {
         return chain.process(context, request).exceptionally(e -> {
+            if(e instanceof CompletionException) {
+                e = e.getCause();
+            }
             if (e instanceof HttpServerResponseException ex) {
                 return ex;
             }

@@ -1,6 +1,7 @@
 package ru.tinkoff.kora.example.http.server;
 
 import java.io.IOException;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import ru.tinkoff.kora.common.Component;
 import ru.tinkoff.kora.common.Context;
@@ -41,6 +42,9 @@ public final class ErrorHandlerController {
         public CompletionStage<HttpServerResponse> intercept(Context context, HttpServerRequest request, InterceptChain chain)
                 throws Exception {
             return chain.process(context, request).exceptionally(e -> {
+                if(e instanceof CompletionException) {
+                    e = e.getCause();
+                }
                 if (e instanceof HttpServerResponseException ex) {
                     return ex;
                 }
