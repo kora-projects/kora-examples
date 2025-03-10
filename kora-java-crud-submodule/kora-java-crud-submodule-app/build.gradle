@@ -39,7 +39,7 @@ dependencies {
     // access to flyway migrations in tests
     testRuntimeOnly project(":kora-java-crud-submodule:kora-java-crud-submodule-common")
 
-    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.12.0"
+    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.12.2"
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
 }
 

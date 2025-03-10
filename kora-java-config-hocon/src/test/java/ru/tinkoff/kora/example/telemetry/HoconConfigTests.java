@@ -51,5 +51,9 @@ class HoconConfigTests {
         assertEquals(Map.of("k1", "v1", "k2", "v2"), fooConfig.valueProperties());
         assertEquals("someString", fooConfig.bar().someBarString());
         assertEquals("someString", fooConfig.bar().baz().someBazString());
+        assertEquals("someString1", fooConfig.bars().get(0).someBarString());
+        assertEquals("someString1", fooConfig.bars().get(0).baz().someBazString());
+        assertEquals("someString2", fooConfig.bars().get(1).someBarString());
+        assertEquals("someString2", fooConfig.bars().get(1).baz().someBazString());
     }
 }

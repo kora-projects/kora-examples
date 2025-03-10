@@ -36,3 +36,10 @@ foo:
     someBarString: "someString"
     baz:
       someBazString: "someString"
+  bars:
+    - someBarString: "someString1"
+      baz:
+        someBazString: "someString1"
+    - someBarString: "someString2"
+      baz:
+        someBazString: "someString2"

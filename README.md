@@ -1,4 +1,4 @@
-# Kora applications examples
+# Kora examples
 
 В данном репозитории собраны примеры сервисов использующих различные модули [Kora](https://kora-projects.github.io/kora-docs/ru/).
 Каждый Gradle модуль является независимым сервисом. 
