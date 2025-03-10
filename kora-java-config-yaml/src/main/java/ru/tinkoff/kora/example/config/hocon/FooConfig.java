@@ -7,6 +7,7 @@ import java.time.*;
 import java.util.*;
 import java.util.regex.Pattern;
 import ru.tinkoff.kora.config.common.annotation.ConfigSource;
+import ru.tinkoff.kora.config.common.annotation.ConfigValueExtractor;
 
 @ConfigSource("foo")
 public interface FooConfig {
@@ -73,17 +74,21 @@ public interface FooConfig {
 
     Properties valueProperties();
 
-    BarConfig bar();
-
+    @ConfigValueExtractor
     interface BarConfig {
 
         String someBarString();
 
         BazConfig baz();
 
+        @ConfigValueExtractor
         interface BazConfig {
 
             String someBazString();
         }
     }
+
+    BarConfig bar();
+
+    List<BarConfig> bars();
 }
