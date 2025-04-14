@@ -42,6 +42,11 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter:1.19.8")
 }
 
+
+tasks.distTar {
+    archiveFileName.set("application.tar")
+}
+
 tasks.test {
     dependsOn("distTar")
 
@@ -61,8 +66,4 @@ tasks.test {
         html.required = false
         junitXml.required = false
     }
-}
-
-tasks.distTar {
-    archiveFileName.set("application.tar")
 }

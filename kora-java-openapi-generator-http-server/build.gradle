@@ -46,39 +46,42 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
 }
 
-// OpeAPI for V2
-openApiGenerate {
+// OpenAPI for V2
+def openApiGeneratePetV2 = tasks.register("openApiGeneratePetV2", GenerateTask) {
     generatorName = "kora"
     group = "openapi tools"
     inputSpec = "$projectDir/src/main/resources/openapi/petstoreV2.yaml"
     outputDir = "$buildDir/generated/openapi"
-    apiPackage = "ru.tinkoff.kora.example.openapi.petV2.api"
-    modelPackage = "ru.tinkoff.kora.example.openapi.petV2.model"
-    invokerPackage = "ru.tinkoff.kora.example.openapi.petV2.invoker"
+    def corePackage = "ru.tinkoff.kora.example.openapi.petV2"
+    apiPackage = "${corePackage}.api"
+    modelPackage = "${corePackage}.model"
+    invokerPackage = "${corePackage}.invoker"
     configOptions = [
             mode                  : "java-server", // так же есть reactive_server вариация HTTP Server'а
             enableServerValidation: "true",
     ]
 }
+sourceSets.main { java.srcDirs += openApiGeneratePetV2.get().outputDir }
+compileJava.dependsOn openApiGeneratePetV2
+
 
 // Additional OpenAPI Generator for V3
-tasks.register("openApiGeneratePetV3", GenerateTask) {
+def openApiGeneratePetV3 = tasks.register("openApiGeneratePetV3", GenerateTask) {
     generatorName = "kora"
     group = "openapi tools"
     inputSpec = "$projectDir/src/main/resources/openapi/petstoreV3.yaml"
     outputDir = "$buildDir/generated/openapi"
-    apiPackage = "ru.tinkoff.kora.example.openapi.petV3.api"
-    modelPackage = "ru.tinkoff.kora.example.openapi.petV3.model"
-    invokerPackage = "ru.tinkoff.kora.example.openapi.petV3.invoker"
+    def corePackage = "ru.tinkoff.kora.example.openapi.petV3"
+    apiPackage = "${corePackage}.api"
+    modelPackage = "${corePackage}.model"
+    invokerPackage = "${corePackage}.invoker"
     configOptions = [
             mode                  : "java-reactive-server", // так же есть java-server вариация HTTP Server'а
             enableServerValidation: "true",
     ]
 }
-
-compileJava.dependsOn tasks.openApiGenerate
-compileJava.dependsOn tasks.openApiGeneratePetV3
-test.dependsOn tasks.distTar
+sourceSets.main { java.srcDirs += openApiGeneratePetV3.get().outputDir }
+compileJava.dependsOn openApiGeneratePetV3
 
 application {
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
@@ -91,7 +94,13 @@ run {
     ])
 }
 
+distTar {
+    archiveFileName = "application.tar"
+}
+
 test {
+    dependsOn tasks.distTar
+
     jvmArgs += [
             "-XX:+TieredCompilation",
             "-XX:TieredStopAtLevel=1",
@@ -122,10 +131,6 @@ sourceSets {
     main {
         java.srcDirs += "$buildDir/generated/openapi"
     }
-}
-
-distTar {
-    archiveFileName = "application.tar"
 }
 
 compileJava {

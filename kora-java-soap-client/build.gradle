@@ -53,7 +53,13 @@ run {
     ])
 }
 
+distTar {
+    archiveFileName = "application.tar"
+}
+
 test {
+    dependsOn tasks.distTar
+
     jvmArgs += [
             "-XX:+TieredCompilation",
             "-XX:TieredStopAtLevel=1",
@@ -91,10 +97,6 @@ wsdl2java {
     includesWithOptions = [
             "**/simple-service.wsdl": ["-wsdlLocation", "https://kora.tinkoff.ru/simple/service?wsdl"],
     ]
-}
-
-distTar {
-    archiveFileName = "application.tar"
 }
 
 compileJava {
