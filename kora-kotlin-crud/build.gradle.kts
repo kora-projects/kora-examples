@@ -91,11 +91,11 @@ kotlin.sourceSets.main { kotlin.srcDir(openApiGenerateHttpServer.get().outputDir
 tasks.withType<KspTask> { dependsOn(openApiGenerateHttpServer) }
 
 ksp {
-    allowSourcesFromOtherPlugins = true // Use KAPT sources
+    allowSourcesFromOtherPlugins = true // Use KAPT sources for MapStruct
     arg("kora.app.submodule.enabled", "true") // Only for integration tests
 }
 
-// Run KAPT Before KSP for MapStruct
+// Run KAPT before KSP for MapStruct
 tasks.withType<KspTask> {
     dependsOn(tasks.named("kaptGenerateStubsKotlin").get())
     dependsOn(tasks.named("kaptKotlin").get())
