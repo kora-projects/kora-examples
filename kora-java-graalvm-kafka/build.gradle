@@ -57,8 +57,7 @@ graalvmNative {
 }
 
 processResources.dependsOn tasks.collectReachabilityMetadata
-test.dependsOn tasks.shadowJar
-test.dependsOn tasks.shadowJar
+sourceSets.main { resources.srcDirs += "$buildDir/native-reachability-metadata" }
 
 //noinspection GroovyAssignabilityCheck
 run {
