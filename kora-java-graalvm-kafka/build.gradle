@@ -57,8 +57,7 @@ graalvmNative {
 }
 
 processResources.dependsOn tasks.collectReachabilityMetadata
-test.dependsOn tasks.shadowJar
-test.dependsOn tasks.shadowJar
+sourceSets.main { resources.srcDirs += "$buildDir/native-reachability-metadata" }
 
 //noinspection GroovyAssignabilityCheck
 run {
@@ -67,7 +66,22 @@ run {
     ])
 }
 
+jar.enabled = false
+shadowJar {
+    mergeServiceFiles()
+    manifest {
+        attributes "Main-Class": mainClassName
+        attributes "Implementation-Version": koraVersion
+    }
+}
+
+artifacts {
+    archives shadowJar
+}
+
 test {
+    dependsOn tasks.shadowJar
+
     jvmArgs += [
             "-XX:+TieredCompilation",
             "-XX:TieredStopAtLevel=1",
@@ -92,25 +106,6 @@ test {
         html.required = false
         junitXml.required = false
     }
-}
-
-sourceSets {
-    main {
-        resources.srcDirs += "$buildDir/native-reachability-metadata"
-    }
-}
-
-jar.enabled = false
-shadowJar {
-    mergeServiceFiles()
-    manifest {
-        attributes "Main-Class": mainClassName
-        attributes "Implementation-Version": koraVersion
-    }
-}
-
-artifacts {
-    archives shadowJar
 }
 
 compileJava {
