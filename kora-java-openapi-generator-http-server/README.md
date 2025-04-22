@@ -25,7 +25,7 @@
 
 Сгенерировать API для PetV2.yml:
 ```shell
-./gradlew openApiGenerate
+./gradlew openApiGeneratePetV2
 ```
 
 Сгенерировать API для PetV3.yml:

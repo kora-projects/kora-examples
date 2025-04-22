@@ -61,22 +61,22 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
 }
 
-tasks.register("openApiGenerateHttpServer", GenerateTask) {
+def openApiGenerateHttpServer = tasks.register("openApiGenerateHttpServer", GenerateTask) {
     generatorName = "kora"
     group = "openapi tools"
     inputSpec = "$projectDir/src/main/resources/openapi/http-server.yaml"
     outputDir = "$buildDir/generated/openapi"
-    apiPackage = "ru.tinkoff.kora.example.crud.openapi.http.server.api"
-    modelPackage = "ru.tinkoff.kora.example.crud.openapi.http.server.model"
-    invokerPackage = "ru.tinkoff.kora.example.crud.openapi.http.server.invoker"
+    def corePackage = "ru.tinkoff.kora.example.crud.openapi.http.server"
+    apiPackage = "${corePackage}.api"
+    modelPackage = "${corePackage}.model"
+    invokerPackage = "${corePackage}.invoker"
     configOptions = [
             mode                  : "java-server", // так же есть java-server вариация HTTP Server"а
             enableServerValidation: "true"
     ]
 }
-
-compileJava.dependsOn tasks.openApiGenerateHttpServer
-test.dependsOn tasks.distTar
+sourceSets.main { java.srcDirs += openApiGenerateHttpServer.get().outputDir }
+compileJava.dependsOn openApiGenerateHttpServer
 
 application {
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
@@ -91,7 +91,13 @@ run {
     ])
 }
 
+distTar {
+    archiveFileName = "application.tar"
+}
+
 test {
+    dependsOn tasks.distTar
+
     jvmArgs += [
             "-XX:+TieredCompilation",
             "-XX:TieredStopAtLevel=1",
@@ -120,21 +126,11 @@ test {
     }
 }
 
-sourceSets {
-    main {
-        java.srcDirs += "$buildDir/generated/openapi"
-    }
-}
-
 flyway {
     url = "jdbc:postgresql://$postgresHost:$postgresPort/$postgresDatabase"
     user = "$postgresUser"
     password = "$postgresPassword"
     locations = ["classpath:db/migration"]
-}
-
-distTar {
-    archiveFileName = "application.tar"
 }
 
 compileJava {

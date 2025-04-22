@@ -15,6 +15,7 @@ import ru.tinkoff.kora.json.common.annotation.Json;
 @HttpController
 public final class JsonGetController {
 
+    @Json
     public record HelloWorldResponse(String greeting) {}
 
     @Json

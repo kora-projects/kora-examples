@@ -1,3 +1,5 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
 buildscript {
     dependencies {
         classpath("ru.tinkoff.kora:openapi-generator:$koraVersion")
@@ -59,19 +61,22 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
 }
 
-openApiGenerate {
+def openApiGenerateHttpServer = tasks.register("openApiGenerateHttpServer", GenerateTask) {
     generatorName = "kora"
     group = "openapi tools"
     inputSpec = "$projectDir/src/main/resources/openapi/http-server.yaml"
     outputDir = "$buildDir/generated/openapi"
-    apiPackage = "ru.tinkoff.kora.example.graalvm.crud.openapi.server.api"
-    modelPackage = "ru.tinkoff.kora.example.graalvm.crud.openapi.server.model"
-    invokerPackage = "ru.tinkoff.kora.example.graalvm.crud.openapi.server.invoker"
+    def corePackage = "ru.tinkoff.kora.example.graalvm.crud.openapi.server"
+    apiPackage = "${corePackage}.api"
+    modelPackage = "${corePackage}.model"
+    invokerPackage = "${corePackage}.invoker"
     configOptions = [
             mode                  : "java-reactive-server", // так же есть java-server вариация HTTP Server"а
             enableServerValidation: "true"
     ]
 }
+sourceSets.main { java.srcDirs += openApiGenerateHttpServer.get().outputDir }
+compileJava.dependsOn openApiGenerateHttpServer
 
 graalvmNative {
     binaries {
@@ -89,9 +94,8 @@ graalvmNative {
     }
 }
 
-compileJava.dependsOn tasks.openApiGenerate
 processResources.dependsOn tasks.collectReachabilityMetadata
-test.dependsOn tasks.shadowJar
+sourceSets.main { resources.srcDirs += "$buildDir/native-reachability-metadata" }
 
 //noinspection GroovyAssignabilityCheck
 run {
@@ -107,7 +111,22 @@ run {
     ])
 }
 
+jar.enabled = false
+shadowJar {
+    mergeServiceFiles()
+    manifest {
+        attributes "Main-Class": mainClassName
+        attributes "Implementation-Version": koraVersion
+    }
+}
+
+artifacts {
+    archives shadowJar
+}
+
 test {
+    dependsOn tasks.shadowJar
+
     jvmArgs += [
             "-XX:+TieredCompilation",
             "-XX:TieredStopAtLevel=1",
@@ -132,26 +151,6 @@ test {
         html.required = false
         junitXml.required = false
     }
-}
-
-sourceSets {
-    main {
-        java.srcDirs += "$buildDir/generated/openapi"
-        resources.srcDirs += "$buildDir/native-reachability-metadata"
-    }
-}
-
-jar.enabled = false
-shadowJar {
-    mergeServiceFiles()
-    manifest {
-        attributes "Main-Class": mainClassName
-        attributes "Implementation-Version": koraVersion
-    }
-}
-
-artifacts {
-    archives shadowJar
 }
 
 compileJava {

@@ -1,6 +1,5 @@
 import com.google.devtools.ksp.gradle.KspTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 buildscript {
@@ -30,7 +29,6 @@ kotlin {
     jvmToolchain { languageVersion.set(JavaLanguageVersion.of(17)) }
     sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
     sourceSets.test { kotlin.srcDir("build/generated/ksp/test/kotlin") }
-    sourceSets.main { kotlin.srcDir("build/generated/openapi") }
     sourceSets.main { kotlin.srcDir("build/generated/source/kapt/main") }
 }
 
@@ -75,30 +73,32 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter:1.19.8")
 }
 
-tasks.register("openApiGenerateHttpServer", GenerateTask::class) {
+val openApiGenerateHttpServer = tasks.register<GenerateTask>("openApiGenerateHttpServer") {
     generatorName = "kora"
     group = "openapi tools"
     inputSpec = "$projectDir/src/main/resources/openapi/http-server.yaml"
     outputDir = "$buildDir/generated/openapi"
-    apiPackage = "ru.tinkoff.kora.example.crud.openapi.http.server.api"
-    modelPackage = "ru.tinkoff.kora.example.crud.openapi.http.server.model"
-    invokerPackage = "ru.tinkoff.kora.example.crud.openapi.http.server.invoker"
+    val corePackage = "ru.tinkoff.kora.example.crud.openapi.http.server"
+    apiPackage = "${corePackage}.api"
+    modelPackage = "${corePackage}.model"
+    invokerPackage = "${corePackage}.invoker"
     configOptions = mapOf(
         "mode" to "kotlin-server",
         "enableServerValidation" to "true",
     )
 }
+kotlin.sourceSets.main { kotlin.srcDir(openApiGenerateHttpServer.get().outputDir) }
+tasks.withType<KspTask> { dependsOn(openApiGenerateHttpServer) }
 
 ksp {
-    allowSourcesFromOtherPlugins = true
+    allowSourcesFromOtherPlugins = true // Use KAPT sources for MapStruct
     arg("kora.app.submodule.enabled", "true") // Only for integration tests
 }
+
+// Run KAPT before KSP for MapStruct
 tasks.withType<KspTask> {
+    dependsOn(tasks.named("kaptGenerateStubsKotlin").get())
     dependsOn(tasks.named("kaptKotlin").get())
-    tasks.named("kaptGenerateStubsKotlin").get()
-}
-tasks.withType<KotlinCompile>().configureEach {
-    dependsOn(tasks.named("openApiGenerateHttpServer"))
 }
 
 val postgresHost: String by project
@@ -112,6 +112,10 @@ tasks.withType<JavaExec> {
         "POSTGRES_USER" to postgresUser,
         "POSTGRES_PASS" to postgresPassword,
     )
+}
+
+tasks.distTar {
+    archiveFileName.set("application.tar")
 }
 
 tasks.test {
@@ -142,10 +146,6 @@ flyway {
     user = postgresUser
     password = postgresPassword
     locations = arrayOf("classpath:db/migration")
-}
-
-tasks.distTar {
-    archiveFileName.set("application.tar")
 }
 
 tasks.jacocoTestReport {

@@ -46,7 +46,13 @@ run {
     ])
 }
 
+distTar {
+    archiveFileName = "application.tar"
+}
+
 test {
+    dependsOn tasks.distTar
+
     jvmArgs += [
             "-XX:+TieredCompilation",
             "-XX:TieredStopAtLevel=1",
@@ -71,10 +77,6 @@ test {
         html.required = false
         junitXml.required = false
     }
-}
-
-distTar {
-    archiveFileName = "application.tar"
 }
 
 compileJava {

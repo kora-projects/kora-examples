@@ -33,8 +33,6 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
 }
 
-test.dependsOn tasks.distTar
-
 application {
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
@@ -46,7 +44,13 @@ run {
     ])
 }
 
+distTar {
+    archiveFileName = "application.tar"
+}
+
 test {
+    dependsOn tasks.distTar
+
     jvmArgs += [
             "-XX:+TieredCompilation",
             "-XX:TieredStopAtLevel=1",
@@ -71,10 +75,6 @@ test {
         html.required = false
         junitXml.required = false
     }
-}
-
-distTar {
-    archiveFileName = "application.tar"
 }
 
 compileJava {
