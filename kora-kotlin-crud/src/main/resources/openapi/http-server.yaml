@@ -131,6 +131,8 @@ paths:
           schema:
             type: integer
             format: int64
+            nullable: false
+            minimum: 1
       requestBody:
         description: Update an existent pet in the store
         content:
@@ -243,6 +245,7 @@ components:
           type: integer
           format: int64
           example: 1
+          minimum: 1
         name:
           type: string
           example: Dogs
@@ -276,6 +279,7 @@ components:
               format: int64
               example: 10
               nullable: false
+              minimum: 1
             name:
               type: string
               example: doggie
