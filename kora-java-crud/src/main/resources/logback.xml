@@ -1,5 +1,5 @@
 <configuration debug="false">
-    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ru.tinkoff.kora.logging.logback.ConsoleTextRecordEncoder"/>
@@ -12,4 +12,8 @@
     <root level="WARN">
         <appender-ref ref="ASYNC"/>
     </root>
+
+    <logger level="INFO" name="ru.tinkoff.kora"/>
+
+    <logger level="DEBUG" name="ru.tinkoff.kora.example"/>
 </configuration>

@@ -1,25 +1,29 @@
 <configuration debug="false">
-    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+<statusListener class="ch.qos.logback.core.status.NopStatusListener" />
 
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <charset>UTF-8</charset>
-            <pattern>%cyan(%d{HH:mm:ss.SSS}) %highlight(%-5level) [%thread] %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
+<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+        <charset>UTF-8</charset>
+        <pattern>%cyan(%d{HH:mm:ss.SSS}) %highlight(%-5level) [%thread] %logger{36} - %msg%n</pattern>
+    </encoder>
+</appender>
 
-    <appender name="ASYNC" class="ru.tinkoff.kora.logging.logback.KoraAsyncAppender">
-        <appender-ref ref="STDOUT"/>
-    </appender>
+<appender name="ASYNC" class="ru.tinkoff.kora.logging.logback.KoraAsyncAppender">
+    <appender-ref ref="STDOUT"/>
+</appender>
 
-    <root level="WARN">
-        <appender-ref ref="ASYNC"/>
-    </root>
+<root level="WARN">
+    <appender-ref ref="ASYNC"/>
+</root>
 
-    <logger level="INFO" name="ru.tinkoff.kora"/>
-    <logger level="DEBUG" name="ru.tinkoff.kora.example"/>
+<logger level="INFO" name="ru.tinkoff.kora"/>
 
-    <logger level="DEBUG" name="org.testcontainers.containers"/>
-    <logger level="WARN" name="org.testcontainers.containers.CassandraContainer"/>
-    <logger level="DEBUG" name="io.goodforgod.testcontainers.extensions"/>
+<logger level="DEBUG" name="ru.tinkoff.kora.example"/>
+
+<logger level="TRACE" name="ru.tinkoff.kora.database"/>
+
+<logger level="WARN" name="org.apache"/>
+<logger level="DEBUG" name="org.testcontainers.containers"/>
+<logger level="WARN" name="org.testcontainers.containers.CassandraContainer"/>
+<logger level="DEBUG" name="io.goodforgod.testcontainers.extensions"/>
 </configuration>

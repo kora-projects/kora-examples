@@ -12,4 +12,10 @@
     <root level="WARN">
         <appender-ref ref="ASYNC"/>
     </root>
+
+    <logger level="INFO" name="ru.tinkoff.kora"/>
+
+    <logger level="DEBUG" name="ru.tinkoff.kora.example"/>
+
+    <logger level="ERROR" name="org.apache"/>
 </configuration>
