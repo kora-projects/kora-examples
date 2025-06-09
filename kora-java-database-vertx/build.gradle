@@ -25,7 +25,7 @@ dependencies {
     implementation "ru.tinkoff.kora:database-vertx"
     implementation "io.vertx:vertx-pg-client:4.3.8"
     implementation "com.ongres.scram:client:2.1"
-    implementation "io.projectreactor:reactor-core:3.6.5" // For reactive examples (optional)
+    implementation "io.projectreactor:reactor-core:3.7.6" // For reactive examples (optional)
 
     implementation "ru.tinkoff.kora:logging-logback"
     implementation "ru.tinkoff.kora:config-hocon"

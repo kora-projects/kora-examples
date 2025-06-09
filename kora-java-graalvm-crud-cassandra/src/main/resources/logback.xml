@@ -15,5 +15,5 @@
 
     <logger level="INFO" name="ru.tinkoff.kora"/>
 
-    <logger level="DEBUG" name="ru.tinkoff.kora.example"/>
+    <logger level="TRACE" name="ru.tinkoff.kora.example"/>
 </configuration>
