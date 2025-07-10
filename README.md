@@ -1,3 +1,6 @@
+[![Maven Central](https://maven-badges.sml.io/sonatype-central/ru.tinkoff.kora/common/badge.svg)](https://maven-badges.sml.io/sonatype-central/ru.tinkoff.kora/common)
+[![GitHub Action](https://github.com/kora-projects/kora-examples/workflows/Build%20Master/badge.svg)](https://github.com/kora-projects/kora-examples/actions?query=workflow%3A%22Build%20Master%22++)
+
 # Kora examples
 
 В данном репозитории собраны примеры сервисов использующих различные модули [фреймворка Kora](https://kora-projects.github.io/kora-docs/ru/).
