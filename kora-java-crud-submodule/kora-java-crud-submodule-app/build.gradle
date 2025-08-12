@@ -32,7 +32,7 @@ dependencies {
     implementation "ru.tinkoff.kora:openapi-management"
 
     implementation "org.mapstruct:mapstruct:1.5.5.Final"
-    implementation "org.postgresql:postgresql:42.7.2"
+    implementation "org.postgresql:postgresql:42.7.7"
 
     testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
 

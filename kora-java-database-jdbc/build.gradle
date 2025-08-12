@@ -22,7 +22,7 @@ dependencies {
     koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
     annotationProcessor "ru.tinkoff.kora:annotation-processors"
 
-    implementation "org.postgresql:postgresql:42.7.2"
+    implementation "org.postgresql:postgresql:42.7.7"
     implementation "ru.tinkoff.kora:database-jdbc"
     implementation "io.projectreactor:reactor-core:3.7.6" // For reactive examples (optional)
 
