@@ -13,9 +13,9 @@ plugins {
     id("application")
     id("jacoco")
     id("java")
-    kotlin("kapt") version ("1.9.10")
-    kotlin("jvm") version ("1.9.10")
-    id("com.google.devtools.ksp") version ("1.9.10-1.0.13")
+//    kotlin("kapt") version ("1.9.21") // broken since 1.9.11
+    kotlin("jvm") version ("1.9.21")
+    id("com.google.devtools.ksp") version ("1.9.21-1.0.16")
     id("org.flywaydb.flyway") version ("8.4.2")
 }
 
@@ -29,7 +29,7 @@ kotlin {
     jvmToolchain { languageVersion.set(JavaLanguageVersion.of(17)) }
     sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
     sourceSets.test { kotlin.srcDir("build/generated/ksp/test/kotlin") }
-    sourceSets.main { kotlin.srcDir("build/generated/source/kapt/main") }
+//    sourceSets.main { kotlin.srcDir("build/generated/source/kapt/main") } // broken since 1.9.11
 }
 
 val koraBom: Configuration by configurations.creating
@@ -43,7 +43,7 @@ configurations {
 dependencies {
     koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
 
-    kapt("org.mapstruct:mapstruct-processor:1.5.5.Final")
+//    kapt("org.mapstruct:mapstruct-processor:1.5.5.Final") // broken since 1.9.11
     ksp("ru.tinkoff.kora:symbol-processors")
 
     implementation("ru.tinkoff.kora:http-server-undertow")
@@ -60,7 +60,7 @@ dependencies {
     implementation("ru.tinkoff.kora:logging-logback")
 
     implementation("org.postgresql:postgresql:42.7.2")
-    implementation("org.mapstruct:mapstruct:1.5.5.Final")
+//    implementation("org.mapstruct:mapstruct:1.5.5.Final") // broken since 1.9.11
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.3")
 
     kspTest("ru.tinkoff.kora:symbol-processors")
@@ -95,11 +95,12 @@ ksp {
     arg("kora.app.submodule.enabled", "true") // Only for integration tests
 }
 
-// Run KAPT before KSP for MapStruct
-tasks.withType<KspTask> {
-    dependsOn(tasks.named("kaptGenerateStubsKotlin").get())
-    dependsOn(tasks.named("kaptKotlin").get())
-}
+// Run KAPT before KSP for MapStruct broken since 1.9.11 cause its Kotlin
+//tasks.withType<KspTask> {
+//    dependsOn.removeIf { (it as Named).name.contains("kapt", true) }
+//    dependsOn(tasks.named("kaptGenerateStubsKotlin").get())
+//    dependsOn(tasks.named("kaptKotlin").get())
+//}
 
 val postgresHost: String by project
 val postgresPort: String by project

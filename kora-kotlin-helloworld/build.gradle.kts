@@ -2,8 +2,8 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     id("application")
-    kotlin("jvm") version ("1.9.10")
-    id("com.google.devtools.ksp") version ("1.9.10-1.0.13")
+    kotlin("jvm") version ("1.9.21")
+    id("com.google.devtools.ksp") version ("1.9.21-1.0.16")
 }
 
 application {
