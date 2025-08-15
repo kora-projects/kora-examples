@@ -13,7 +13,7 @@ plugins {
     id("application")
     id("jacoco")
     id("java")
-//    kotlin("kapt") version ("1.9.21") // broken since 1.9.11
+//    kotlin("kapt") version ("1.9.21") // KAPT & KSP broken since 1.9.11
     kotlin("jvm") version ("1.9.21")
     id("com.google.devtools.ksp") version ("1.9.21-1.0.16")
     id("org.flywaydb.flyway") version ("8.4.2")
@@ -29,7 +29,7 @@ kotlin {
     jvmToolchain { languageVersion.set(JavaLanguageVersion.of(17)) }
     sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
     sourceSets.test { kotlin.srcDir("build/generated/ksp/test/kotlin") }
-//    sourceSets.main { kotlin.srcDir("build/generated/source/kapt/main") } // broken since 1.9.11
+//    sourceSets.main { kotlin.srcDir("build/generated/source/kapt/main") } // KAPT & KSP broken since 1.9.11
 }
 
 val koraBom: Configuration by configurations.creating
@@ -43,7 +43,7 @@ configurations {
 dependencies {
     koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
 
-//    kapt("org.mapstruct:mapstruct-processor:1.5.5.Final") // broken since 1.9.11
+//    kapt("org.mapstruct:mapstruct-processor:1.5.5.Final") // KAPT & KSP broken since 1.9.11
     ksp("ru.tinkoff.kora:symbol-processors")
 
     implementation("ru.tinkoff.kora:http-server-undertow")
@@ -52,16 +52,15 @@ dependencies {
     implementation("ru.tinkoff.kora:micrometer-module")
     implementation("ru.tinkoff.kora:json-module")
     implementation("ru.tinkoff.kora:validation-module")
-    implementation("ru.tinkoff.kora:validation-common")
     implementation("ru.tinkoff.kora:cache-caffeine")
     implementation("ru.tinkoff.kora:resilient-kora")
     implementation("ru.tinkoff.kora:config-hocon")
     implementation("ru.tinkoff.kora:openapi-management")
     implementation("ru.tinkoff.kora:logging-logback")
 
-    implementation("org.postgresql:postgresql:42.7.2")
-//    implementation("org.mapstruct:mapstruct:1.5.5.Final") // broken since 1.9.11
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.3")
+    implementation("org.postgresql:postgresql:42.7.7")
+//    implementation("org.mapstruct:mapstruct:1.5.5.Final") // KAPT & KSP broken since 1.9.11
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.1")
 
     kspTest("ru.tinkoff.kora:symbol-processors")
     testImplementation("org.json:json:20231013")
