@@ -13,9 +13,9 @@ plugins {
     id("application")
     id("jacoco")
     id("java")
-//    kotlin("kapt") version ("1.9.21") // KAPT & KSP broken since 1.9.11
-    kotlin("jvm") version ("1.9.21")
-    id("com.google.devtools.ksp") version ("1.9.21-1.0.16")
+//    kotlin("kapt") version (".9.25") // KAPT & KSP broken since 1.9.11
+    kotlin("jvm") version ("1.9.25")
+    id("com.google.devtools.ksp") version ("1.9.25-1.0.20")
     id("org.flywaydb.flyway") version ("8.4.2")
 }
 
@@ -86,7 +86,7 @@ val openApiGenerateHttpServer = tasks.register<GenerateTask>("openApiGenerateHtt
         "enableServerValidation" to "true",
     )
 }
-kotlin.sourceSets.main { kotlin.srcDir(openApiGenerateHttpServer.get().outputDir) }
+kotlin.sourceSets.main { kotlin.srcDir("$buildDir/generated/openapi") }
 tasks.withType<KspTask> { dependsOn(openApiGenerateHttpServer) }
 
 ksp {
