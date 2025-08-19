@@ -11,7 +11,7 @@ plugins {
     id "jacoco"
     id "application"
 
-    id "org.openapi.generator" version "7.4.0"
+    id "org.openapi.generator" version "7.14.0"
     id "org.flywaydb.flyway" version "8.4.2"
 }
 
@@ -51,14 +51,14 @@ dependencies {
     implementation "ru.tinkoff.kora:logging-logback"
 
     implementation "org.mapstruct:mapstruct:1.5.5.Final"
-    implementation "org.postgresql:postgresql:42.7.2"
+    implementation "org.postgresql:postgresql:42.7.7"
 
     testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
 
     testImplementation "org.json:json:20231013"
     testImplementation "org.skyscreamer:jsonassert:1.5.1"
 
-    testImplementation "org.mockito:mockito-core:5.7.0"
+    testImplementation "org.mockito:mockito-core:5.18.0"
     testImplementation "ru.tinkoff.kora:test-junit5"
     testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.12.2"
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"

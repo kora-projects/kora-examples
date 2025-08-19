@@ -27,7 +27,7 @@ dependencies {
     implementation "ru.tinkoff.kora:logging-logback"
     implementation "ru.tinkoff.kora:config-hocon"
 
-    testImplementation "org.mockito:mockito-core:5.7.0"
+    testImplementation "org.mockito:mockito-core:5.18.0"
     testImplementation "ru.tinkoff.kora:test-junit5"
     testImplementation "io.camunda:zeebe-process-test-extension-testcontainer:8.6.7"
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
