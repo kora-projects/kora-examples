@@ -9,13 +9,13 @@ buildscript {
 }
 
 plugins {
-    id("org.openapi.generator") version ("7.4.0")
+    id("org.openapi.generator") version ("7.14.0")
     id("application")
     id("jacoco")
     id("java")
-    kotlin("kapt") version ("1.9.10")
-    kotlin("jvm") version ("1.9.10")
-    id("com.google.devtools.ksp") version ("1.9.10-1.0.13")
+//    kotlin("kapt") version ("1.9.25") // KAPT & KSP broken since 1.9.11
+    kotlin("jvm") version ("1.9.25")
+    id("com.google.devtools.ksp") version ("1.9.25-1.0.20")
     id("org.flywaydb.flyway") version ("8.4.2")
 }
 
@@ -29,7 +29,7 @@ kotlin {
     jvmToolchain { languageVersion.set(JavaLanguageVersion.of(17)) }
     sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
     sourceSets.test { kotlin.srcDir("build/generated/ksp/test/kotlin") }
-    sourceSets.main { kotlin.srcDir("build/generated/source/kapt/main") }
+//    sourceSets.main { kotlin.srcDir("build/generated/source/kapt/main") } // KAPT & KSP broken since 1.9.11
 }
 
 val koraBom: Configuration by configurations.creating
@@ -43,7 +43,7 @@ configurations {
 dependencies {
     koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
 
-    kapt("org.mapstruct:mapstruct-processor:1.5.5.Final")
+//    kapt("org.mapstruct:mapstruct-processor:1.5.5.Final") // KAPT & KSP broken since 1.9.11
     ksp("ru.tinkoff.kora:symbol-processors")
 
     implementation("ru.tinkoff.kora:http-server-undertow")
@@ -52,16 +52,15 @@ dependencies {
     implementation("ru.tinkoff.kora:micrometer-module")
     implementation("ru.tinkoff.kora:json-module")
     implementation("ru.tinkoff.kora:validation-module")
-    implementation("ru.tinkoff.kora:validation-common")
     implementation("ru.tinkoff.kora:cache-caffeine")
     implementation("ru.tinkoff.kora:resilient-kora")
     implementation("ru.tinkoff.kora:config-hocon")
     implementation("ru.tinkoff.kora:openapi-management")
     implementation("ru.tinkoff.kora:logging-logback")
 
-    implementation("org.postgresql:postgresql:42.7.2")
-    implementation("org.mapstruct:mapstruct:1.5.5.Final")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.3")
+    implementation("org.postgresql:postgresql:42.7.7")
+//    implementation("org.mapstruct:mapstruct:1.5.5.Final") // KAPT & KSP broken since 1.9.11
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.1")
 
     kspTest("ru.tinkoff.kora:symbol-processors")
     testImplementation("org.json:json:20231013")
@@ -87,7 +86,7 @@ val openApiGenerateHttpServer = tasks.register<GenerateTask>("openApiGenerateHtt
         "enableServerValidation" to "true",
     )
 }
-kotlin.sourceSets.main { kotlin.srcDir(openApiGenerateHttpServer.get().outputDir) }
+kotlin.sourceSets.main { kotlin.srcDir("$buildDir/generated/openapi") }
 tasks.withType<KspTask> { dependsOn(openApiGenerateHttpServer) }
 
 ksp {
@@ -95,11 +94,12 @@ ksp {
     arg("kora.app.submodule.enabled", "true") // Only for integration tests
 }
 
-// Run KAPT before KSP for MapStruct
-tasks.withType<KspTask> {
-    dependsOn(tasks.named("kaptGenerateStubsKotlin").get())
-    dependsOn(tasks.named("kaptKotlin").get())
-}
+// Run KAPT before KSP for MapStruct broken since 1.9.11 cause its Kotlin
+//tasks.withType<KspTask> {
+//    dependsOn.removeIf { (it as Named).name.contains("kapt", true) }
+//    dependsOn(tasks.named("kaptGenerateStubsKotlin").get())
+//    dependsOn(tasks.named("kaptKotlin").get())
+//}
 
 val postgresHost: String by project
 val postgresPort: String by project

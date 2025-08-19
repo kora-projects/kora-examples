@@ -11,10 +11,10 @@ plugins {
     id "jacoco"
     id "application"
 
-    id "org.openapi.generator" version "7.4.0"
+    id "org.openapi.generator" version "7.14.0"
     id "org.flywaydb.flyway" version "8.4.2"
     id "com.github.johnrengelman.shadow" version "8.1.1"
-    id "org.graalvm.buildtools.native" version "0.10.1"
+    id "org.graalvm.buildtools.native" version "0.11.0"
 }
 
 mainClassName = "ru.tinkoff.kora.example.graalvm.crud.r2dbc.Application"
@@ -36,7 +36,7 @@ dependencies {
     annotationProcessor "ru.tinkoff.kora:annotation-processors"
     annotationProcessor "io.goodforgod:graalvm-hint-processor:1.2.0"
     compileOnly "io.goodforgod:graalvm-hint-annotations:1.2.0"
-    compileOnly "org.postgresql:postgresql:42.7.2"
+    compileOnly "org.postgresql:postgresql:42.7.7"
 
     implementation "ru.tinkoff.kora:http-server-undertow"
     implementation "ru.tinkoff.kora:database-r2dbc"
@@ -54,9 +54,9 @@ dependencies {
 
     testImplementation "org.json:json:20231013"
     testImplementation "org.skyscreamer:jsonassert:1.5.1"
-    testImplementation "org.postgresql:postgresql:42.7.2"
+    testImplementation "org.postgresql:postgresql:42.7.7"
 
-    testImplementation "org.mockito:mockito-core:5.7.0"
+    testImplementation "org.mockito:mockito-core:5.18.0"
     testImplementation "ru.tinkoff.kora:test-junit5"
     testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.12.2"
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
