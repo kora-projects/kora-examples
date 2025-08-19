@@ -10,7 +10,7 @@ plugins {
     id "java"
     id "application"
 
-    id "org.openapi.generator" version "7.4.0"
+    id "org.openapi.generator" version "7.14.0"
     id "org.flywaydb.flyway" version "8.4.2"
 }
 
