@@ -25,7 +25,6 @@ dependencies {
     implementation "ru.tinkoff.kora.experimental:s3-client-aws"
     implementation "ru.tinkoff.kora:http-client-async"
     implementation "ru.tinkoff.kora:http-client-jdk"
-    implementation "ru.tinkoff.kora:http-client-ok"
 
     implementation "ru.tinkoff.kora:logging-logback"
     implementation "ru.tinkoff.kora:config-hocon"
@@ -43,7 +42,10 @@ application {
 //noinspection GroovyAssignabilityCheck
 run {
     environment([
-            "": ""
+            "S3_URL"       : "$s3Url",
+            "S3_BUCKET"    : "$s3Bucket",
+            "S3_ACCESS_KEY": "$s3AccessKey",
+            "S3_SECRET_KEY": "$s3SecretKey",
     ])
 }
 
