@@ -32,24 +32,23 @@ class TelemetryTests {
     void tracingTelemetryExported() throws Exception {
         // given
         var httpClient = HttpClient.newHttpClient();
-
-        // when
         var requestTest = HttpRequest.newBuilder()
                 .GET()
                 .uri(container.getURI().resolve("/text"))
                 .timeout(Duration.ofSeconds(5))
                 .build();
 
+        // when
         var responseTest = httpClient.send(requestTest, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, responseTest.statusCode());
 
         // then
         Awaitility.await().atMost(Duration.ofSeconds(5))
-                .untilAsserted(() -> {
+                .until(() -> {
                     final String logs = telemetryContainer.getLogs(OutputFrame.OutputType.STDERR);
                     final String[] logsSplit = logs.split("\n");
                     final String lastLog = logsSplit[logsSplit.length - 1].replace('\t', ' ');
-                    lastLog.endsWith(
+                    return lastLog.endsWith(
                             "TracesExporter {\"kind\": \"exporter\", \"data_type\": \"traces\", \"name\": \"logging\", \"#spans\": 1}");
                 });
     }
@@ -58,14 +57,13 @@ class TelemetryTests {
     void healthLivenessFails() throws Exception {
         // given
         var httpClient = HttpClient.newHttpClient();
-
-        // then
         var request = HttpRequest.newBuilder()
                 .GET()
                 .uri(container.getSystemURI().resolve("/liveness"))
                 .timeout(Duration.ofSeconds(5))
                 .build();
 
+        // then
         var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(503, response.statusCode());
         assertEquals("Error", response.body());
@@ -75,14 +73,13 @@ class TelemetryTests {
     void healthReadinessFails() throws Exception {
         // given
         var httpClient = HttpClient.newHttpClient();
-
-        // then
         var request = HttpRequest.newBuilder()
                 .GET()
                 .uri(container.getSystemURI().resolve("/readiness"))
                 .timeout(Duration.ofSeconds(5))
                 .build();
 
+        // then
         var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(503, response.statusCode());
         assertEquals("Error", response.body());
@@ -92,14 +89,13 @@ class TelemetryTests {
     void metricsSuccess() throws Exception {
         // given
         var httpClient = HttpClient.newHttpClient();
-
-        // then
         var request = HttpRequest.newBuilder()
                 .GET()
                 .uri(container.getSystemURI().resolve("/metrics"))
                 .timeout(Duration.ofSeconds(5))
                 .build();
 
+        // then
         var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, response.statusCode());
         assertFalse(response.body().isBlank());
