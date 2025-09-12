@@ -9,12 +9,12 @@ buildscript {
 }
 
 plugins {
-    id("org.openapi.generator") version ("7.14.0")
     id("application")
     id("jacoco")
 //    kotlin("kapt") version ("1.9.25") // KAPT & KSP broken since 1.9.11
     kotlin("jvm") version ("1.9.25")
     id("com.google.devtools.ksp") version ("1.9.25-1.0.20")
+    id("org.openapi.generator") version ("7.14.0")
     id("org.flywaydb.flyway") version ("8.4.2")
 }
 

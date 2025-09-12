@@ -4,11 +4,7 @@ plugins {
     id "application"
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
+java.toolchain.languageVersion = JavaLanguageVersion.of(24)
 
 configurations {
     koraBom

@@ -14,11 +14,7 @@ plugins {
     id "org.openapi.generator" version "7.14.0"
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
+java.toolchain.languageVersion = JavaLanguageVersion.of(24)
 
 configurations {
     koraBom

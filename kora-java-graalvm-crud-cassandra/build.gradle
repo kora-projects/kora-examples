@@ -18,11 +18,7 @@ plugins {
 
 mainClassName = "ru.tinkoff.kora.example.graalvm.crud.cassandra.Application"
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
+java.toolchain.languageVersion = JavaLanguageVersion.of(24)
 
 configurations {
     koraBom

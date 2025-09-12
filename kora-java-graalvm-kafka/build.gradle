@@ -9,11 +9,7 @@ plugins {
 
 mainClassName = "ru.tinkoff.kora.example.graalvm.kafka.Application"
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
+java.toolchain.languageVersion = JavaLanguageVersion.of(24)
 
 configurations {
     koraBom
