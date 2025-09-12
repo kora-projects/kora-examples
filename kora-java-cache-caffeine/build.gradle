@@ -4,11 +4,11 @@ plugins {
     id "application"
 }
 
-applicationName = "application"
-mainClassName = "ru.tinkoff.kora.example.cache.caffeine.Application"
-
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
 
 configurations {
     koraBom
@@ -16,6 +16,8 @@ configurations {
     compileOnly.extendsFrom(koraBom)
     implementation.extendsFrom(koraBom)
     api.extendsFrom(koraBom)
+    testImplementation.extendsFrom(koraBom)
+    testAnnotationProcessor.extendsFrom(koraBom)
 }
 
 dependencies {
@@ -31,6 +33,8 @@ dependencies {
 }
 
 application {
+    applicationName = "application"
+    mainClassName = "ru.tinkoff.kora.example.cache.caffeine.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 
@@ -65,7 +69,7 @@ test {
     }
 
     jacoco {
-        excludes += ["**/Application*"]
+        excludes += ["**/generated/**", "**/Application*", "**/\$*"]
     }
 
     reports {
@@ -85,6 +89,9 @@ jacocoTestReport {
     reports {
         xml.required = true
         html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
+    }
+    afterEvaluate {
+        classDirectories = files(classDirectories.files.collect { fileTree(dir: it, excludes: test.jacoco.excludes) })
     }
 }
 

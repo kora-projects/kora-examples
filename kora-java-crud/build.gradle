@@ -15,14 +15,11 @@ plugins {
     id "org.flywaydb.flyway" version "8.4.2"
 }
 
-application {
-    applicationName = "application"
-    mainClassName = "ru.tinkoff.kora.example.crud.Application"
-    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(24)
+    }
 }
-
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
 
 configurations {
     koraBom
@@ -64,6 +61,21 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
 }
 
+application {
+    applicationName = "application"
+    mainClassName = "ru.tinkoff.kora.example.crud.Application"
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+}
+
+//noinspection GroovyAssignabilityCheck
+run {
+    environment([
+            "POSTGRES_JDBC_URL": "jdbc:postgresql://$postgresHost:$postgresPort/$postgresDatabase",
+            "POSTGRES_USER"    : "$postgresUser",
+            "POSTGRES_PASS"    : "$postgresPassword",
+    ])
+}
+
 def openApiGenerateHttpServer = tasks.register("openApiGenerateHttpServer", GenerateTask) {
     generatorName = "kora"
     group = "openapi tools"
@@ -80,15 +92,6 @@ def openApiGenerateHttpServer = tasks.register("openApiGenerateHttpServer", Gene
 }
 sourceSets.main { java.srcDirs += openApiGenerateHttpServer.get().outputDir }
 compileJava.dependsOn openApiGenerateHttpServer
-
-//noinspection GroovyAssignabilityCheck
-run {
-    environment([
-            "POSTGRES_JDBC_URL": "jdbc:postgresql://$postgresHost:$postgresPort/$postgresDatabase",
-            "POSTGRES_USER"    : "$postgresUser",
-            "POSTGRES_PASS"    : "$postgresPassword",
-    ])
-}
 
 distTar {
     archiveFileName = "application.tar"
@@ -113,10 +116,8 @@ test {
         exceptionFormat("full")
     }
 
-    exclude(["**/\$*"])
-
     jacoco {
-        excludes += ["**/Application*"]
+        excludes += ["**/generated/**", "**/Application*", "**/\$*"]
     }
 
     reports {
@@ -146,6 +147,9 @@ jacocoTestReport {
     reports {
         xml.required = true
         html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
+    }
+    afterEvaluate {
+        classDirectories = files(classDirectories.files.collect { fileTree(dir: it, excludes: test.jacoco.excludes) })
     }
 }
 

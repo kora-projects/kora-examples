@@ -7,8 +7,11 @@ plugins {
 applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.helloworld.Application"
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
 
 configurations {
     koraBom
@@ -16,6 +19,8 @@ configurations {
     compileOnly.extendsFrom(koraBom)
     implementation.extendsFrom(koraBom)
     api.extendsFrom(koraBom)
+    testImplementation.extendsFrom(koraBom)
+    testAnnotationProcessor.extendsFrom(koraBom)
 }
 
 dependencies {
@@ -32,8 +37,9 @@ dependencies {
     testImplementation "org.skyscreamer:jsonassert:1.5.1"
 }
 
-
 application {
+    applicationName = "application"
+    mainClassName = "ru.tinkoff.kora.example.helloworld.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 
@@ -68,7 +74,7 @@ test {
     }
 
     jacoco {
-        excludes += ["**/Application*"]
+        excludes += ["**/generated/**", "**/Application*", "**/\$*"]
     }
 
     reports {
@@ -88,6 +94,9 @@ jacocoTestReport {
     reports {
         xml.required = true
         html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
+    }
+    afterEvaluate {
+        classDirectories = files(classDirectories.files.collect { fileTree(dir: it, excludes: test.jacoco.excludes) })
     }
 }
 

@@ -39,8 +39,6 @@ subprojects {
                 "": ""
         ])
 
-        exclude(["**/\$*"])
-
         useJUnitPlatform()
         testLogging {
             showStandardStreams(true)
@@ -65,6 +63,9 @@ subprojects {
         reports {
             xml.required = true
             html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
+        }
+        afterEvaluate {
+            classDirectories = files(classDirectories.files.collect { fileTree(dir: it, excludes: test.jacoco.excludes) })
         }
     }
 

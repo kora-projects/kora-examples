@@ -14,11 +14,11 @@ plugins {
     id "org.openapi.generator" version "7.14.0"
 }
 
-applicationName = "application"
-mainClassName = "ru.tinkoff.kora.example.openapi.http.client.Application"
-
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
 
 configurations {
     koraBom
@@ -26,6 +26,8 @@ configurations {
     compileOnly.extendsFrom(koraBom)
     implementation.extendsFrom(koraBom)
     api.extendsFrom(koraBom)
+    testImplementation.extendsFrom(koraBom)
+    testAnnotationProcessor.extendsFrom(koraBom)
 }
 
 dependencies {
@@ -44,6 +46,20 @@ dependencies {
     testImplementation "org.skyscreamer:jsonassert:1.5.1"
     testImplementation "ru.tinkoff.kora:test-junit5"
     testImplementation "io.goodforgod:testcontainers-extensions-mockserver:0.12.2"
+}
+
+application {
+    applicationName = "application"
+    mainClassName = "ru.tinkoff.kora.example.openapi.http.client.Application"
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+}
+
+//noinspection GroovyAssignabilityCheck
+run {
+    environment([
+            "HTTP_CLIENT_PET_V2_URL": "$httpClientUrlPetV2",
+            "HTTP_CLIENT_PET_V3_URL": "$httpClientUrlPetV3",
+    ])
 }
 
 // OpeAPI for V2
@@ -85,18 +101,6 @@ def openApiGeneratePetV3 = tasks.register("openApiGeneratePetV3", GenerateTask) 
 sourceSets.main { java.srcDirs += openApiGeneratePetV3.get().outputDir }
 compileJava.dependsOn openApiGeneratePetV3
 
-application {
-    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
-}
-
-//noinspection GroovyAssignabilityCheck
-run {
-    environment([
-            "HTTP_CLIENT_PET_V2_URL": "$httpClientUrlPetV2",
-            "HTTP_CLIENT_PET_V3_URL": "$httpClientUrlPetV3",
-    ])
-}
-
 distTar {
     archiveFileName = "application.tar"
 }
@@ -121,7 +125,7 @@ test {
     }
 
     jacoco {
-        excludes += ["**/Application*"]
+        excludes += ["**/generated/**", "**/Application*", "**/\$*"]
     }
 
     reports {
@@ -141,6 +145,9 @@ jacocoTestReport {
     reports {
         xml.required = true
         html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
+    }
+    afterEvaluate {
+        classDirectories = files(classDirectories.files.collect { fileTree(dir: it, excludes: test.jacoco.excludes) })
     }
 }
 

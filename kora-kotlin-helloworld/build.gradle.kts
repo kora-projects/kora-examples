@@ -2,14 +2,9 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     id("application")
+    id("jacoco")
     kotlin("jvm") version ("1.9.25")
     id("com.google.devtools.ksp") version ("1.9.25-1.0.20")
-}
-
-application {
-    applicationName = "application"
-    mainClass.set("ru.tinkoff.kora.kotlin.example.helloworld.ApplicationKt")
-    applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 
 kotlin {
@@ -42,11 +37,17 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter:1.19.8")
 }
 
+application {
+    applicationName = "application"
+    mainClass.set("ru.tinkoff.kora.kotlin.example.helloworld.ApplicationKt")
+    applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
+}
 
 tasks.distTar {
     archiveFileName.set("application.tar")
 }
 
+val jacocoExcludeSet = setOf("**/generated/**", "**/Application*", "**/\$*")
 tasks.test {
     dependsOn("distTar")
 
@@ -65,5 +66,21 @@ tasks.test {
     reports {
         html.required = false
         junitXml.required = false
+    }
+
+    jacoco {
+        jacocoExcludeSet.forEach { exclude(it) }
+    }
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required = true
+        html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
+    }
+    afterEvaluate {
+        classDirectories.setFrom(sourceSets.main.get().output.asFileTree.matching {
+            jacocoExcludeSet.forEach { exclude(it) }
+        })
     }
 }
