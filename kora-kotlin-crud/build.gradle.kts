@@ -138,6 +138,8 @@ tasks.test {
         junitXml.required = false
     }
 
+    exclude("**/\$*")
+
     jacoco {
         jacocoExcludeSet.forEach { exclude(it) }
     }
