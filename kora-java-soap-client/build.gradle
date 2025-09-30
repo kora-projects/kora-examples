@@ -6,18 +6,10 @@ plugins {
     id "com.github.bjornvester.wsdl2java" version "2.0.2"
 }
 
-applicationName = "application"
-mainClassName = "ru.tinkoff.kora.example.soap.client.Application"
-
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
-
 configurations {
     koraBom
-    annotationProcessor.extendsFrom(koraBom)
-    compileOnly.extendsFrom(koraBom)
-    implementation.extendsFrom(koraBom)
-    api.extendsFrom(koraBom)
+    annotationProcessor.extendsFrom(koraBom); compileOnly.extendsFrom(koraBom); implementation.extendsFrom(koraBom)
+    api.extendsFrom(koraBom); testImplementation.extendsFrom(koraBom); testAnnotationProcessor.extendsFrom(koraBom)
 }
 
 dependencies {
@@ -42,7 +34,14 @@ dependencies {
     testImplementation "io.goodforgod:testcontainers-extensions-mockserver:0.12.2"
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 application {
+    applicationName = "application"
+    mainClass = "ru.tinkoff.kora.example.soap.client.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 
@@ -76,8 +75,10 @@ test {
         exceptionFormat("full")
     }
 
+    exclude("**/\$*")
+
     jacoco {
-        excludes += ["**/Application*"]
+        excludes += ["**/generated/**", "**/Application*", "**/\$*"]
     }
 
     reports {
@@ -111,6 +112,7 @@ jacocoTestReport {
         xml.required = true
         html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
     }
+    classDirectories = files(classDirectories.files.collect { fileTree(dir: it, excludes: test.jacoco.excludes) })
 }
 
 javadoc {

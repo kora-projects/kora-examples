@@ -9,35 +9,19 @@ buildscript {
 }
 
 plugins {
-    id("org.openapi.generator") version ("7.14.0")
     id("application")
     id("jacoco")
-    id("java")
 //    kotlin("kapt") version ("1.9.25") // KAPT & KSP broken since 1.9.11
     kotlin("jvm") version ("1.9.25")
     id("com.google.devtools.ksp") version ("1.9.25-1.0.20")
+    id("org.openapi.generator") version ("7.14.0")
     id("org.flywaydb.flyway") version ("8.4.2")
-}
-
-application {
-    applicationName = "application"
-    mainClass.set("ru.tinkoff.kora.kotlin.example.crud.ApplicationKt")
-    applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
-}
-
-kotlin {
-    jvmToolchain { languageVersion.set(JavaLanguageVersion.of(17)) }
-    sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
-    sourceSets.test { kotlin.srcDir("build/generated/ksp/test/kotlin") }
-//    sourceSets.main { kotlin.srcDir("build/generated/source/kapt/main") } // KAPT & KSP broken since 1.9.11
 }
 
 val koraBom: Configuration by configurations.creating
 configurations {
-    ksp.get().extendsFrom(koraBom)
-    compileOnly.get().extendsFrom(koraBom)
-    api.get().extendsFrom(koraBom)
-    implementation.get().extendsFrom(koraBom)
+    ksp.get().extendsFrom(koraBom); compileOnly.get().extendsFrom(koraBom)
+    api.get().extendsFrom(koraBom); implementation.get().extendsFrom(koraBom)
 }
 
 dependencies {
@@ -72,6 +56,32 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter:1.19.8")
 }
 
+kotlin {
+    jvmToolchain { languageVersion.set(JavaLanguageVersion.of(17)) }
+    sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
+    sourceSets.test { kotlin.srcDir("build/generated/ksp/test/kotlin") }
+//    sourceSets.main { kotlin.srcDir("build/generated/source/kapt/main") } // KAPT & KSP broken since 1.9.11
+}
+
+application {
+    applicationName = "application"
+    mainClass.set("ru.tinkoff.kora.kotlin.example.crud.ApplicationKt")
+    applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
+}
+
+val postgresHost: String by project
+val postgresPort: String by project
+val postgresDatabase: String by project
+val postgresUser: String by project
+val postgresPassword: String by project
+tasks.withType<JavaExec> {
+    environment(
+        "POSTGRES_JDBC_URL" to "jdbc:postgresql://${postgresHost}:${postgresPort}/${postgresDatabase}",
+        "POSTGRES_USER" to postgresUser,
+        "POSTGRES_PASS" to postgresPassword,
+    )
+}
+
 val openApiGenerateHttpServer = tasks.register<GenerateTask>("openApiGenerateHttpServer") {
     generatorName = "kora"
     group = "openapi tools"
@@ -101,23 +111,11 @@ ksp {
 //    dependsOn(tasks.named("kaptKotlin").get())
 //}
 
-val postgresHost: String by project
-val postgresPort: String by project
-val postgresDatabase: String by project
-val postgresUser: String by project
-val postgresPassword: String by project
-tasks.withType<JavaExec> {
-    environment(
-        "POSTGRES_JDBC_URL" to "jdbc:postgresql://${postgresHost}:${postgresPort}/${postgresDatabase}",
-        "POSTGRES_USER" to postgresUser,
-        "POSTGRES_PASS" to postgresPassword,
-    )
-}
-
 tasks.distTar {
     archiveFileName.set("application.tar")
 }
 
+val jacocoExcludeSet = setOf("**/generated/**", "**/Application*", "**/\$*")
 tasks.test {
     dependsOn("distTar")
 
@@ -125,8 +123,6 @@ tasks.test {
         "-XX:+TieredCompilation",
         "-XX:TieredStopAtLevel=1",
     )
-
-    exclude(listOf("**/\$*"))
 
     useJUnitPlatform()
     testLogging {
@@ -138,6 +134,12 @@ tasks.test {
     reports {
         html.required = false
         junitXml.required = false
+    }
+
+    exclude("**/\$*")
+
+    jacoco {
+        jacocoExcludeSet.forEach { exclude(it) }
     }
 }
 
@@ -153,4 +155,7 @@ tasks.jacocoTestReport {
         xml.required = true
         html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
     }
+    classDirectories.setFrom(sourceSets.main.get().output.asFileTree.matching {
+        jacocoExcludeSet.forEach { exclude(it) }
+    })
 }

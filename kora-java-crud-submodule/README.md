@@ -63,7 +63,11 @@ docker build -t kora-java-crud-submodule .
 
 ## Run Docker-Compose
 
-Требуется сначала собрать артефакт.
+Требуется сначала собрать артефакт:
+
+```shell
+./gradlew distTar
+```
 
 Запустить как docker-compose:
 ```shell

@@ -67,7 +67,11 @@ docker run --rm --entrypoint cat kora-java-graalvm-crud-r2dbc /opt/app/applicati
 
 ## Run Docker-Compose
 
-Требуется сначала собрать артефакт.
+Требуется сначала собрать артефакт:
+
+```shell
+./gradlew shadowJar
+```
 
 Запустить как docker-compose:
 ```shell
