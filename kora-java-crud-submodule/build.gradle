@@ -5,9 +5,6 @@ plugins {
 subprojects {
     apply plugin: "jacoco"
 
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-
     configurations {
         koraBom
         annotationProcessor.extendsFrom(koraBom)
@@ -27,6 +24,11 @@ subprojects {
 
         testImplementation "org.mockito:mockito-core:5.18.0"
         testImplementation "ru.tinkoff.kora:test-junit5"
+    }
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     test {

@@ -4,17 +4,10 @@ plugins {
     id "application"
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
-
 configurations {
     koraBom
-    annotationProcessor.extendsFrom(koraBom)
-    compileOnly.extendsFrom(koraBom)
-    implementation.extendsFrom(koraBom)
-    api.extendsFrom(koraBom)
-    testImplementation.extendsFrom(koraBom)
-    testAnnotationProcessor.extendsFrom(koraBom)
+    annotationProcessor.extendsFrom(koraBom); compileOnly.extendsFrom(koraBom); implementation.extendsFrom(koraBom)
+    api.extendsFrom(koraBom); testImplementation.extendsFrom(koraBom); testAnnotationProcessor.extendsFrom(koraBom)
 }
 
 dependencies {
@@ -29,9 +22,14 @@ dependencies {
     testImplementation "ru.tinkoff.kora:test-junit5"
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 application {
     applicationName = "application"
-    mainClassName = "ru.tinkoff.kora.example.cache.caffeine.Application"
+    mainClass = "ru.tinkoff.kora.example.cache.caffeine.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 

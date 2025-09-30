@@ -4,17 +4,10 @@ plugins {
     id "application"
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
-
 configurations {
     koraBom
-    annotationProcessor.extendsFrom(koraBom)
-    compileOnly.extendsFrom(koraBom)
-    implementation.extendsFrom(koraBom)
-    api.extendsFrom(koraBom)
-    testImplementation.extendsFrom(koraBom)
-    testAnnotationProcessor.extendsFrom(koraBom)
+    annotationProcessor.extendsFrom(koraBom); compileOnly.extendsFrom(koraBom); implementation.extendsFrom(koraBom)
+    api.extendsFrom(koraBom); testImplementation.extendsFrom(koraBom); testAnnotationProcessor.extendsFrom(koraBom)
 }
 
 dependencies {
@@ -32,10 +25,15 @@ dependencies {
     testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.12.2"
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 application {
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
     applicationName = "application"
-    mainClassName = "ru.tinkoff.kora.example.jdbc.Application"
+    mainClass = "ru.tinkoff.kora.example.jdbc.Application"
 }
 
 //noinspection GroovyAssignabilityCheck

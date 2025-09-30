@@ -15,17 +15,10 @@ plugins {
     id "org.flywaydb.flyway" version "8.4.2"
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
-
 configurations {
     koraBom
-    annotationProcessor.extendsFrom(koraBom)
-    compileOnly.extendsFrom(koraBom)
-    implementation.extendsFrom(koraBom)
-    api.extendsFrom(koraBom)
-    testImplementation.extendsFrom(koraBom)
-    testAnnotationProcessor.extendsFrom(koraBom)
+    annotationProcessor.extendsFrom(koraBom); compileOnly.extendsFrom(koraBom); implementation.extendsFrom(koraBom)
+    api.extendsFrom(koraBom); testImplementation.extendsFrom(koraBom); testAnnotationProcessor.extendsFrom(koraBom)
 }
 
 dependencies {
@@ -58,9 +51,14 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 application {
     applicationName = "application"
-    mainClassName = "ru.tinkoff.kora.example.crud.Application"
+    mainClass = "ru.tinkoff.kora.example.crud.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 

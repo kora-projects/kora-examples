@@ -5,17 +5,10 @@ plugins {
 }
 
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
-
 configurations {
     koraBom
-    annotationProcessor.extendsFrom(koraBom)
-    compileOnly.extendsFrom(koraBom)
-    implementation.extendsFrom(koraBom)
-    api.extendsFrom(koraBom)
-    testImplementation.extendsFrom(koraBom)
-    testAnnotationProcessor.extendsFrom(koraBom)
+    annotationProcessor.extendsFrom(koraBom); compileOnly.extendsFrom(koraBom); implementation.extendsFrom(koraBom)
+    api.extendsFrom(koraBom); testImplementation.extendsFrom(koraBom); testAnnotationProcessor.extendsFrom(koraBom)
 }
 
 dependencies {
@@ -33,9 +26,14 @@ dependencies {
     testImplementation "io.goodforgod:testcontainers-extensions-mockserver:0.12.2"
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 application {
     applicationName = "application"
-    mainClassName = "ru.tinkoff.kora.example.http.client.Application"
+    mainClass = "ru.tinkoff.kora.example.http.client.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 

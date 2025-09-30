@@ -4,17 +4,10 @@ plugins {
     id "application"
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
-
 configurations {
     koraBom
-    annotationProcessor.extendsFrom(koraBom)
-    compileOnly.extendsFrom(koraBom)
-    implementation.extendsFrom(koraBom)
-    api.extendsFrom(koraBom)
-    testImplementation.extendsFrom(koraBom)
-    testAnnotationProcessor.extendsFrom(koraBom)
+    annotationProcessor.extendsFrom(koraBom); compileOnly.extendsFrom(koraBom); implementation.extendsFrom(koraBom)
+    api.extendsFrom(koraBom); testImplementation.extendsFrom(koraBom); testAnnotationProcessor.extendsFrom(koraBom)
 }
 
 dependencies {
@@ -39,9 +32,14 @@ dependencies {
     testImplementation "org.assertj:assertj-core:3.26.0"
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 application {
     applicationName = "application"
-    mainClassName = "ru.tinkoff.kora.example.camunda.engine.Application"
+    mainClass = "ru.tinkoff.kora.example.camunda.engine.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 

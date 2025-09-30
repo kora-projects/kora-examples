@@ -40,9 +40,14 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 application {
     applicationName = "application"
-    mainClassName = "ru.tinkoff.kora.example.submodule.app.Application"
+    mainClass = "ru.tinkoff.kora.example.submodule.app.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 

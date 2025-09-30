@@ -18,19 +18,10 @@ plugins {
     id("org.flywaydb.flyway") version ("8.4.2")
 }
 
-kotlin {
-    jvmToolchain { languageVersion.set(JavaLanguageVersion.of(17)) }
-    sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
-    sourceSets.test { kotlin.srcDir("build/generated/ksp/test/kotlin") }
-//    sourceSets.main { kotlin.srcDir("build/generated/source/kapt/main") } // KAPT & KSP broken since 1.9.11
-}
-
 val koraBom: Configuration by configurations.creating
 configurations {
-    ksp.get().extendsFrom(koraBom)
-    compileOnly.get().extendsFrom(koraBom)
-    api.get().extendsFrom(koraBom)
-    implementation.get().extendsFrom(koraBom)
+    ksp.get().extendsFrom(koraBom); compileOnly.get().extendsFrom(koraBom)
+    api.get().extendsFrom(koraBom); implementation.get().extendsFrom(koraBom)
 }
 
 dependencies {
@@ -63,6 +54,13 @@ dependencies {
     testImplementation("ru.tinkoff.kora:test-junit5")
     testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.12.2")
     testImplementation("org.testcontainers:junit-jupiter:1.19.8")
+}
+
+kotlin {
+    jvmToolchain { languageVersion.set(JavaLanguageVersion.of(17)) }
+    sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
+    sourceSets.test { kotlin.srcDir("build/generated/ksp/test/kotlin") }
+//    sourceSets.main { kotlin.srcDir("build/generated/source/kapt/main") } // KAPT & KSP broken since 1.9.11
 }
 
 application {
