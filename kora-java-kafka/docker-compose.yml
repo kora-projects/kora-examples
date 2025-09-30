@@ -1,6 +1,6 @@
 services:
   kafka:
-    image: confluentinc/cp-kafka:7.7.1
+    image: apache/kafka-native:4.1.0
     restart: unless-stopped
     ports:
       - '9092:9092'

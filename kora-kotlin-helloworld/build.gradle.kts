@@ -2,28 +2,15 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     id("application")
+    id("jacoco")
     kotlin("jvm") version ("1.9.25")
     id("com.google.devtools.ksp") version ("1.9.25-1.0.20")
 }
 
-application {
-    applicationName = "application"
-    mainClass.set("ru.tinkoff.kora.kotlin.example.helloworld.ApplicationKt")
-    applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
-}
-
-kotlin {
-    jvmToolchain { languageVersion.set(JavaLanguageVersion.of(17)) }
-    sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
-    sourceSets.test { kotlin.srcDir("build/generated/ksp/test/kotlin") }
-}
-
 val koraBom: Configuration by configurations.creating
 configurations {
-    ksp.get().extendsFrom(koraBom)
-    compileOnly.get().extendsFrom(koraBom)
-    api.get().extendsFrom(koraBom)
-    implementation.get().extendsFrom(koraBom)
+    ksp.get().extendsFrom(koraBom); compileOnly.get().extendsFrom(koraBom)
+    api.get().extendsFrom(koraBom); implementation.get().extendsFrom(koraBom)
 }
 
 val koraVersion: String by project
@@ -42,11 +29,23 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter:1.19.8")
 }
 
+kotlin {
+    jvmToolchain { languageVersion.set(JavaLanguageVersion.of(17)) }
+    sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
+    sourceSets.test { kotlin.srcDir("build/generated/ksp/test/kotlin") }
+}
+
+application {
+    applicationName = "application"
+    mainClass.set("ru.tinkoff.kora.kotlin.example.helloworld.ApplicationKt")
+    applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
+}
 
 tasks.distTar {
     archiveFileName.set("application.tar")
 }
 
+val jacocoExcludeSet = setOf("**/generated/**", "**/Application*", "**/\$*")
 tasks.test {
     dependsOn("distTar")
 
@@ -66,4 +65,20 @@ tasks.test {
         html.required = false
         junitXml.required = false
     }
+
+    exclude("**/\$*")
+
+    jacoco {
+        jacocoExcludeSet.forEach { exclude(it) }
+    }
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required = true
+        html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
+    }
+    classDirectories.setFrom(sourceSets.main.get().output.asFileTree.matching {
+        jacocoExcludeSet.forEach { exclude(it) }
+    })
 }

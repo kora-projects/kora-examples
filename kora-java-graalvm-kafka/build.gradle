@@ -3,21 +3,14 @@ plugins {
     id "jacoco"
     id "application"
 
-    id "com.github.johnrengelman.shadow" version "8.1.1"
-    id "org.graalvm.buildtools.native" version "0.11.0"
+    id "com.gradleup.shadow" version "9.2.2"
+    id "org.graalvm.buildtools.native" version "0.11.1"
 }
-
-mainClassName = "ru.tinkoff.kora.example.graalvm.kafka.Application"
-
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
 
 configurations {
     koraBom
-    annotationProcessor.extendsFrom(koraBom)
-    compileOnly.extendsFrom(koraBom)
-    implementation.extendsFrom(koraBom)
-    api.extendsFrom(koraBom)
+    annotationProcessor.extendsFrom(koraBom); compileOnly.extendsFrom(koraBom); implementation.extendsFrom(koraBom)
+    api.extendsFrom(koraBom); testImplementation.extendsFrom(koraBom); testAnnotationProcessor.extendsFrom(koraBom)
 }
 
 dependencies {
@@ -40,11 +33,20 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+application {
+    mainClass = "ru.tinkoff.kora.example.graalvm.crud.kafka.Application"
+}
+
 graalvmNative {
     binaries {
         main {
             imageName = "$project.name"
-            mainClass = "$mainClassName"
+            mainClass = "$application.mainClass"
             javaLauncher = javaToolchains.launcherFor {
                 languageVersion = JavaLanguageVersion.of(21)
                 vendor = JvmVendorSpec.matching("GraalVM Community")
@@ -70,7 +72,7 @@ jar.enabled = false
 shadowJar {
     mergeServiceFiles()
     manifest {
-        attributes "Main-Class": mainClassName
+        attributes "Main-Class": application.mainClass
         attributes "Implementation-Version": koraVersion
     }
 }
@@ -98,8 +100,10 @@ test {
         exceptionFormat("full")
     }
 
+    exclude("**/\$*")
+
     jacoco {
-        excludes += ["**/Application*"]
+        excludes += ["**/generated/**", "**/Application*", "**/\$*"]
     }
 
     reports {
@@ -120,6 +124,7 @@ jacocoTestReport {
         xml.required = true
         html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
     }
+    classDirectories = files(classDirectories.files.collect { fileTree(dir: it, excludes: test.jacoco.excludes) })
 }
 
 javadoc {

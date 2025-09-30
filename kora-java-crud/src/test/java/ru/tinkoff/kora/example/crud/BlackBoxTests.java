@@ -42,7 +42,10 @@ class BlackBoxTests {
                 "POSTGRES_JDBC_URL", params.jdbcUrl(),
                 "POSTGRES_USER", params.username(),
                 "POSTGRES_PASS", params.password(),
-                "CACHE_MAX_SIZE", "0"));
+                "CACHE_MAX_SIZE", "0",
+                "RETRY_ATTEMPTS", "0",
+                "LOGGING_LEVEL_KORA", "DEBUG",
+                "LOGGING_LEVEL_APP", "DEBUG"));
 
         container.start();
     }

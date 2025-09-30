@@ -15,23 +15,10 @@ plugins {
     id "org.flywaydb.flyway" version "8.4.2"
 }
 
-application {
-    applicationName = "application"
-    mainClassName = "ru.tinkoff.kora.example.crud.Application"
-    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
-}
-
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
-
 configurations {
     koraBom
-    annotationProcessor.extendsFrom(koraBom)
-    compileOnly.extendsFrom(koraBom)
-    implementation.extendsFrom(koraBom)
-    api.extendsFrom(koraBom)
-    testImplementation.extendsFrom(koraBom)
-    testAnnotationProcessor.extendsFrom(koraBom)
+    annotationProcessor.extendsFrom(koraBom); compileOnly.extendsFrom(koraBom); implementation.extendsFrom(koraBom)
+    api.extendsFrom(koraBom); testImplementation.extendsFrom(koraBom); testAnnotationProcessor.extendsFrom(koraBom)
 }
 
 dependencies {
@@ -64,6 +51,26 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+application {
+    applicationName = "application"
+    mainClass = "ru.tinkoff.kora.example.crud.Application"
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+}
+
+//noinspection GroovyAssignabilityCheck
+run {
+    environment([
+            "POSTGRES_JDBC_URL": "jdbc:postgresql://$postgresHost:$postgresPort/$postgresDatabase",
+            "POSTGRES_USER"    : "$postgresUser",
+            "POSTGRES_PASS"    : "$postgresPassword",
+    ])
+}
+
 def openApiGenerateHttpServer = tasks.register("openApiGenerateHttpServer", GenerateTask) {
     generatorName = "kora"
     group = "openapi tools"
@@ -80,15 +87,6 @@ def openApiGenerateHttpServer = tasks.register("openApiGenerateHttpServer", Gene
 }
 sourceSets.main { java.srcDirs += openApiGenerateHttpServer.get().outputDir }
 compileJava.dependsOn openApiGenerateHttpServer
-
-//noinspection GroovyAssignabilityCheck
-run {
-    environment([
-            "POSTGRES_JDBC_URL": "jdbc:postgresql://$postgresHost:$postgresPort/$postgresDatabase",
-            "POSTGRES_USER"    : "$postgresUser",
-            "POSTGRES_PASS"    : "$postgresPassword",
-    ])
-}
 
 distTar {
     archiveFileName = "application.tar"
@@ -113,10 +111,10 @@ test {
         exceptionFormat("full")
     }
 
-    exclude(["**/\$*"])
+    exclude("**/\$*")
 
     jacoco {
-        excludes += ["**/Application*"]
+        excludes += ["**/generated/**", "**/Application*", "**/\$*"]
     }
 
     reports {
@@ -147,6 +145,7 @@ jacocoTestReport {
         xml.required = true
         html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
     }
+    classDirectories = files(classDirectories.files.collect { fileTree(dir: it, excludes: test.jacoco.excludes) })
 }
 
 javadoc {

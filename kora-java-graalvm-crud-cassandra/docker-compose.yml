@@ -1,0 +1,30 @@
+services:
+  scylla:
+    image: scylladb/scylla:2025.3
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+
+
+
+# Можно закомментировать секцию application и использовать docker-compose
+# как окружения для запуска сервиса через gradle run
+  application:
+    image: kora-java-graalvm-crud-cassandra
+    build: .
+    restart: unless-stopped
+    ports:
+      - '8080:8080'
+      - '8085:8085'
+    environment:
+      CASSANDRA_CONTACT_POINTS: jdbc:postgresql://postgres:5432/postgres
+      CASSANDRA_USER: cassandra
+      CASSANDRA_PASS: cassandra
+      CASSANDRA_DC: cassandra
+      CASSANDRA_KEYSPACE: cassandra
+      REDIS_URL: redis
+      REDIS_USER: redis
+      REDIS_PASS: redis
+    depends_on:
+      - scylla
+      - redis

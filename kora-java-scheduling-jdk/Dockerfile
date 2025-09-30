@@ -1,4 +1,4 @@
-ARG RUN_IMAGE=eclipse-temurin:17-jre-jammy
+ARG RUN_IMAGE=eclipse-temurin:25-jre-jammy
 FROM ${RUN_IMAGE}
 
 ARG TARGET_DIR=/opt/app

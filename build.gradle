@@ -1,7 +1,7 @@
 plugins {
     id "com.diffplug.spotless" version "6.19.0"
-    id "org.graalvm.buildtools.native" version "0.11.0" // or dependsOn fails in graalvm examples
     id "com.asarkar.gradle.build-time-tracker" version "4.3.0"
+    id "org.graalvm.buildtools.native" version "0.11.1" apply false // or dependsOn fails in graalvm examples
     id "org.jetbrains.kotlin.jvm" version "1.9.25" apply false
     id "org.jetbrains.kotlin.kapt" version "1.9.25" apply false
 }

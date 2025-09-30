@@ -4,18 +4,10 @@ plugins {
     id "application"
 }
 
-applicationName = "application"
-mainClassName = "ru.tinkoff.kora.example.r2dbc.Application"
-
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
-
 configurations {
     koraBom
-    annotationProcessor.extendsFrom(koraBom)
-    compileOnly.extendsFrom(koraBom)
-    implementation.extendsFrom(koraBom)
-    api.extendsFrom(koraBom)
+    annotationProcessor.extendsFrom(koraBom); compileOnly.extendsFrom(koraBom); implementation.extendsFrom(koraBom)
+    api.extendsFrom(koraBom); testImplementation.extendsFrom(koraBom); testAnnotationProcessor.extendsFrom(koraBom)
 }
 
 dependencies {
@@ -34,7 +26,14 @@ dependencies {
     testImplementation "org.postgresql:postgresql:42.7.7"
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 application {
+    applicationName = "application"
+    mainClass = "ru.tinkoff.kora.example.r2dbc.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 
@@ -70,8 +69,10 @@ test {
         exceptionFormat("full")
     }
 
+    exclude("**/\$*")
+
     jacoco {
-        excludes += ["**/Application*"]
+        excludes += ["**/generated/**", "**/Application*", "**/\$*"]
     }
 
     reports {
@@ -92,6 +93,7 @@ jacocoTestReport {
         xml.required = true
         html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
     }
+    classDirectories = files(classDirectories.files.collect { fileTree(dir: it, excludes: test.jacoco.excludes) })
 }
 
 javadoc {
