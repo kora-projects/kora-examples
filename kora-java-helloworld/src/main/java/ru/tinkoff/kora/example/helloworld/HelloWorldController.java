@@ -2,6 +2,7 @@ package ru.tinkoff.kora.example.helloworld;
 
 import ru.tinkoff.kora.common.Component;
 import ru.tinkoff.kora.http.common.HttpMethod;
+import ru.tinkoff.kora.http.common.HttpResponseEntity;
 import ru.tinkoff.kora.http.common.annotation.HttpRoute;
 import ru.tinkoff.kora.http.common.body.HttpBody;
 import ru.tinkoff.kora.http.server.common.HttpServerResponse;
@@ -18,6 +19,12 @@ public final class HelloWorldController {
     @HttpRoute(method = HttpMethod.GET, path = "/hello/world/json")
     public HelloWorldResponse helloWorldJson() {
         return new HelloWorldResponse("Hello World");
+    }
+
+    @Json
+    @HttpRoute(method = HttpMethod.GET, path = "/hello/world/json/entity")
+    public HttpResponseEntity<HelloWorldResponse> helloWorldJsonEntity() {
+        return HttpResponseEntity.of(200, new HelloWorldResponse("Hello World"));
     }
 
     @HttpRoute(method = HttpMethod.GET, path = "/hello/world")
