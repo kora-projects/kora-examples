@@ -6,7 +6,8 @@ plugins {
     id "com.google.protobuf" version "0.9.4"
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(24)
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 configurations {
     koraBom

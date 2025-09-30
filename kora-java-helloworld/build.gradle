@@ -7,7 +7,8 @@ plugins {
 applicationName = "application"
 mainClassName = "ru.tinkoff.kora.example.helloworld.Application"
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(24)
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 configurations {
     koraBom

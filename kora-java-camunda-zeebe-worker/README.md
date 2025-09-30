@@ -37,7 +37,11 @@ docker build -t kora-java-camunda-zeebe-worker .
 
 ## Run Docker-Compose
 
-Требуется сначала собрать артефакт.
+Требуется сначала собрать артефакт:
+
+```shell
+./gradlew distTar
+```
 
 Запустить как docker-compose:
 ```shell

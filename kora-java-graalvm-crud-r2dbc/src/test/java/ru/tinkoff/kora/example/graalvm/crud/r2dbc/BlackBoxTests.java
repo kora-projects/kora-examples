@@ -45,7 +45,8 @@ class BlackBoxTests {
                     "POSTGRES_USER", params.username(),
                     "POSTGRES_PASS", params.password(),
                     "CACHE_MAX_SIZE", "0",
-                    "RETRY_ATTEMPTS", "0"));
+                    "RETRY_ATTEMPTS", "0",
+                    "LOGGING_LEVEL_ALL", "INFO"));
 
             container.start();
         }
