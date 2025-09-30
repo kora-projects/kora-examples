@@ -46,6 +46,12 @@ subprojects {
             exceptionFormat("full")
         }
 
+        exclude("**/\$*")
+
+        jacoco {
+            excludes += ["**/generated/**", "**/Application*", "**/\$*"]
+        }
+
         reports {
             html.required = false
             junitXml.required = false
@@ -64,7 +70,9 @@ subprojects {
             xml.required = true
             html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
         }
-        classDirectories = files(classDirectories.files.collect { fileTree(dir: it, excludes: test.jacoco.excludes) })
+        afterEvaluate {
+            classDirectories = files(classDirectories.files.collect { fileTree(dir: it, excludes: test.jacoco.excludes) })
+        }
     }
 
     javadoc {
