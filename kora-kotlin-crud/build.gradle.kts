@@ -157,9 +157,7 @@ tasks.jacocoTestReport {
         xml.required = true
         html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
     }
-    afterEvaluate {
-        classDirectories.setFrom(sourceSets.main.get().output.asFileTree.matching {
-            jacocoExcludeSet.forEach { exclude(it) }
-        })
-    }
+    classDirectories.setFrom(sourceSets.main.get().output.asFileTree.matching {
+        jacocoExcludeSet.forEach { exclude(it) }
+    })
 }
