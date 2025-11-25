@@ -25,7 +25,7 @@ class JsonPostControllerTests {
 
         // then
         var request = HttpRequest.newBuilder()
-                .POST(HttpRequest.BodyPublishers.ofString("{\"name\":\"Ivan\"}"))
+                .POST(HttpRequest.BodyPublishers.ofString("{\"id\":\"1\"}"))
                 .uri(container.getURI().resolve("/json"))
                 .timeout(Duration.ofSeconds(5))
                 .build();
