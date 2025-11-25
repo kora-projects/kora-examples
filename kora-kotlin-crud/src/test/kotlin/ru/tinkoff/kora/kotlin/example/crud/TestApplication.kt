@@ -27,6 +27,7 @@ import ru.tinkoff.kora.kotlin.example.crud.model.PetCategory
 @KoraApp
 interface TestApplication : Application {
 
+    @Root
     @Repository
     interface TestPetRepository : JdbcRepository {
         @Query("SELECT %{return#selects} FROM %{return#table}")
@@ -36,6 +37,7 @@ interface TestApplication : Application {
         fun deleteAll()
     }
 
+    @Root
     @Repository
     interface TestCategoryRepository : JdbcRepository {
         @Query("SELECT %{return#selects} FROM %{return#table}")
@@ -44,12 +46,4 @@ interface TestApplication : Application {
         @Query("DELETE FROM categories")
         fun deleteAll()
     }
-
-    // Need any fake root to require components to include them in graph
-    @Root
-    @Tag(TestApplication::class)
-    fun testRoot(
-        petRepository: TestPetRepository,
-        categoryRepository: TestCategoryRepository
-    ): String = "root"
 }
