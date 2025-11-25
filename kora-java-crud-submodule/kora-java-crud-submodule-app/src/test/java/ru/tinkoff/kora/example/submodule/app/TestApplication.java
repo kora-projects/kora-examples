@@ -1,6 +1,7 @@
 package ru.tinkoff.kora.example.submodule.app;
 
 import java.util.List;
+import ru.tinkoff.kora.common.Component;
 import ru.tinkoff.kora.common.KoraApp;
 import ru.tinkoff.kora.common.annotation.Root;
 import ru.tinkoff.kora.database.common.annotation.Query;
@@ -33,6 +34,7 @@ import ru.tinkoff.kora.example.submodule.pet.model.dao.PetCategory;
 public interface TestApplication extends Application {
 
     @Root
+    @Component
     @Repository
     interface TestPetRepository extends JdbcRepository {
 
@@ -44,6 +46,7 @@ public interface TestApplication extends Application {
     }
 
     @Root
+    @Component
     @Repository
     interface TestCategoryRepository extends JdbcRepository {
 

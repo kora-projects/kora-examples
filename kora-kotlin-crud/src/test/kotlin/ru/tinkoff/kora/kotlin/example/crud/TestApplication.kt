@@ -1,5 +1,6 @@
 package ru.tinkoff.kora.kotlin.example.crud
 
+import ru.tinkoff.kora.common.Component
 import ru.tinkoff.kora.common.KoraApp
 import ru.tinkoff.kora.common.Tag
 import ru.tinkoff.kora.common.annotation.Root
@@ -28,6 +29,7 @@ import ru.tinkoff.kora.kotlin.example.crud.model.PetCategory
 interface TestApplication : Application {
 
     @Root
+    @Component
     @Repository
     interface TestPetRepository : JdbcRepository {
         @Query("SELECT %{return#selects} FROM %{return#table}")
@@ -38,6 +40,7 @@ interface TestApplication : Application {
     }
 
     @Root
+    @Component
     @Repository
     interface TestCategoryRepository : JdbcRepository {
         @Query("SELECT %{return#selects} FROM %{return#table}")
