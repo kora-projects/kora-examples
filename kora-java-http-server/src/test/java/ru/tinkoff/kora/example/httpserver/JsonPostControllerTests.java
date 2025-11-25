@@ -1,19 +1,18 @@
 package ru.tinkoff.kora.example.httpserver;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
 
-@KoraAppTest(TestApplication.class)
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @Testcontainers
 class JsonPostControllerTests {
 
