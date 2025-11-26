@@ -1,8 +1,8 @@
 package ru.tinkoff.kora.example.submodule.app;
 
 import java.util.List;
+import ru.tinkoff.kora.common.Component;
 import ru.tinkoff.kora.common.KoraApp;
-import ru.tinkoff.kora.common.Tag;
 import ru.tinkoff.kora.common.annotation.Root;
 import ru.tinkoff.kora.database.common.annotation.Query;
 import ru.tinkoff.kora.database.common.annotation.Repository;
@@ -33,6 +33,8 @@ import ru.tinkoff.kora.example.submodule.pet.model.dao.PetCategory;
 @KoraApp
 public interface TestApplication extends Application {
 
+    @Root
+    @Component
     @Repository
     interface TestPetRepository extends JdbcRepository {
 
@@ -43,6 +45,8 @@ public interface TestApplication extends Application {
         void deleteAll();
     }
 
+    @Root
+    @Component
     @Repository
     interface TestCategoryRepository extends JdbcRepository {
 
@@ -51,12 +55,5 @@ public interface TestApplication extends Application {
 
         @Query("DELETE FROM categories")
         void deleteAll();
-    }
-
-    // Need any fake root to require components to include them in graph
-    @Tag(TestApplication.class)
-    @Root
-    default String testRoot(TestPetRepository petRepository, TestCategoryRepository categoryRepository) {
-        return "root";
     }
 }

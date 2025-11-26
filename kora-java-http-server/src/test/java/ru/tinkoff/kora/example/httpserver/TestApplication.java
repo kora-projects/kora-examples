@@ -1,14 +1,15 @@
-package ru.tinkoff.kora.example.crud;
+package ru.tinkoff.kora.example.httpserver;
 
-import java.util.List;
 import ru.tinkoff.kora.common.Component;
 import ru.tinkoff.kora.common.KoraApp;
 import ru.tinkoff.kora.common.annotation.Root;
-import ru.tinkoff.kora.database.common.annotation.Query;
-import ru.tinkoff.kora.database.common.annotation.Repository;
-import ru.tinkoff.kora.database.jdbc.JdbcRepository;
-import ru.tinkoff.kora.example.crud.model.dao.Pet;
-import ru.tinkoff.kora.example.crud.model.dao.PetCategory;
+import ru.tinkoff.kora.example.http.server.Application;
+import ru.tinkoff.kora.example.http.server.JsonPostController;
+import ru.tinkoff.kora.http.client.common.annotation.HttpClient;
+import ru.tinkoff.kora.http.client.jdk.JdkHttpClientModule;
+import ru.tinkoff.kora.http.common.HttpMethod;
+import ru.tinkoff.kora.http.common.annotation.HttpRoute;
+import ru.tinkoff.kora.json.common.annotation.Json;
 
 /**
  * Тестовый контейнер приложение, который расширяет основное приложение и например добавляет
@@ -31,29 +32,15 @@ import ru.tinkoff.kora.example.crud.model.dao.PetCategory;
  * tests.
  */
 @KoraApp
-public interface TestApplication extends Application {
+public interface TestApplication extends Application, JdkHttpClientModule {
 
     @Root
     @Component
-    @Repository
-    interface TestPetRepository extends JdbcRepository {
+    @HttpClient(configPath = "testHttpClient")
+    interface JsonHttpClient {
 
-        @Query("SELECT %{return#selects} FROM %{return#table}")
-        List<Pet> findAll();
-
-        @Query("DELETE FROM pets")
-        void deleteAll();
-    }
-
-    @Root
-    @Component
-    @Repository
-    interface TestCategoryRepository extends JdbcRepository {
-
-        @Query("SELECT %{return#selects} FROM %{return#table}")
-        List<PetCategory> findAll();
-
-        @Query("DELETE FROM categories")
-        void deleteAll();
+        @HttpRoute(method = HttpMethod.POST, path = "/json")
+        @Json
+        JsonPostController.JsonResponse post(@Json JsonPostController.JsonRequest body);
     }
 }

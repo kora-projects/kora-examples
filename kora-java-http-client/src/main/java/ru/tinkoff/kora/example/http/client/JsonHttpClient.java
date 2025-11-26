@@ -8,8 +8,10 @@ import ru.tinkoff.kora.json.common.annotation.Json;
 @HttpClient(configPath = "httpClient.default")
 public interface JsonHttpClient {
 
+    @Json
     record JsonRequest(String id) {}
 
+    @Json
     record JsonResponse(String name, int value) {}
 
     @HttpRoute(method = HttpMethod.POST, path = "/json")

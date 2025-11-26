@@ -7,6 +7,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -23,13 +25,15 @@ class JsonPostControllerTests {
 
         // then
         var request = HttpRequest.newBuilder()
-                .POST(HttpRequest.BodyPublishers.ofString("{\"name\":\"Ivan\"}"))
+                .POST(HttpRequest.BodyPublishers.ofString("{\"id\":\"1\"}"))
                 .uri(container.getURI().resolve("/json"))
                 .timeout(Duration.ofSeconds(5))
                 .build();
 
         var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, response.statusCode(), response.body());
-        assertEquals("Hello world: Ivan", response.body(), response.body());
+        JSONAssert.assertEquals(
+                """
+                        {"name":"Ivan","value":100}""", response.body(), JSONCompareMode.STRICT);
     }
 }

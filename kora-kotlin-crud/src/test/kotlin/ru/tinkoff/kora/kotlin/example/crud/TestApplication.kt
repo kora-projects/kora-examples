@@ -1,5 +1,6 @@
 package ru.tinkoff.kora.kotlin.example.crud
 
+import ru.tinkoff.kora.common.Component
 import ru.tinkoff.kora.common.KoraApp
 import ru.tinkoff.kora.common.Tag
 import ru.tinkoff.kora.common.annotation.Root
@@ -27,6 +28,8 @@ import ru.tinkoff.kora.kotlin.example.crud.model.PetCategory
 @KoraApp
 interface TestApplication : Application {
 
+    @Root
+    @Component
     @Repository
     interface TestPetRepository : JdbcRepository {
         @Query("SELECT %{return#selects} FROM %{return#table}")
@@ -36,6 +39,8 @@ interface TestApplication : Application {
         fun deleteAll()
     }
 
+    @Root
+    @Component
     @Repository
     interface TestCategoryRepository : JdbcRepository {
         @Query("SELECT %{return#selects} FROM %{return#table}")
@@ -44,12 +49,4 @@ interface TestApplication : Application {
         @Query("DELETE FROM categories")
         fun deleteAll()
     }
-
-    // Need any fake root to require components to include them in graph
-    @Root
-    @Tag(TestApplication::class)
-    fun testRoot(
-        petRepository: TestPetRepository,
-        categoryRepository: TestCategoryRepository
-    ): String = "root"
 }

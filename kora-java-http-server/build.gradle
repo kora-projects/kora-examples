@@ -22,7 +22,10 @@ dependencies {
     implementation "ru.tinkoff.kora:logging-logback"
     implementation "ru.tinkoff.kora:config-hocon"
 
+    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
+
     testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "ru.tinkoff.kora:http-client-jdk"
     testImplementation "org.skyscreamer:jsonassert:1.5.1"
     testImplementation "com.squareup.okhttp:okhttp:2.7.5"
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
@@ -78,6 +81,9 @@ compileJava {
     options.encoding("UTF-8")
     options.incremental(true)
     options.fork = false
+    options.compilerArgs += [
+            "-Akora.app.submodule.enabled=true", // Only for integration tests
+    ]
 }
 
 check.dependsOn jacocoTestReport
