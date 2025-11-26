@@ -18,7 +18,7 @@ dependencies {
     implementation "ru.tinkoff.kora.experimental:camunda-engine-bpmn"
     implementation "ru.tinkoff.kora.experimental:camunda-rest-undertow"
     implementation "ru.tinkoff.kora:json-module"
-    implementation "org.postgresql:postgresql:42.6.0"
+    implementation "org.postgresql:postgresql:42.7.7"
     implementation "ru.tinkoff.kora:database-jdbc"
 
     implementation "ru.tinkoff.kora:logging-logback"

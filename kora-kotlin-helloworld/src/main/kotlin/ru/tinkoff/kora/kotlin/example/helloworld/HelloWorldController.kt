@@ -13,6 +13,7 @@ import ru.tinkoff.kora.json.common.annotation.Json
 @HttpController
 class HelloWorldController {
 
+    @Json
     data class HelloWorldResponse(val greeting: String)
 
     @Json
