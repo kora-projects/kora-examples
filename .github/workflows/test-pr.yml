@@ -42,10 +42,3 @@ jobs:
 
       - name: Gradle tests
         run: "./gradlew test-${{ matrix.task }} jacocoTestReport --no-parallel --scan"
-
-      - name: Report tests
-        if: ${{ matrix.java }} == "17"
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        with:
-          files: |
-            **/test-results/**/*.xml
