@@ -1,3 +1,6 @@
+import org.gradle.api.services.BuildService
+import org.gradle.api.services.BuildServiceParameters
+
 plugins {
     id "com.diffplug.spotless" version "6.19.0"
     id "com.asarkar.gradle.build-time-tracker" version "4.3.0"
@@ -15,9 +18,22 @@ repositories {
     maven { url = "https://central.sonatype.com/repository/maven-snapshots" }
 }
 
+// plugin was attempted without an exclusive lock - https://github.com/graalvm/native-build-tools/issues/760
+abstract class GraalVmBuildLock implements BuildService<BuildServiceParameters.None> {}
+
+def graalVmBuildLock = gradle.sharedServices.registerIfAbsent("graalVmBuildLock", GraalVmBuildLock) {
+    maxParallelUsages = 1
+}
+
 subprojects {
     if (!project.childProjects.isEmpty()) {
         return
+    }
+
+    if (project.path.startsWith(":examples:graalvm:")) {
+        tasks.configureEach {
+            usesService(graalVmBuildLock)
+        }
     }
 
     apply plugin: "java"

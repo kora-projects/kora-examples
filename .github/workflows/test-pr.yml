@@ -17,9 +17,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ "17" ]
-        task: [ "database", "client", "server", "graalvm", "kotlin", "other" ]
-    name: Pull Request Java ${{ matrix.java }} for ${{ matrix.task }}
+        java: [ "24" ]
+        type: [ "Examples" ]
+        lang: [ "Java", "Kotlin" ]
+        feature: [ "Database", "Client", "Server", "Graalvm", "Other" ]
+    name: Pull Request Java ${{ matrix.java }} for ${{ matrix.type }}-${{ matrix.lang }}-${{ matrix.feature }}
+    env:
+      GRADLE_TASK_SUFFIX: ${{ matrix.type }}${{ matrix.lang }}${{ matrix.feature }}
     steps:
       - uses: actions/checkout@v4
       - name: JDK setup
@@ -34,11 +38,11 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/master' }}
           gradle-home-cache-cleanup: ${{ github.ref == 'refs/heads/master' }}
 
-      - name: Gradle classes
-        run: "./gradlew classes-${{ matrix.task }} --scan"
+      - name: Gradle build classes
+        run: "./gradlew classes${GRADLE_TASK_SUFFIX} --scan"
 
-      - name: Gradle tests classes
-        run: "./gradlew testClasses-${{ matrix.task }} --scan"
+      - name: Gradle build test classes
+        run: "./gradlew testClasses${GRADLE_TASK_SUFFIX} --scan"
 
-      - name: Gradle tests
-        run: "./gradlew test-${{ matrix.task }} jacocoTestReport --no-parallel --scan"
+      - name: Gradle run tests
+        run: "./gradlew test${GRADLE_TASK_SUFFIX} jacocoTestReport --no-parallel --scan"
