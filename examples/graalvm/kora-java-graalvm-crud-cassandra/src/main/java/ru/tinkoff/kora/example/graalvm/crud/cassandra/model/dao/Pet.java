@@ -1,9 +1,9 @@
 package ru.tinkoff.kora.example.graalvm.crud.cassandra.model.dao;
 
+import ru.tinkoff.kora.database.cassandra.annotation.EntityCassandra;
 import ru.tinkoff.kora.database.common.annotation.Column;
 import ru.tinkoff.kora.database.common.annotation.Id;
 import ru.tinkoff.kora.database.common.annotation.Table;
-import ru.tinkoff.kora.database.cassandra.annotation.EntityCassandra;
 import ru.tinkoff.kora.json.common.annotation.Json;
 
 @Json

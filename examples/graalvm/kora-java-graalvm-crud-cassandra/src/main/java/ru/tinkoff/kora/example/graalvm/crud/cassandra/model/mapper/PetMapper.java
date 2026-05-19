@@ -1,8 +1,8 @@
 package ru.tinkoff.kora.example.graalvm.crud.cassandra.model.mapper;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.ReportingPolicy;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 import ru.tinkoff.kora.example.graalvm.crud.cassandra.model.dao.Pet;
 import ru.tinkoff.kora.example.graalvm.crud.openapi.server.model.CategoryTO;
 import ru.tinkoff.kora.example.graalvm.crud.openapi.server.model.PetTO;
