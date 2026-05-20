@@ -17,7 +17,6 @@ jobs:
     name: Pull Request Java ${{ matrix.java }} for ${{ matrix.type }}-${{ matrix.lang }}-${{ matrix.feature }}
     env:
       GRADLE_TASK_SUFFIX: ${{ matrix.type }}${{ matrix.lang }}${{ matrix.feature }}
-      MAX_PARALLEL_WORKERS: 2
     steps:
       - uses: actions/checkout@v4
       - name: JDK setup
