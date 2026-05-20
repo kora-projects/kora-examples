@@ -45,9 +45,9 @@ class R2dbcCrudMacrosTests implements KoraAppTestConfigModifier {
     void monoSingleSuccess() {
         // given
         var entityCreate = new R2dbcCrudMacrosRepository.Entity("1", 1, "2", null);
-        repository.insert(entityCreate).block(Duration.ofMinutes(1));
+        repository.insert(entityCreate).block(Duration.ofSeconds(15));
 
-        var foundCreated = repository.findById("1").block(Duration.ofMinutes(1));
+        var foundCreated = repository.findById("1").block(Duration.ofSeconds(15));
         assertNotNull(foundCreated);
         assertEquals("1", foundCreated.id());
         assertEquals(1, foundCreated.field1());
@@ -56,9 +56,9 @@ class R2dbcCrudMacrosTests implements KoraAppTestConfigModifier {
 
         // when
         var entityUpdate = new R2dbcCrudMacrosRepository.Entity("1", 5, "6", null);
-        repository.update(entityUpdate).block(Duration.ofMinutes(1));
+        repository.update(entityUpdate).block(Duration.ofSeconds(15));
 
-        var foundUpdated = repository.findById("1").block(Duration.ofMinutes(1));
+        var foundUpdated = repository.findById("1").block(Duration.ofSeconds(15));
         assertNotNull(foundUpdated);
         assertEquals("1", foundUpdated.id());
         assertEquals(5, foundUpdated.field1());
@@ -66,8 +66,8 @@ class R2dbcCrudMacrosTests implements KoraAppTestConfigModifier {
         assertNull(foundUpdated.value3());
 
         // then
-        repository.deleteById("1").block(Duration.ofMinutes(1));
-        assertNull(repository.findById("1").block(Duration.ofMinutes(1)));
+        repository.deleteById("1").block(Duration.ofSeconds(15));
+        assertNull(repository.findById("1").block(Duration.ofSeconds(15)));
     }
 
     @Test
@@ -75,9 +75,9 @@ class R2dbcCrudMacrosTests implements KoraAppTestConfigModifier {
         // given
         var entityCreate1 = new R2dbcCrudMacrosRepository.Entity("1", 1, "2", null);
         var entityCreate2 = new R2dbcCrudMacrosRepository.Entity("2", 3, "4", null);
-        assertEquals(2L, repository.insertBatch(List.of(entityCreate1, entityCreate2)).block(Duration.ofMinutes(1)).value());
+        assertEquals(2L, repository.insertBatch(List.of(entityCreate1, entityCreate2)).block(Duration.ofSeconds(15)).value());
 
-        var foundCreated = repository.findAllMono().block(Duration.ofMinutes(1));
+        var foundCreated = repository.findAllMono().block(Duration.ofSeconds(15));
         assertNotNull(foundCreated);
         assertEquals(2, foundCreated.size());
         for (var entity : foundCreated) {
@@ -97,9 +97,9 @@ class R2dbcCrudMacrosTests implements KoraAppTestConfigModifier {
         // when
         var entityUpdate1 = new R2dbcCrudMacrosRepository.Entity("1", 5, "6", null);
         var entityUpdate2 = new R2dbcCrudMacrosRepository.Entity("2", 7, "8", null);
-        assertEquals(2L, repository.updateBatch(List.of(entityUpdate1, entityUpdate2)).block(Duration.ofMinutes(1)).value());
+        assertEquals(2L, repository.updateBatch(List.of(entityUpdate1, entityUpdate2)).block(Duration.ofSeconds(15)).value());
 
-        var foundUpdated = repository.findAll().collectList().block(Duration.ofMinutes(1));
+        var foundUpdated = repository.findAll().collectList().block(Duration.ofSeconds(15));
         assertEquals(2, foundUpdated.size());
         for (var entity : foundUpdated) {
             if (entity.id().equals("1")) {
@@ -116,7 +116,7 @@ class R2dbcCrudMacrosTests implements KoraAppTestConfigModifier {
         }
 
         // then
-        assertEquals(2L, repository.deleteAll().block(Duration.ofMinutes(1)).value());
-        assertTrue(repository.findAll().collectList().block(Duration.ofMinutes(1)).isEmpty());
+        assertEquals(2L, repository.deleteAll().block(Duration.ofSeconds(15)).value());
+        assertTrue(repository.findAll().collectList().block(Duration.ofSeconds(15)).isEmpty());
     }
 }

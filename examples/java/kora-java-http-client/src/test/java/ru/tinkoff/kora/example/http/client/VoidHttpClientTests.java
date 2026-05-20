@@ -40,7 +40,7 @@ class VoidHttpClientTests implements KoraAppTestConfigModifier {
                                 .withBody("OK"));
 
         // then
-        httpClient.reactor().block(Duration.ofMinutes(1));
+        httpClient.reactor().block(Duration.ofSeconds(15));
     }
 
     @Test
