@@ -166,5 +166,10 @@ interface VertxMapperRowSetRepository : VertxRepository {
 @Root
 @Component
 class RootService(
-    private val vertxCrudRepository: VertxCrudSyncRepository
+    private val vertxCrudRepository: VertxCrudSyncRepository,
+    private val vertxCrudSuspendRepository: VertxCrudSuspendRepository,
+    private val vertxMapperColumnRepository: VertxMapperColumnRepository,
+    private val vertxMapperParameterRepository: VertxMapperParameterRepository,
+    private val vertxMapperRowRepository: VertxMapperRowRepository,
+    private val vertxMapperRowSetRepository: VertxMapperRowSetRepository
 )

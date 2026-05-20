@@ -210,5 +210,10 @@ interface CassandraMapperResultSetRepository : CassandraRepository {
 @Component
 class RootService(
     private val crudSyncRepository: CassandraCrudSyncRepository,
-    private val cassandraUdtRepository: CassandraUdtRepository
+    private val crudSuspendRepository: CassandraCrudSuspendRepository,
+    private val cassandraUdtRepository: CassandraUdtRepository,
+    private val mapperRowColumnRepository: CassandraMapperRowColumnRepository,
+    private val mapperParameterRepository: CassandraMapperParameterRepository,
+    private val mapperRowRepository: CassandraMapperRowRepository,
+    private val mapperResultSetRepository: CassandraMapperResultSetRepository
 )

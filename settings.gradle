@@ -56,17 +56,17 @@ include "examples:java:kora-java-crud-submodule:kora-java-crud-submodule-vet-api
 
 // GRAALVM
 
-def graalvmExamples = [
-        "kora-java-graalvm-crud-jdbc",
-        "kora-java-graalvm-crud-r2dbc",
-        "kora-java-graalvm-crud-vertx",
-        "kora-java-graalvm-crud-cassandra",
-        "kora-java-graalvm-kafka",
-]
-
-graalvmExamples.each {
-    include "examples:graalvm:${it}"
-}
+//def graalvmExamples = [
+//        "kora-java-graalvm-crud-jdbc",
+//        "kora-java-graalvm-crud-r2dbc",
+//        "kora-java-graalvm-crud-vertx",
+//        "kora-java-graalvm-crud-cassandra",
+//        "kora-java-graalvm-kafka",
+//]
+//
+//graalvmExamples.each {
+//    include "examples:graalvm:${it}"
+//}
 
 // KOTLIN
 
