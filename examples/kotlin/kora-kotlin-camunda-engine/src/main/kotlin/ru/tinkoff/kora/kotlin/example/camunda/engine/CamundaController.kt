@@ -8,7 +8,7 @@ import ru.tinkoff.kora.http.common.HttpResponseEntity
 import ru.tinkoff.kora.http.common.annotation.HttpRoute
 import ru.tinkoff.kora.http.server.common.annotation.HttpController
 import ru.tinkoff.kora.json.common.annotation.Json
-import java.util.UUID
+import java.util.*
 
 @Component
 @HttpController("/camunda")

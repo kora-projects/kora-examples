@@ -25,7 +25,7 @@ dependencies {
     implementation "ru.tinkoff.kora:config-yaml"
 
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "org.testcontainers:junit-jupiter:1.19.8"
+    testImplementation "org.testcontainers:junit-jupiter:1.21.4"
 }
 
 application {

@@ -1,6 +1,4 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.jvm.toolchain.JavaLanguageVersion
-import org.gradle.jvm.toolchain.JvmVendorSpec
 
 plugins {
     id("application")
@@ -29,7 +27,8 @@ dependencies {
     kspTest("ru.tinkoff.kora:symbol-processors")
 
     implementation("ru.tinkoff.kora:database-r2dbc")
-    implementation("io.projectreactor:reactor-core:3.6.18")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.1")
     implementation("ru.tinkoff.kora:config-hocon")
     implementation("ru.tinkoff.kora:logging-logback")
 
@@ -54,7 +53,11 @@ application {
 
 tasks.withType<JavaExec> {
     environment(
-        "POSTGRES_R2DBC_URL" to "r2dbc:postgresql://${findProperty("postgresHost") ?: "localhost"}:${findProperty("postgresPort") ?: "5432"}/${findProperty("postgresDatabase") ?: "postgres"}",
+        "POSTGRES_R2DBC_URL" to "r2dbc:postgresql://${findProperty("postgresHost") ?: "localhost"}:${findProperty("postgresPort") ?: "5432"}/${
+            findProperty(
+                "postgresDatabase"
+            ) ?: "postgres"
+        }",
         "POSTGRES_USER" to (findProperty("postgresUser") ?: "postgres"),
         "POSTGRES_PASS" to (findProperty("postgresPassword") ?: "postgres"),
     )

@@ -1,6 +1,4 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.jvm.toolchain.JavaLanguageVersion
-import org.gradle.jvm.toolchain.JvmVendorSpec
 
 plugins {
     id("application")
@@ -36,8 +34,8 @@ dependencies {
 
     testImplementation("org.mockito:mockito-core:5.18.0")
     testImplementation("ru.tinkoff.kora:test-junit5")
-    testImplementation("io.camunda:zeebe-process-test-extension-testcontainer:8.6.7")
-    testImplementation("org.testcontainers:junit-jupiter:1.19.8")
+    testImplementation("io.camunda:zeebe-process-test-extension-testcontainer:8.9.5")
+    testImplementation("org.testcontainers:junit-jupiter:1.21.4")
 }
 
 kotlin {
@@ -56,7 +54,10 @@ application {
 }
 
 tasks.withType<JavaExec> {
-    environment("ZEEBE_GRPC_URL", "http://${findProperty("zeebeHost") ?: "localhost"}:${findProperty("zeebePort") ?: "26500"}")
+    environment(
+        "ZEEBE_GRPC_URL",
+        "http://${findProperty("zeebeHost") ?: "localhost"}:${findProperty("zeebePort") ?: "26500"}"
+    )
 }
 
 tasks.distTar { archiveFileName.set("application.tar") }

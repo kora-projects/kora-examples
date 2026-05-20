@@ -239,7 +239,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MessageTO'
 
-############ VETS #############
+  ############ VETS #############
 
   /vets:
     get:

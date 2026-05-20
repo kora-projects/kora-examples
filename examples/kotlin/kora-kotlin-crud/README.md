@@ -1,9 +1,11 @@
 # Kora Kotlin CRUD Service
 
 Пример сервиса реализованного на Kora с упрощенным HTTP [CRUD](https://github.com/swagger-api/swagger-petstore) API,
-в качестве базы данных выступает Postgres, используется кэш Caffeine, а также другие модули которые использовались бы в реальном приложении в бою.
+в качестве базы данных выступает Postgres, используется кэш Caffeine, а также другие модули которые использовались бы в
+реальном приложении в бою.
 
 В примере использовались модули:
+
 - [HTTP Server](https://kora-projects.github.io/kora-docs/ru/documentation/http-server/)
 - [HTTP Server OpenAPI Generation](https://kora-projects.github.io/kora-docs/ru/documentation/openapi-codegen/)
 - [Probes](https://kora-projects.github.io/kora-docs/ru/documentation/probes/)
@@ -31,6 +33,7 @@
 ### Generate
 
 Сгенерировать API для HTTP Server:
+
 ```shell
 ./gradlew openApiGenerateHttpServer
 ```
@@ -38,6 +41,7 @@
 ### Image
 
 Собрать образ приложения:
+
 ```shell
 docker build -t kora-kotlin-crud .
 ```
@@ -45,6 +49,7 @@ docker build -t kora-kotlin-crud .
 ## Migration
 
 Миграции вызываются с помощью Flyway Gradle Plugin:
+
 ```shell
 ./gradlew flywayMigrate
 ```
@@ -54,6 +59,7 @@ docker build -t kora-kotlin-crud .
 Перед запуском локально требуется запустить базу Postgres и накатить миграции.
 
 Запустить локально:
+
 ```shell
 ./gradlew run
 ```
@@ -67,15 +73,19 @@ docker build -t kora-kotlin-crud .
 ```
 
 Запустить как docker-compose:
+
 ```shell
 docker-compose up
 ```
 
 ## Test
 
-Тест использует [Testcontainers](https://java.testcontainers.org/), требуется [Docker](https://docs.docker.com/engine/install/) окружение для запуска тестов или аналогичные контейнерные окружения ([colima](https://github.com/abiosoft/colima) / итп)
+Тест использует [Testcontainers](https://java.testcontainers.org/),
+требуется [Docker](https://docs.docker.com/engine/install/) окружение для запуска тестов или аналогичные контейнерные
+окружения ([colima](https://github.com/abiosoft/colima) / итп)
 
 Протестировать локально:
+
 ```shell
 ./gradlew test
 ```

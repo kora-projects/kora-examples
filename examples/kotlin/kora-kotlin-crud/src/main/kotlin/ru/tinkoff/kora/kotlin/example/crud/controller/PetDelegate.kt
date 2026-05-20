@@ -4,7 +4,6 @@ import ru.tinkoff.kora.common.Component
 import ru.tinkoff.kora.example.crud.openapi.http.server.api.PetApiDelegate
 import ru.tinkoff.kora.example.crud.openapi.http.server.api.PetApiResponses
 import ru.tinkoff.kora.example.crud.openapi.http.server.model.*
-import ru.tinkoff.kora.kotlin.example.crud.model.Pet
 import ru.tinkoff.kora.kotlin.example.crud.model.PetMapper
 import ru.tinkoff.kora.kotlin.example.crud.model.PetWithCategory
 import ru.tinkoff.kora.kotlin.example.crud.service.PetService

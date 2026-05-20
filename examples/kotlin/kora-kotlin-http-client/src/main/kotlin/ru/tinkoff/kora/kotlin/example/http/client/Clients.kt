@@ -2,12 +2,10 @@ package ru.tinkoff.kora.kotlin.example.http.client
 
 import jakarta.annotation.Nullable
 import org.slf4j.LoggerFactory
-import reactor.core.publisher.Mono
 import ru.tinkoff.kora.common.Component
 import ru.tinkoff.kora.common.Context
 import ru.tinkoff.kora.common.Mapping
 import ru.tinkoff.kora.common.annotation.Root
-import ru.tinkoff.kora.http.client.common.HttpClientDecoderException
 import ru.tinkoff.kora.http.client.common.annotation.HttpClient
 import ru.tinkoff.kora.http.client.common.annotation.ResponseCodeMapper
 import ru.tinkoff.kora.http.client.common.annotation.ResponseCodeMapper.DEFAULT
@@ -18,11 +16,7 @@ import ru.tinkoff.kora.http.client.common.response.HttpClientResponse
 import ru.tinkoff.kora.http.client.common.response.HttpClientResponseMapper
 import ru.tinkoff.kora.http.common.HttpMethod
 import ru.tinkoff.kora.http.common.HttpResponseEntity
-import ru.tinkoff.kora.http.common.annotation.Header
-import ru.tinkoff.kora.http.common.annotation.HttpRoute
-import ru.tinkoff.kora.http.common.annotation.InterceptWith
-import ru.tinkoff.kora.http.common.annotation.Path
-import ru.tinkoff.kora.http.common.annotation.Query
+import ru.tinkoff.kora.http.common.annotation.*
 import ru.tinkoff.kora.http.common.body.HttpBody
 import ru.tinkoff.kora.http.common.body.HttpBodyOutput
 import ru.tinkoff.kora.http.common.form.FormMultipart
@@ -143,9 +137,13 @@ interface ParametersHttpClient {
 }
 
 @HttpClient(configPath = "httpClient.default")
-interface ReactorHttpClient {
-    @HttpRoute(method = HttpMethod.GET, path = "/reactor/{path}")
-    fun get(@Path path: String, @Nullable @Query query: String?, @Nullable @Header header: String?): HttpResponseEntity<ByteArray>
+interface SuspendHttpClient {
+    @HttpRoute(method = HttpMethod.GET, path = "/suspend/{path}")
+    suspend fun get(
+        @Path path: String,
+        @Nullable @Query query: String?,
+        @Nullable @Header header: String?
+    ): HttpResponseEntity<ByteArray>
 }
 
 @HttpClient(configPath = "httpClient.default")
@@ -154,7 +152,7 @@ interface VoidHttpClient {
     fun sync()
 
     @HttpRoute(method = HttpMethod.POST, path = "/void")
-    fun reactor()
+    suspend fun suspendRequest()
 }
 
 @Root
@@ -165,7 +163,7 @@ class RootService(
     private val mapperRequestHttpClient: MapperRequestHttpClient,
     private val mapperResponseHttpClient: MapperResponseHttpClient,
     private val parametersHttpClient: ParametersHttpClient,
-    private val reactorHttpClient: ReactorHttpClient,
+    private val suspendHttpClient: SuspendHttpClient,
     private val voidHttpClient: VoidHttpClient,
     private val formHttpClient: FormHttpClient
 )

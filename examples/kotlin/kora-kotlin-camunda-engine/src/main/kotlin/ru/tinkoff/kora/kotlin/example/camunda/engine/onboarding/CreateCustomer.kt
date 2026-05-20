@@ -10,6 +10,10 @@ class CreateCustomer : JavaDelegate {
     private val logger = LoggerFactory.getLogger(CreateCustomer::class.java)
 
     override fun execute(execution: DelegateExecution) {
-        logger.info("Creating approved customer {} with result {}.", execution.businessKey, execution.getVariable("result"))
+        logger.info(
+            "Creating approved customer {} with result {}.",
+            execution.businessKey,
+            execution.getVariable("result")
+        )
     }
 }

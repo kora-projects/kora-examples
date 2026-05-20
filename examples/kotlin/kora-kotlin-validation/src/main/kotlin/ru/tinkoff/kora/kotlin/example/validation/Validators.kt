@@ -3,13 +3,8 @@ package ru.tinkoff.kora.kotlin.example.validation
 import jakarta.annotation.Nullable
 import ru.tinkoff.kora.common.Component
 import ru.tinkoff.kora.common.annotation.Root
-import ru.tinkoff.kora.validation.common.annotation.NotBlank
-import ru.tinkoff.kora.validation.common.annotation.Pattern
-import ru.tinkoff.kora.validation.common.annotation.Range
-import ru.tinkoff.kora.validation.common.annotation.Size
-import ru.tinkoff.kora.validation.common.annotation.Valid
-import ru.tinkoff.kora.validation.common.annotation.Validate
-import java.util.UUID
+import ru.tinkoff.kora.validation.common.annotation.*
+import java.util.*
 
 @Root
 @Component

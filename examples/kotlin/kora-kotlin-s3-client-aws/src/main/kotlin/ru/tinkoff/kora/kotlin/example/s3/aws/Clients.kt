@@ -3,15 +3,9 @@ package ru.tinkoff.kora.kotlin.example.s3.aws
 import ru.tinkoff.kora.common.Component
 import ru.tinkoff.kora.common.annotation.Root
 import ru.tinkoff.kora.s3.client.annotation.S3
-import ru.tinkoff.kora.s3.client.model.S3Body
-import ru.tinkoff.kora.s3.client.model.S3Object
-import ru.tinkoff.kora.s3.client.model.S3ObjectList
-import ru.tinkoff.kora.s3.client.model.S3ObjectMeta
-import ru.tinkoff.kora.s3.client.model.S3ObjectMetaList
-import ru.tinkoff.kora.s3.client.model.S3ObjectUpload
+import ru.tinkoff.kora.s3.client.model.*
 import software.amazon.awssdk.core.ResponseInputStream
 import software.amazon.awssdk.services.s3.model.DeleteObjectResponse
-import software.amazon.awssdk.services.s3.model.DeleteObjectsResponse
 import software.amazon.awssdk.services.s3.model.GetObjectResponse
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response
 import software.amazon.awssdk.services.s3.model.PutObjectResponse

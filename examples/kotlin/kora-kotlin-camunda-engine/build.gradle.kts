@@ -1,6 +1,4 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.jvm.toolchain.JavaLanguageVersion
-import org.gradle.jvm.toolchain.JvmVendorSpec
 
 plugins {
     id("application")
@@ -62,7 +60,11 @@ application {
 
 tasks.withType<JavaExec> {
     environment(
-        "POSTGRES_JDBC_URL" to "jdbc:postgresql://${findProperty("postgresHost") ?: "localhost"}:${findProperty("postgresPort") ?: "5432"}/${findProperty("postgresDatabase") ?: "postgres"}",
+        "POSTGRES_JDBC_URL" to "jdbc:postgresql://${findProperty("postgresHost") ?: "localhost"}:${findProperty("postgresPort") ?: "5432"}/${
+            findProperty(
+                "postgresDatabase"
+            ) ?: "postgres"
+        }",
         "POSTGRES_USER" to (findProperty("postgresUser") ?: "postgres"),
         "POSTGRES_PASS" to (findProperty("postgresPassword") ?: "postgres"),
     )

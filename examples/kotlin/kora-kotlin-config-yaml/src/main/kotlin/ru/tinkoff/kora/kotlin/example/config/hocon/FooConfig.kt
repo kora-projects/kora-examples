@@ -5,15 +5,8 @@ import ru.tinkoff.kora.config.common.annotation.ConfigSource
 import ru.tinkoff.kora.config.common.annotation.ConfigValueExtractor
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.time.Duration
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.OffsetDateTime
-import java.time.OffsetTime
-import java.time.Period
-import java.util.Properties
-import java.util.UUID
+import java.time.*
+import java.util.*
 import java.util.regex.Pattern
 
 @ConfigSource("foo")

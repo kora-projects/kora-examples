@@ -15,6 +15,12 @@ configurations {
     koraBom
     annotationProcessor.extendsFrom(koraBom); compileOnly.extendsFrom(koraBom); implementation.extendsFrom(koraBom)
     api.extendsFrom(koraBom); testImplementation.extendsFrom(koraBom); testAnnotationProcessor.extendsFrom(koraBom)
+
+    configureEach {
+        resolutionStrategy {
+            force "com.github.docker-java:docker-java:3.2.14"
+        }
+    }
 }
 
 dependencies {
@@ -28,8 +34,8 @@ dependencies {
 
     testImplementation "org.mockito:mockito-core:5.18.0"
     testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.camunda:zeebe-process-test-extension-testcontainer:8.6.7"
-    testImplementation "org.testcontainers:junit-jupiter:1.19.8"
+    testImplementation "io.camunda:zeebe-process-test-extension-testcontainer:8.9.5"
+    testImplementation "org.testcontainers:junit-jupiter:1.21.4"
 }
 
 application {

@@ -2,7 +2,6 @@ package ru.tinkoff.kora.kotlin.example.crud
 
 import ru.tinkoff.kora.common.Component
 import ru.tinkoff.kora.common.KoraApp
-import ru.tinkoff.kora.common.Tag
 import ru.tinkoff.kora.common.annotation.Root
 import ru.tinkoff.kora.database.common.annotation.Query
 import ru.tinkoff.kora.database.common.annotation.Repository

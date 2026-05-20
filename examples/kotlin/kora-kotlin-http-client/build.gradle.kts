@@ -1,6 +1,4 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.jvm.toolchain.JavaLanguageVersion
-import org.gradle.jvm.toolchain.JvmVendorSpec
 
 plugins {
     id("application")
@@ -30,7 +28,7 @@ dependencies {
 
     implementation("ru.tinkoff.kora:http-client-jdk")
     implementation("ru.tinkoff.kora:json-module")
-    implementation("io.projectreactor:reactor-core:3.6.18")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     implementation("ru.tinkoff.kora:logging-logback")
     implementation("ru.tinkoff.kora:config-hocon")
 

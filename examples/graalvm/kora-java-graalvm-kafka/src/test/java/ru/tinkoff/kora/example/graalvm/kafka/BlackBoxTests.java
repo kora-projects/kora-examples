@@ -28,7 +28,7 @@ class BlackBoxTests {
         System.out.println(params);
         System.out.println("BOOTS - " + params.bootstrapServers());
         container.withEnv(Map.of(
-                "KAFKA_BOOTSTRAP", params.bootstrapServers(),
+                "KAFKA_BOOTSTRAP", params.bootstrapServers().replace(":9092", ":9093"),
                 "LOGGING_LEVEL_KORA", "INFO",
                 "LOGGING_LEVEL_APP", "DEBUG",
                 "LOGGING_LEVEL_KORA_KAFKA", "TRACE"));

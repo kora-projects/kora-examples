@@ -14,7 +14,8 @@ import java.util.concurrent.Executors
 @KoraApp
 interface Application : HoconConfigModule, LogbackModule, JsonCommonModule, JdbcDatabaseModule {
     @Tag(JdbcDatabase::class)
-    fun jdbcExecutor(): Executor = Executors.newFixedThreadPool(maxOf(Runtime.getRuntime().availableProcessors(), 2) * 2)
+    fun jdbcExecutor(): Executor =
+        Executors.newFixedThreadPool(maxOf(Runtime.getRuntime().availableProcessors(), 2) * 2)
 }
 
 fun main() {

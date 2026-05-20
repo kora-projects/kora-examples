@@ -7,19 +7,11 @@ import ru.tinkoff.kora.common.Mapping
 import ru.tinkoff.kora.common.Tag
 import ru.tinkoff.kora.http.common.HttpMethod
 import ru.tinkoff.kora.http.common.HttpResponseEntity
-import ru.tinkoff.kora.http.common.annotation.Header
-import ru.tinkoff.kora.http.common.annotation.HttpRoute
-import ru.tinkoff.kora.http.common.annotation.InterceptWith
-import ru.tinkoff.kora.http.common.annotation.Path
-import ru.tinkoff.kora.http.common.annotation.Query
+import ru.tinkoff.kora.http.common.annotation.*
 import ru.tinkoff.kora.http.common.body.HttpBody
 import ru.tinkoff.kora.http.common.form.FormMultipart
 import ru.tinkoff.kora.http.common.header.HttpHeaders
-import ru.tinkoff.kora.http.server.common.HttpServerInterceptor
-import ru.tinkoff.kora.http.server.common.HttpServerModule
-import ru.tinkoff.kora.http.server.common.HttpServerRequest
-import ru.tinkoff.kora.http.server.common.HttpServerResponse
-import ru.tinkoff.kora.http.server.common.HttpServerResponseException
+import ru.tinkoff.kora.http.server.common.*
 import ru.tinkoff.kora.http.server.common.annotation.HttpController
 import ru.tinkoff.kora.http.server.common.handler.HttpServerRequestMapper
 import ru.tinkoff.kora.http.server.common.handler.HttpServerResponseMapper
@@ -140,7 +132,8 @@ class JsonGetController {
 
     @Json
     @HttpRoute(method = HttpMethod.GET, path = "/json/entity")
-    fun getEntity(): HttpResponseEntity<HelloWorldResponse> = HttpResponseEntity.of(201, HelloWorldResponse("Hello world"))
+    fun getEntity(): HttpResponseEntity<HelloWorldResponse> =
+        HttpResponseEntity.of(201, HelloWorldResponse("Hello world"))
 }
 
 @Component
@@ -200,9 +193,9 @@ class MultipartController {
 
 @Component
 @HttpController
-class ReactorController {
-    @HttpRoute(method = HttpMethod.GET, path = "/reactor/mono")
-    fun get(): HttpServerResponse = HttpServerResponse.of(200, HttpBody.plaintext("Hello world"))
+class SuspendController {
+    @HttpRoute(method = HttpMethod.GET, path = "/suspend")
+    suspend fun get(): HttpServerResponse = HttpServerResponse.of(200, HttpBody.plaintext("Hello world"))
 }
 
 @Component

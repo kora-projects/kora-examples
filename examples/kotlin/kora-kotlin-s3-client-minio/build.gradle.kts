@@ -1,6 +1,4 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.jvm.toolchain.JavaLanguageVersion
-import org.gradle.jvm.toolchain.JvmVendorSpec
 
 plugins {
     id("application")
@@ -34,8 +32,8 @@ dependencies {
     implementation("ru.tinkoff.kora:logging-logback")
     implementation("ru.tinkoff.kora:config-hocon")
 
-    testImplementation("org.testcontainers:junit-jupiter:1.19.8")
-    testImplementation("org.testcontainers:minio:1.19.8")
+    testImplementation("org.testcontainers:junit-jupiter:1.21.4")
+    testImplementation("org.testcontainers:minio:1.21.4")
     testImplementation("io.goodforgod:testcontainers-extensions-minio:0.13.1")
     testImplementation("ru.tinkoff.kora:test-junit5")
 }

@@ -1,6 +1,3 @@
-import org.gradle.jvm.toolchain.JavaLanguageVersion
-import org.gradle.jvm.toolchain.JvmVendorSpec
-
 plugins {
     kotlin("jvm") version ("1.9.25")
     id("com.google.devtools.ksp") version ("1.9.25-1.0.20")
@@ -31,6 +28,9 @@ dependencies {
     api("ru.tinkoff.kora:resilient-kora")
 
     testImplementation("ru.tinkoff.kora:config-hocon")
+    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("org.mockito:mockito-core:5.18.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
 }
 

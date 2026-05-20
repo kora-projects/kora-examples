@@ -20,8 +20,8 @@ services:
       - postgres
 
 
-# Можно закомментировать секцию application и использовать docker-compose
-# как окружения для запуска сервиса через gradle run
+  # Можно закомментировать секцию application и использовать docker-compose
+  # как окружения для запуска сервиса через gradle run
   application:
     image: kora-kotlin-crud
     build: .

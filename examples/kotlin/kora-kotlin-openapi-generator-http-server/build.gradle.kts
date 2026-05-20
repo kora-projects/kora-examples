@@ -1,7 +1,5 @@
 import com.google.devtools.ksp.gradle.KspTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.jvm.toolchain.JavaLanguageVersion
-import org.gradle.jvm.toolchain.JvmVendorSpec
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 buildscript {
@@ -46,7 +44,7 @@ dependencies {
     testImplementation("org.json:json:20231013")
     testImplementation("org.skyscreamer:jsonassert:1.5.1")
     testImplementation("ru.tinkoff.kora:test-junit5")
-    testImplementation("org.testcontainers:junit-jupiter:1.19.8")
+    testImplementation("org.testcontainers:junit-jupiter:1.21.4")
 }
 
 kotlin {

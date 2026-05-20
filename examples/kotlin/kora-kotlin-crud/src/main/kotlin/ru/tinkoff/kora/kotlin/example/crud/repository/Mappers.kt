@@ -1,6 +1,5 @@
 package ru.tinkoff.kora.kotlin.example.crud.repository
 
-import jakarta.annotation.Nullable
 import ru.tinkoff.kora.common.Component
 import ru.tinkoff.kora.database.jdbc.mapper.parameter.JdbcParameterColumnMapper
 import ru.tinkoff.kora.database.jdbc.mapper.result.JdbcResultColumnMapper

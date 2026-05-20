@@ -4,8 +4,7 @@ import io.camunda.zeebe.client.ZeebeClient
 import org.slf4j.LoggerFactory
 import ru.tinkoff.kora.common.Component
 import ru.tinkoff.kora.scheduling.jdk.annotation.ScheduleAtFixedRate
-import java.util.Date
-import java.util.UUID
+import java.util.*
 
 @Component
 class ProcessScheduler(private val client: ZeebeClient) {

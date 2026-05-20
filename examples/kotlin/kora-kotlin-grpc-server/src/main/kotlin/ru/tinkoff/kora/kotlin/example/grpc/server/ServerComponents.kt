@@ -12,7 +12,7 @@ import ru.tinkoff.kora.common.Component
 import ru.tinkoff.kora.generated.grpc.Message
 import ru.tinkoff.kora.generated.grpc.UserServiceGrpc
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.*
 
 @Component
 class MyServerInterceptor : ServerInterceptor {

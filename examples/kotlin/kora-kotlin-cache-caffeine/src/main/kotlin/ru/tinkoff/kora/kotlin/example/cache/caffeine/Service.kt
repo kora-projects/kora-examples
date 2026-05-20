@@ -29,7 +29,8 @@ open class SimpleService {
     open fun get(id: String): Long = ThreadLocalRandom.current().nextLong(0, 100_000_000L)
 
     @CachePut(value = SimpleCache::class, parameters = ["id"])
-    open fun put(arg2: BigDecimal, arg3: String, id: String): Long = ThreadLocalRandom.current().nextLong(0, 100_000_000L)
+    open fun put(arg2: BigDecimal, arg3: String, id: String): Long =
+        ThreadLocalRandom.current().nextLong(0, 100_000_000L)
 
     @CacheInvalidate(SimpleCache::class)
     open fun delete(id: String) = Unit

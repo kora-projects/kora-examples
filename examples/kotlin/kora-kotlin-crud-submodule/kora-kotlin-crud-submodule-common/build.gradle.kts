@@ -1,6 +1,3 @@
-import org.gradle.jvm.toolchain.JavaLanguageVersion
-import org.gradle.jvm.toolchain.JvmVendorSpec
-
 plugins {
     kotlin("jvm") version ("1.9.25")
     id("com.google.devtools.ksp") version ("1.9.25-1.0.20")

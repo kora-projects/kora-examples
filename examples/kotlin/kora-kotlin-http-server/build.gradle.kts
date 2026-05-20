@@ -1,6 +1,4 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.jvm.toolchain.JavaLanguageVersion
-import org.gradle.jvm.toolchain.JvmVendorSpec
 
 plugins {
     id("application")
@@ -31,12 +29,15 @@ dependencies {
     implementation("ru.tinkoff.kora:http-server-undertow")
     implementation("ru.tinkoff.kora:json-module")
     implementation("ru.tinkoff.kora:validation-module")
-    implementation("io.projectreactor:reactor-core:3.6.18")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     implementation("ru.tinkoff.kora:config-hocon")
     implementation("ru.tinkoff.kora:logging-logback")
 
+    testImplementation("org.skyscreamer:jsonassert:1.5.1")
+    testImplementation("com.squareup.okhttp:okhttp:2.7.5")
+    testImplementation("ru.tinkoff.kora:http-client-jdk")
     testImplementation("ru.tinkoff.kora:test-junit5")
-    testImplementation("org.testcontainers:junit-jupiter:1.19.8")
+    testImplementation("org.testcontainers:junit-jupiter:1.21.4")
 }
 
 kotlin {

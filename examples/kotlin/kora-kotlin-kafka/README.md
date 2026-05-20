@@ -3,6 +3,7 @@
 Пример модуля Kafka в Kora.
 
 В примере использовались модули:
+
 - [Kafka](https://kora-projects.github.io/kora-docs/ru/documentation/kafka/)
 - [JSON](https://kora-projects.github.io/kora-docs/ru/documentation/json/)
 
@@ -23,6 +24,7 @@
 ## Run
 
 Запустить локально:
+
 ```shell
 ./gradlew run
 ```
@@ -36,15 +38,19 @@
 ```
 
 Запустить как docker-compose:
+
 ```shell
 docker-compose up
 ```
 
 ## Test
 
-Тесты используют [Testcontainers](https://java.testcontainers.org/), требуется [Docker](https://docs.docker.com/engine/install/) окружение для запуска тестов или аналогичные контейнерные окружения ([colima](https://github.com/abiosoft/colima) / итп)
+Тесты используют [Testcontainers](https://java.testcontainers.org/),
+требуется [Docker](https://docs.docker.com/engine/install/) окружение для запуска тестов или аналогичные контейнерные
+окружения ([colima](https://github.com/abiosoft/colima) / итп)
 
 Протестировать локально:
+
 ```shell
 ./gradlew test
 ```

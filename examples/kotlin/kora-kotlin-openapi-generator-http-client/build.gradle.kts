@@ -1,7 +1,5 @@
 import com.google.devtools.ksp.gradle.KspTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.jvm.toolchain.JavaLanguageVersion
-import org.gradle.jvm.toolchain.JvmVendorSpec
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 buildscript {
@@ -42,6 +40,7 @@ dependencies {
     implementation("ru.tinkoff.kora:json-module")
     implementation("ru.tinkoff.kora:logging-logback")
     implementation("ru.tinkoff.kora:config-hocon")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.1")
 
     testImplementation("org.json:json:20231013")
     testImplementation("org.skyscreamer:jsonassert:1.5.1")
@@ -86,7 +85,7 @@ val openApiGeneratePetV3 = tasks.register<GenerateTask>("openApiGeneratePetV3") 
     invokerPackage.set("$corePackage.invoker")
     configOptions.set(
         mapOf(
-            "mode" to "kotlin-client",
+            "mode" to "kotlin-suspend-client",
             "clientConfigPrefix" to "httpClient.petV3",
             "securityConfigPrefix" to "openapiAuth",
             "primaryAuth" to "apiKeyAuth",

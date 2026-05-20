@@ -1,6 +1,4 @@
 ﻿import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.jvm.toolchain.JavaLanguageVersion
-import org.gradle.jvm.toolchain.JvmVendorSpec
 
 plugins {
     id("application")
@@ -31,6 +29,7 @@ dependencies {
     implementation("ru.tinkoff.kora:config-hocon")
     implementation("ru.tinkoff.kora:logging-logback")
     testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("org.awaitility:awaitility:4.2.0")
 }
 
 kotlin {

@@ -1,15 +1,14 @@
 package ru.tinkoff.kora.example.graalvm.kafka;
 
+import java.net.URI;
+import java.nio.file.Paths;
+import java.time.Duration;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.utility.DockerImageName;
-
-import java.net.URI;
-import java.nio.file.Paths;
-import java.time.Duration;
 
 public final class AppContainer extends GenericContainer<AppContainer> {
 

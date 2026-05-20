@@ -6,7 +6,8 @@
                   xmlns:tns="http://kora.tinkoff.ru/simple/service"
                   xmlns:xsd="http://www.w3.org/2001/XMLSchema">
     <wsdl:types>
-        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://kora.tinkoff.ru/simple/service">
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                    targetNamespace="http://kora.tinkoff.ru/simple/service">
             <xsd:element name="TestRequest">
                 <xsd:complexType>
                     <xsd:sequence>

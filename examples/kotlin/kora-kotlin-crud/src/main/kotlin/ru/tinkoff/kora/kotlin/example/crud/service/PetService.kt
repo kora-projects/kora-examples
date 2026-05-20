@@ -14,7 +14,6 @@ import ru.tinkoff.kora.kotlin.example.crud.repository.PetRepository
 import ru.tinkoff.kora.resilient.circuitbreaker.annotation.CircuitBreaker
 import ru.tinkoff.kora.resilient.retry.annotation.Retry
 import ru.tinkoff.kora.resilient.timeout.annotation.Timeout
-import java.util.function.Supplier
 
 @Component
 open class PetService(

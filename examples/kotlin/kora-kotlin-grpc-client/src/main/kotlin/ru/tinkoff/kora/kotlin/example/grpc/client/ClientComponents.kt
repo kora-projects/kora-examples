@@ -1,10 +1,6 @@
 package ru.tinkoff.kora.kotlin.example.grpc.client
 
-import io.grpc.CallOptions
-import io.grpc.Channel
-import io.grpc.ClientCall
-import io.grpc.ClientInterceptor
-import io.grpc.MethodDescriptor
+import io.grpc.*
 import org.slf4j.LoggerFactory
 import ru.tinkoff.kora.common.Component
 import ru.tinkoff.kora.common.Tag
