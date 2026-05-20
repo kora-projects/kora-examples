@@ -7,13 +7,6 @@ plugins {
     id("com.google.devtools.ksp") version ("1.9.25-1.0.20")
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-        vendor.set(JvmVendorSpec.ADOPTIUM)
-    }
-}
-
 val koraBom: Configuration by configurations.creating
 configurations {
     ksp.get().extendsFrom(koraBom); compileOnly.get().extendsFrom(koraBom)

@@ -16,13 +16,6 @@ plugins {
     id("org.openapi.generator") version ("7.14.0")
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-        vendor.set(JvmVendorSpec.ADOPTIUM)
-    }
-}
-
 val koraBom: Configuration by configurations.creating
 configurations {
     ksp.get().extendsFrom(koraBom); compileOnly.get().extendsFrom(koraBom)

@@ -8,13 +8,6 @@ plugins {
     id("com.github.bjornvester.wsdl2java") version ("2.0.2")
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-        vendor.set(JvmVendorSpec.ADOPTIUM)
-    }
-}
-
 val koraBom: Configuration by configurations.creating
 configurations {
     ksp.get().extendsFrom(koraBom); compileOnly.get().extendsFrom(koraBom)
