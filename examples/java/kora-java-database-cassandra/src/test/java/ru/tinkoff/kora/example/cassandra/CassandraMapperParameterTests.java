@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import io.goodforgod.testcontainers.extensions.ContainerMode;
-import io.goodforgod.testcontainers.extensions.cassandra.CassandraConnection;
-import io.goodforgod.testcontainers.extensions.cassandra.ConnectionCassandra;
-import io.goodforgod.testcontainers.extensions.cassandra.Migration;
-import io.goodforgod.testcontainers.extensions.cassandra.TestcontainersCassandra;
+import io.goodforgod.testcontainers.extensions.scylla.ConnectionScylla;
+import io.goodforgod.testcontainers.extensions.scylla.Migration;
+import io.goodforgod.testcontainers.extensions.scylla.ScyllaConnection;
+import io.goodforgod.testcontainers.extensions.scylla.TestcontainersScylla;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,7 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
 import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 
-@TestcontainersCassandra(
+@TestcontainersScylla(
         mode = ContainerMode.PER_RUN,
         migration = @Migration(
                 engine = Migration.Engines.SCRIPTS,
@@ -26,8 +26,8 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent;
 @KoraAppTest(Application.class)
 class CassandraMapperParameterTests implements KoraAppTestConfigModifier {
 
-    @ConnectionCassandra
-    private CassandraConnection connection;
+    @ConnectionScylla
+    private ScyllaConnection connection;
 
     @TestComponent
     private CassandraCrudSyncRepository crudRepository;

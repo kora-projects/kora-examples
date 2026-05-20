@@ -4,13 +4,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.Network;
-import io.goodforgod.testcontainers.extensions.cassandra.CassandraConnection;
-import io.goodforgod.testcontainers.extensions.cassandra.ConnectionCassandra;
-import io.goodforgod.testcontainers.extensions.cassandra.Migration;
-import io.goodforgod.testcontainers.extensions.cassandra.TestcontainersCassandra;
 import io.goodforgod.testcontainers.extensions.redis.ConnectionRedis;
 import io.goodforgod.testcontainers.extensions.redis.RedisConnection;
 import io.goodforgod.testcontainers.extensions.redis.TestcontainersRedis;
+import io.goodforgod.testcontainers.extensions.scylla.ConnectionScylla;
+import io.goodforgod.testcontainers.extensions.scylla.Migration;
+import io.goodforgod.testcontainers.extensions.scylla.ScyllaConnection;
+import io.goodforgod.testcontainers.extensions.scylla.TestcontainersScylla;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-@TestcontainersCassandra(
+@TestcontainersScylla(
         network = @Network(shared = true),
         mode = ContainerMode.PER_RUN,
         migration = @Migration(
@@ -39,11 +39,11 @@ class BlackBoxTests {
     private static final AppContainer container = AppContainer.build()
             .withNetwork(org.testcontainers.containers.Network.SHARED);
 
-    @ConnectionCassandra
-    private CassandraConnection connection;
+    @ConnectionScylla
+    private ScyllaConnection connection;
 
     @BeforeEach
-    public void setup(@ConnectionCassandra CassandraConnection cassandraConnection,
+    public void setup(@ConnectionScylla ScyllaConnection cassandraConnection,
                       @ConnectionRedis RedisConnection redisConnection) {
         if (!container.isRunning()) {
             var paramsCassandra = cassandraConnection.paramsInNetwork().orElseThrow();

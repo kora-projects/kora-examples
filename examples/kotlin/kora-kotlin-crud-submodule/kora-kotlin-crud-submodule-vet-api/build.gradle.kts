@@ -31,7 +31,7 @@ dependencies {
     api("ru.tinkoff.kora:resilient-kora")
 
     testImplementation("ru.tinkoff.kora:config-hocon")
-    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.12.2")
+    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
 }
 
 kotlin {

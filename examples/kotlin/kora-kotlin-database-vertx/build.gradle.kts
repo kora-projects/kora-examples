@@ -34,7 +34,7 @@ dependencies {
     implementation("ru.tinkoff.kora:logging-logback")
 
     testImplementation("ru.tinkoff.kora:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.12.2")
+    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
 }
 
 kotlin {

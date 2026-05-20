@@ -1,7 +1,9 @@
 package ru.tinkoff.kora.example.graalvm.crud.cassandra;
 
 import io.goodforgod.graalvm.hint.annotation.NativeImageHint;
+import io.goodforgod.graalvm.hint.annotation.ReflectionHint;
 import io.goodforgod.graalvm.hint.annotation.ResourceHint;
+import io.netty.channel.socket.nio.NioDatagramChannel;
 import ru.tinkoff.kora.application.graph.KoraApplication;
 import ru.tinkoff.kora.cache.redis.RedisCacheModule;
 import ru.tinkoff.kora.common.KoraApp;
@@ -16,6 +18,7 @@ import ru.tinkoff.kora.resilient.ResilientModule;
 import ru.tinkoff.kora.validation.module.ValidationModule;
 
 @ResourceHint(include = { "openapi/http-server.yaml" })
+@ReflectionHint(types = NioDatagramChannel.class)
 @NativeImageHint(name = "application", entrypoint = Application.class)
 @KoraApp
 public interface Application extends

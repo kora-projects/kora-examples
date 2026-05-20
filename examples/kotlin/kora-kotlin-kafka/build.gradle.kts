@@ -34,7 +34,7 @@ dependencies {
     implementation("ru.tinkoff.kora:config-hocon")
 
     testImplementation("ru.tinkoff.kora:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-kafka:0.12.2")
+    testImplementation("io.goodforgod:testcontainers-extensions-kafka:0.13.1")
 }
 
 kotlin {
