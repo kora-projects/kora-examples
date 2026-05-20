@@ -54,14 +54,3 @@ class AutoCommitValueExceptionListener : AbstractListener<String>() {
         fail(IllegalStateException(value))
     }
 }
-
-@Root
-@Component
-class RootListener(
-    private val autoCommitValueListener: AutoCommitValueListener,
-    private val autoCommitValueKeyListener: AutoCommitValueKeyListener,
-    private val autoCommitValueKeyHeadersListener: AutoCommitValueKeyHeadersListener,
-    private val autoCommitRecordListener: AutoCommitRecordListener,
-    private val autoCommitRecordsListener: AutoCommitRecordsListener,
-    private val autoCommitValueExceptionListener: AutoCommitValueExceptionListener,
-)

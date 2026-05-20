@@ -33,7 +33,7 @@ public final class AppContainer extends GenericContainer<AppContainer> {
     protected void configure() {
         super.configure();
         withExposedPorts(8080, 8085);
-        withStartupTimeout(Duration.ofSeconds(50));
+        withStartupTimeout(Duration.ofSeconds(10));
         withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(AppContainer.class)));
         waitingFor(Wait.forLogMessage(".*Kafka Consumer '.*' first poll.*", 1));
     }
