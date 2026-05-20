@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ "24" ]
+        java: [ "21" ]
         type: [ "Examples" ]
         lang: [ "Java", "Kotlin" ]
         feature: [ "Database", "Client", "Server", "Graalvm", "Other" ]
