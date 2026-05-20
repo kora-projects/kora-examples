@@ -13,7 +13,7 @@ kafka:
       driverProperties:
         bootstrap.servers: ${KAFKA_BOOTSTRAP}
         group.id: "users-gi"
-        auto.offset.reset: "latest"
+        auto.offset.reset: "earliest"
         enable.auto.commit: true
       telemetry.logging.enabled: true
 
