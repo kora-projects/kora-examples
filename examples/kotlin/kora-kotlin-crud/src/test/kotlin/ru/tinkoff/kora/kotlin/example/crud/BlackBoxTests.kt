@@ -45,8 +45,12 @@ class BlackBoxTests(@ConnectionPostgreSQL val connection: JdbcConnection) {
                     "POSTGRES_PASS" to params.password(),
                     "CACHE_MAX_SIZE" to "0",
                     "RETRY_ATTEMPTS" to "0",
-                    "LOGGING_LEVEL_KORA" to "DEBUG",
-                    "LOGGING_LEVEL_APP" to "DEBUG"
+                    "LOGGING_LEVEL_KORA" to "INFO",
+                    "LOGGING_LEVEL_APP" to "DEBUG",
+                    "LOGGING_LEVEL_KORA_HTTP_SERVER" to "TRACE",
+                    "LOGGING_LEVEL_KORA_DATABASE" to "TRACE",
+                    "LOGGING_LEVEL_KORA_RESILIENT" to "TRACE",
+                    "LOGGING_LEVEL_KORA_CACHE" to "TRACE"
                 )
             )
             container.start()

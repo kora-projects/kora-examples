@@ -41,7 +41,7 @@ dependencies {
 }
 
 application {
-    mainClass = "ru.tinkoff.kora.example.graalvm.crud.kafka.Application"
+    mainClass = "ru.tinkoff.kora.example.graalvm.kafka.Application"
 }
 
 graalvmNative {

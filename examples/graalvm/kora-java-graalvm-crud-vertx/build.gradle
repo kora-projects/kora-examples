@@ -107,7 +107,7 @@ sourceSets.main { resources.srcDirs += "$buildDir/native-reachability-metadata" 
 //noinspection GroovyAssignabilityCheck
 run {
     environment([
-            "POSTGRES_VERTX_URL": ":postgresql://$postgresHost:$postgresPort/$postgresDatabase",
+            "POSTGRES_VERTX_URL": "postgresql://$postgresHost:$postgresPort/$postgresDatabase",
             "POSTGRES_USER"     : "$postgresUser",
             "POSTGRES_PASS"     : "$postgresPassword",
     ])

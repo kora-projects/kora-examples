@@ -39,14 +39,18 @@ class BlackBoxTests {
     public void setup(@ConnectionPostgreSQL JdbcConnection connection) {
         if (!container.isRunning()) {
             var params = connection.paramsInNetwork().orElseThrow();
-            container.withEnv(Map.of(
-                    "POSTGRES_JDBC_URL", params.jdbcUrl(),
-                    "POSTGRES_USER", params.username(),
-                    "POSTGRES_PASS", params.password(),
-                    "CACHE_MAX_SIZE", "0",
-                    "RETRY_ATTEMPTS", "0",
-                    "LOGGING_LEVEL_KORA", "DEBUG",
-                    "LOGGING_LEVEL_APP", "DEBUG"));
+            container.withEnv(Map.ofEntries(
+                    Map.entry("POSTGRES_JDBC_URL", params.jdbcUrl()),
+                    Map.entry("POSTGRES_USER", params.username()),
+                    Map.entry("POSTGRES_PASS", params.password()),
+                    Map.entry("CACHE_MAX_SIZE", "0"),
+                    Map.entry("RETRY_ATTEMPTS", "0"),
+                    Map.entry("LOGGING_LEVEL_KORA", "INFO"),
+                    Map.entry("LOGGING_LEVEL_APP", "DEBUG"),
+                    Map.entry("LOGGING_LEVEL_KORA_HTTP_SERVER", "TRACE"),
+                    Map.entry("LOGGING_LEVEL_KORA_DATABASE", "TRACE"),
+                    Map.entry("LOGGING_LEVEL_KORA_RESILIENT", "TRACE"),
+                    Map.entry("LOGGING_LEVEL_KORA_CACHE", "TRACE")));
 
             container.start();
         }

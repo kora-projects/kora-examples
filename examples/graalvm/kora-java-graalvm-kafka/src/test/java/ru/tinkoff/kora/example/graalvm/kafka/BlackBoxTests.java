@@ -25,7 +25,11 @@ class BlackBoxTests {
     @BeforeAll
     public static void setup(@ConnectionKafka KafkaConnection connection) {
         var params = connection.paramsInNetwork().orElseThrow();
-        container.withEnv(Map.of("KAFKA_BOOTSTRAP", params.bootstrapServers()));
+        container.withEnv(Map.of(
+                "KAFKA_BOOTSTRAP", params.bootstrapServers(),
+                "LOGGING_LEVEL_KORA", "INFO",
+                "LOGGING_LEVEL_APP", "DEBUG",
+                "LOGGING_LEVEL_KORA_KAFKA", "TRACE"));
         container.start();
     }
 

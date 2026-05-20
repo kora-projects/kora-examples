@@ -17,6 +17,13 @@ class BlackBoxTests {
 
     @Container
     private val container = AppContainer.build()
+        .withEnv(
+            mapOf(
+                "LOGGING_LEVEL_KORA" to "INFO",
+                "LOGGING_LEVEL_APP" to "DEBUG",
+                "LOGGING_LEVEL_KORA_HTTP" to "TRACE"
+            )
+        )
 
     @Test
     fun helloWorld() {
@@ -55,4 +62,3 @@ class BlackBoxTests {
     }
 
 }
-

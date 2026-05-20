@@ -48,17 +48,23 @@ class BlackBoxTests {
         if (!container.isRunning()) {
             var paramsCassandra = cassandraConnection.paramsInNetwork().orElseThrow();
             var paramsRedis = redisConnection.paramsInNetwork().orElseThrow();
-            container.withEnv(Map.of(
-                    "CASSANDRA_CONTACT_POINTS", paramsCassandra.contactPoint(),
-                    "CASSANDRA_USER", paramsCassandra.username(),
-                    "CASSANDRA_PASS", paramsCassandra.password(),
-                    "CASSANDRA_DC", paramsCassandra.datacenter(),
-                    "CASSANDRA_KEYSPACE", paramsCassandra.keyspace(),
-                    "REDIS_URL", paramsRedis.uri().toString(),
-                    "REDIS_USER", paramsRedis.username(),
-                    "REDIS_PASS", paramsRedis.password(),
-                    "CACHE_MAX_SIZE", "0",
-                    "RETRY_ATTEMPTS", "0"));
+            container.withEnv(Map.ofEntries(
+                    Map.entry("CASSANDRA_CONTACT_POINTS", paramsCassandra.contactPoint()),
+                    Map.entry("CASSANDRA_USER", paramsCassandra.username()),
+                    Map.entry("CASSANDRA_PASS", paramsCassandra.password()),
+                    Map.entry("CASSANDRA_DC", paramsCassandra.datacenter()),
+                    Map.entry("CASSANDRA_KEYSPACE", paramsCassandra.keyspace()),
+                    Map.entry("REDIS_URL", paramsRedis.uri().toString()),
+                    Map.entry("REDIS_USER", paramsRedis.username()),
+                    Map.entry("REDIS_PASS", paramsRedis.password()),
+                    Map.entry("CACHE_MAX_SIZE", "0"),
+                    Map.entry("RETRY_ATTEMPTS", "0"),
+                    Map.entry("LOGGING_LEVEL_KORA", "INFO"),
+                    Map.entry("LOGGING_LEVEL_APP", "DEBUG"),
+                    Map.entry("LOGGING_LEVEL_KORA_HTTP_SERVER", "TRACE"),
+                    Map.entry("LOGGING_LEVEL_KORA_DATABASE", "TRACE"),
+                    Map.entry("LOGGING_LEVEL_KORA_RESILIENT", "TRACE"),
+                    Map.entry("LOGGING_LEVEL_KORA_CACHE", "TRACE")));
 
             container.start();
         }
