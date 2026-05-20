@@ -52,7 +52,7 @@ kotlin {
 protobuf {
     protoc { artifact = "com.google.protobuf:protoc:3.25.3" }
     plugins {
-        id("grpc") { artifact = "io.grpc:protoc-gen-grpc-java:1.74.0:windows-x86_64@exe" }
+        id("grpc") { artifact = "io.grpc:protoc-gen-grpc-java:1.74.0" }
     }
     generateProtoTasks {
         all().forEach { task -> task.plugins { id("grpc") } }
