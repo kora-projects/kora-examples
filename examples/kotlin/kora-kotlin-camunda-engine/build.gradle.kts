@@ -28,7 +28,7 @@ dependencies {
     implementation("ru.tinkoff.kora:logging-logback")
     implementation("ru.tinkoff.kora:config-hocon")
 
-    testImplementation("org.mockito:mockito-core:5.18.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     testImplementation("ru.tinkoff.kora:test-junit5")
     testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
     testRuntimeOnly("com.h2database:h2:2.2.224")

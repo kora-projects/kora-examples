@@ -25,7 +25,7 @@ dependencies {
     implementation("ru.tinkoff.kora:config-hocon")
     implementation("ru.tinkoff.kora:json-module")
 
-    testImplementation("org.mockito:mockito-core:5.18.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     testImplementation("ru.tinkoff.kora:test-junit5")
     testImplementation("io.camunda:zeebe-process-test-extension-testcontainer:8.8.24")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")

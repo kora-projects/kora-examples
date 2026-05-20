@@ -22,7 +22,7 @@ dependencies {
 
     testImplementation("ru.tinkoff.kora:config-hocon")
     testImplementation("ru.tinkoff.kora:test-junit5")
-    testImplementation("org.mockito:mockito-core:5.18.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
 }

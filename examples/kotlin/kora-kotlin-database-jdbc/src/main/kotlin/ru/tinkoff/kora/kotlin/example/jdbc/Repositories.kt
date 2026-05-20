@@ -20,7 +20,7 @@ import ru.tinkoff.kora.json.common.annotation.Json
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Types
-import java.util.*
+import java.util.UUID
 
 @EntityJdbc
 data class JdbcEntity(
@@ -232,7 +232,7 @@ interface JdbcCrudExtendedRepository : AbstractJdbcCrudRepository<String, JdbcCr
     )
 
     @Query("SELECT %{return#selects} FROM %{return#table} WHERE id = :id")
-    fun findById(id: String): Optional<Entity>
+    fun findById(id: String): Entity?
 
     @Query("DELETE FROM entities WHERE id = :id")
     fun deleteById(id: String): UpdateCount
@@ -254,7 +254,7 @@ interface JdbcCrudExtendedCompositeRepository :
     }
 
     @Query("SELECT %{return#selects} FROM %{return#table} WHERE %{id#where}")
-    fun findById(id: Entity.EntityId): Optional<Entity>
+    fun findById(id: Entity.EntityId): Entity?
 
     @Query("DELETE FROM entities_composite_uuid WHERE %{id#where}")
     fun deleteById(id: Entity.EntityId): UpdateCount
@@ -275,7 +275,7 @@ interface JdbcCrudMacrosIdCompositeRepository : JdbcRepository {
     }
 
     @Query("SELECT %{return#selects} FROM %{return#table} WHERE %{id#where}")
-    fun findById(id: Entity.EntityId): Optional<Entity>
+    fun findById(id: Entity.EntityId): Entity?
 
     @Query("SELECT %{return#selects} FROM %{return#table}")
     fun findAll(): List<Entity>

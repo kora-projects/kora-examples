@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.mockito.Mock
 import org.mockito.Mockito
+import org.mockito.kotlin.any
 import org.testcontainers.shaded.org.awaitility.Awaitility
 import ru.tinkoff.kora.camunda.engine.bpmn.CamundaEngineDataSource
 import ru.tinkoff.kora.kotlin.example.camunda.engine.Application
@@ -81,7 +82,7 @@ class ComponentTests : KoraAppTestGraphModifier, KoraAppTestConfigModifier {
         assertNotNull(instance.id)
 
         Awaitility.waitAtMost(Duration.ofSeconds(10)).until {
-            Mockito.verify(loggerDelegate, Mockito.times(1)).execute(Mockito.any())
+            Mockito.verify(loggerDelegate, Mockito.times(1)).execute(any())
             true
         }
     }

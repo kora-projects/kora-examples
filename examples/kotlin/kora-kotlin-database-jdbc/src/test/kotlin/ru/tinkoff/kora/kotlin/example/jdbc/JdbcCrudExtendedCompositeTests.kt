@@ -6,7 +6,7 @@ import io.goodforgod.testcontainers.extensions.jdbc.JdbcConnection
 import io.goodforgod.testcontainers.extensions.jdbc.Migration
 import io.goodforgod.testcontainers.extensions.jdbc.TestcontainersPostgreSQL
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTest
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier
@@ -38,7 +38,7 @@ class JdbcCrudExtendedCompositeTests : KoraAppTestConfigModifier {
         val entity2 =
             JdbcCrudExtendedCompositeRepository.Entity(JdbcCrudExtendedCompositeRepository.Entity.EntityId(), "two")
         assertEquals(1L, repository.insert(entity1).value())
-        assertTrue(repository.findById(entity1.id).isPresent)
+        assertNotNull(repository.findById(entity1.id))
         assertEquals(2L, repository.upsertBatch(listOf(entity1.copy(name = "three"), entity2)).value())
         assertEquals(2, repository.findAll().size)
         assertEquals(1L, repository.deleteById(entity1.id).value())

@@ -38,6 +38,10 @@ application {
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 
+tasks.run {
+    environment("ENV_VALUE_REQUIRED", "valueRequired")
+}
+
 tasks.distTar {
     archiveFileName.set("application.tar")
 }
@@ -46,6 +50,7 @@ val jacocoExcludeSet = setOf("**/generated/**", "**/Application*", "**/\$*")
 tasks.test {
     dependsOn("distTar")
     jvmArgs("-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1")
+    environment("ENV_VALUE_REQUIRED", "valueRequired")
     useJUnitPlatform()
     testLogging {
         showStandardStreams = true
