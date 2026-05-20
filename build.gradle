@@ -18,6 +18,21 @@ repositories {
     maven { url = "https://central.sonatype.com/repository/maven-snapshots" }
 }
 
+def maxParallelWorkers = providers.environmentVariable("MAX_PARALLEL_WORKERS")
+if (maxParallelWorkers.isPresent()) {
+    def maxParallelWorkersValue = maxParallelWorkers.get().trim()
+    if (!maxParallelWorkersValue.isInteger()) {
+        throw new GradleException("MAX_PARALLEL_WORKERS must be a positive integer, but was '${maxParallelWorkers.get()}'")
+    }
+
+    def maxParallelWorkersCount = maxParallelWorkersValue.toInteger()
+    if (maxParallelWorkersCount < 1) {
+        throw new GradleException("MAX_PARALLEL_WORKERS must be a positive integer, but was '${maxParallelWorkers.get()}'")
+    }
+
+    gradle.startParameter.maxWorkerCount = maxParallelWorkersCount
+}
+
 // plugin was attempted without an exclusive lock - https://github.com/graalvm/native-build-tools/issues/760
 abstract class GraalVmBuildLock implements BuildService<BuildServiceParameters.None> {}
 
