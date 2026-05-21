@@ -1,4 +1,4 @@
-package ru.tinkoff.kora.kotlin.example.submodule.app.model
+﻿package ru.tinkoff.kora.kotlin.example.submodule.app.model
 
 import ru.tinkoff.kora.common.Component
 import ru.tinkoff.kora.kotlin.example.submodule.openapi.http.server.model.VetTO

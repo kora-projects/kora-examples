@@ -1,4 +1,4 @@
-package ru.tinkoff.kora.kotlin.example.config.hocon
+﻿package ru.tinkoff.kora.kotlin.example.config.hocon
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -6,7 +6,7 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTest
 import ru.tinkoff.kora.test.extension.junit5.TestComponent
 import java.time.Duration
 import java.time.Period
-import java.util.*
+import java.util.UUID
 
 @KoraAppTest(Application::class)
 class HoconConfigTests {
@@ -49,3 +49,4 @@ class HoconConfigTests {
         assertEquals("someString2", fooConfig.bars()[1].baz().someBazString())
     }
 }
+

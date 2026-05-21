@@ -1,4 +1,4 @@
-package ru.tinkoff.kora.kotlin.example.camunda.engine
+﻿package ru.tinkoff.kora.kotlin.example.camunda.engine
 
 import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.repository.ResourceDefinition
@@ -8,7 +8,7 @@ import ru.tinkoff.kora.http.common.HttpResponseEntity
 import ru.tinkoff.kora.http.common.annotation.HttpRoute
 import ru.tinkoff.kora.http.server.common.annotation.HttpController
 import ru.tinkoff.kora.json.common.annotation.Json
-import java.util.*
+import java.util.UUID
 
 @Component
 @HttpController("/camunda")
@@ -44,3 +44,4 @@ class CamundaController(private val processEngine: ProcessEngine) {
         return HttpResponseEntity.of(200, CamundaProcess(instance.id, businessKey))
     }
 }
+

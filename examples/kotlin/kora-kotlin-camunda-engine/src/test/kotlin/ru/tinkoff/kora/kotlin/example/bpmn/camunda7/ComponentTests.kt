@@ -1,4 +1,4 @@
-package ru.tinkoff.kora.kotlin.example.bpmn.camunda7
+﻿package ru.tinkoff.kora.kotlin.example.bpmn.camunda7
 
 import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.ProcessEngineConfiguration
@@ -16,7 +16,7 @@ import ru.tinkoff.kora.kotlin.example.camunda.engine.Application
 import ru.tinkoff.kora.kotlin.example.camunda.engine.helloworld.LoggerDelegate
 import ru.tinkoff.kora.test.extension.junit5.*
 import java.time.Duration
-import java.util.*
+import java.util.UUID
 
 @KoraAppTest(Application::class)
 class ComponentTests : KoraAppTestGraphModifier, KoraAppTestConfigModifier {
@@ -87,3 +87,4 @@ class ComponentTests : KoraAppTestGraphModifier, KoraAppTestConfigModifier {
         }
     }
 }
+

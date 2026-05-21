@@ -21,6 +21,7 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent
 class ProducerMapperPublisherTests : KoraAppTestConfigModifier {
     @ConnectionKafka
     lateinit var connection: KafkaConnection
+
     @TestComponent
     lateinit var publisher: ProducerMapperPublisher
     override fun config(): KoraConfigModification = kafkaConfig(connection)

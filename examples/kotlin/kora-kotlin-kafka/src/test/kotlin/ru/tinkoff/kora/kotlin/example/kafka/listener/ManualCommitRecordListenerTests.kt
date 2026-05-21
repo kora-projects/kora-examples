@@ -22,6 +22,7 @@ class ManualCommitRecordListenerTests : KoraAppTestConfigModifier {
     @Tag(ManualCommitRecordListenerModule.ManualCommitRecordListenerProcessTag::class)
     @TestComponent
     lateinit var consumerLifecycle: Lifecycle
+
     @TestComponent
     lateinit var consumer: ManualCommitRecordListener
     override fun config(): KoraConfigModification = kafkaConfig(connection)

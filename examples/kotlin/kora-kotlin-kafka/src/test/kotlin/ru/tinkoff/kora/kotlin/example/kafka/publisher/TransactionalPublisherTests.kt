@@ -22,6 +22,7 @@ import java.time.Duration
 class TransactionalPublisherTests : KoraAppTestConfigModifier {
     @ConnectionKafka(properties = [ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed"])
     lateinit var connection: KafkaConnection
+
     @TestComponent
     lateinit var publisher: MyTransactionalPublisher
     override fun config(): KoraConfigModification = kafkaConfig(connection)

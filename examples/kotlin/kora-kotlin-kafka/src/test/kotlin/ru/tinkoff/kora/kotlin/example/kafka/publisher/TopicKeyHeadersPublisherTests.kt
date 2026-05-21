@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets
 class TopicKeyHeadersPublisherTests : KoraAppTestConfigModifier {
     @ConnectionKafka
     lateinit var connection: KafkaConnection
+
     @TestComponent
     lateinit var publisher: TopicKeyHeadersPublisher
     override fun config(): KoraConfigModification = kafkaConfig(connection)

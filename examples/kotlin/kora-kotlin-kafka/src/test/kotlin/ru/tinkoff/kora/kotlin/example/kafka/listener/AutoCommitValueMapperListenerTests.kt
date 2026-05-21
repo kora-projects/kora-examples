@@ -22,6 +22,7 @@ class AutoCommitValueMapperListenerTests : KoraAppTestConfigModifier {
     @Tag(AutoCommitValueMapperListenerModule.AutoCommitValueMapperListenerProcessTag::class)
     @TestComponent
     lateinit var consumerLifecycle: Lifecycle
+
     @TestComponent
     lateinit var consumer: AutoCommitValueMapperListener
     override fun config(): KoraConfigModification = kafkaConfig(connection)

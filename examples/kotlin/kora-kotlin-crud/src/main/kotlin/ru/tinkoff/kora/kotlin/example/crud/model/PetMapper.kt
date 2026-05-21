@@ -1,4 +1,4 @@
-package ru.tinkoff.kora.kotlin.example.crud.model
+﻿package ru.tinkoff.kora.kotlin.example.crud.model
 
 import ru.tinkoff.kora.common.Component
 import ru.tinkoff.kora.example.crud.openapi.http.server.model.CategoryTO

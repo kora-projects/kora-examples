@@ -1,4 +1,4 @@
-package ru.tinkoff.kora.kotlin.example.submodule.pet.model.dao
+﻿package ru.tinkoff.kora.kotlin.example.submodule.pet.model.dao
 
 import ru.tinkoff.kora.database.common.annotation.Column
 import ru.tinkoff.kora.database.common.annotation.Embedded

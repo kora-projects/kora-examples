@@ -20,6 +20,7 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent
 class TopicMapperPublisherTests : KoraAppTestConfigModifier {
     @ConnectionKafka
     lateinit var connection: KafkaConnection
+
     @TestComponent
     lateinit var publisher: TopicMapperPublisher
     override fun config(): KoraConfigModification = kafkaConfig(connection)

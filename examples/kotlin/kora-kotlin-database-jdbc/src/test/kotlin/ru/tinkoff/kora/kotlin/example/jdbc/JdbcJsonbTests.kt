@@ -1,4 +1,4 @@
-package ru.tinkoff.kora.kotlin.example.jdbc
+﻿package ru.tinkoff.kora.kotlin.example.jdbc
 
 import io.goodforgod.testcontainers.extensions.ContainerMode
 import io.goodforgod.testcontainers.extensions.jdbc.ConnectionPostgreSQL
@@ -11,7 +11,7 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTest
 import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification
 import ru.tinkoff.kora.test.extension.junit5.TestComponent
-import java.util.*
+import java.util.UUID
 
 @TestcontainersPostgreSQL(
     mode = ContainerMode.PER_RUN,
@@ -39,3 +39,4 @@ class JdbcJsonbTests : KoraAppTestConfigModifier {
         assertEquals(entity, repository.findById(entity.id))
     }
 }
+

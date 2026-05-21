@@ -1,4 +1,4 @@
-package ru.tinkoff.kora.kotlin.example.crud.model
+﻿package ru.tinkoff.kora.kotlin.example.crud.model
 
 import ru.tinkoff.kora.database.common.annotation.Column
 import ru.tinkoff.kora.database.common.annotation.Embedded

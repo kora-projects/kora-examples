@@ -25,14 +25,19 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent
 class R2dbcMapperSuspendTests : KoraAppTestConfigModifier {
     @ConnectionPostgreSQL
     lateinit var connection: JdbcConnection
+
     @TestComponent
     lateinit var crudRepository: R2dbcCrudSuspendRepository
+
     @TestComponent
     lateinit var columnRepository: R2dbcMapperColumnRepository
+
     @TestComponent
     lateinit var parameterRepository: R2dbcMapperParameterRepository
+
     @TestComponent
     lateinit var rowRepository: R2dbcMapperRowRepository
+
     override fun config(): KoraConfigModification = r2dbcConfig(connection)
 
     @Test

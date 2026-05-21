@@ -22,6 +22,7 @@ class AutoCommitRecordExceptionListenerTests : KoraAppTestConfigModifier {
     @Tag(AutoCommitRecordExceptionListenerModule.AutoCommitRecordExceptionListenerProcessTag::class)
     @TestComponent
     lateinit var consumerLifecycle: Lifecycle
+
     @TestComponent
     lateinit var consumer: AutoCommitRecordExceptionListener
     override fun config(): KoraConfigModification = kafkaConfig(connection)

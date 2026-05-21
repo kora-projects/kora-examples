@@ -26,8 +26,10 @@ import ru.tinkoff.kora.test.extension.junit5.TestComponent
 class VertxCrudSuspendTests : KoraAppTestConfigModifier {
     @ConnectionPostgreSQL
     lateinit var connection: JdbcConnection
+
     @TestComponent
     lateinit var repository: VertxCrudSuspendRepository
+
     override fun config(): KoraConfigModification = vertxConfig(connection)
 
     @Test

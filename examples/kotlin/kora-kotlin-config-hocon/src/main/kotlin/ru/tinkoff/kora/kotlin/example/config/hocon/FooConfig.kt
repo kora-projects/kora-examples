@@ -1,4 +1,4 @@
-package ru.tinkoff.kora.kotlin.example.config.hocon
+﻿package ru.tinkoff.kora.kotlin.example.config.hocon
 
 import jakarta.annotation.Nullable
 import ru.tinkoff.kora.config.common.annotation.ConfigSource
@@ -6,7 +6,8 @@ import ru.tinkoff.kora.config.common.annotation.ConfigValueExtractor
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.*
-import java.util.*
+import java.util.UUID
+import java.util.Properties
 import java.util.regex.Pattern
 
 @ConfigSource("foo")
@@ -62,3 +63,4 @@ interface FooConfig {
     fun bar(): BarConfig
     fun bars(): List<BarConfig>
 }
+

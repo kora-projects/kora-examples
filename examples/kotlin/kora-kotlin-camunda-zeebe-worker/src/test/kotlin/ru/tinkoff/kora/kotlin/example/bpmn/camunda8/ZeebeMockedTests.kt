@@ -1,4 +1,4 @@
-package ru.tinkoff.kora.kotlin.example.bpmn.camunda8
+﻿package ru.tinkoff.kora.kotlin.example.bpmn.camunda8
 
 import io.camunda.zeebe.client.ZeebeClient
 import io.camunda.zeebe.process.test.api.ZeebeTestEngine
@@ -14,7 +14,7 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification
 import ru.tinkoff.kora.test.extension.junit5.TestComponent
 import java.time.Duration
-import java.util.*
+import java.util.UUID
 
 @ZeebeProcessTest
 @KoraAppTest(value = Application::class, components = [KoraZeebeJobWorkerEngine::class])
@@ -62,3 +62,4 @@ class ZeebeMockedTests : KoraAppTestConfigModifier {
             }
     }
 }
+

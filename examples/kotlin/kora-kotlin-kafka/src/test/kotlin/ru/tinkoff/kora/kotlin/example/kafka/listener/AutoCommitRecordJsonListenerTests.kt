@@ -22,6 +22,7 @@ class AutoCommitRecordJsonListenerTests : KoraAppTestConfigModifier {
     @Tag(AutoCommitRecordJsonListenerModule.AutoCommitRecordJsonListenerProcessTag::class)
     @TestComponent
     lateinit var consumerLifecycle: Lifecycle
+
     @TestComponent
     lateinit var consumer: AutoCommitRecordJsonListener
     override fun config(): KoraConfigModification = kafkaConfig(connection)
