@@ -1,6 +1,7 @@
 package ru.tinkoff.kora.kotlin.example.http.server
 
 import jakarta.annotation.Nullable
+import org.slf4j.LoggerFactory
 import ru.tinkoff.kora.common.Component
 import ru.tinkoff.kora.common.Context
 import ru.tinkoff.kora.common.Mapping
@@ -99,20 +100,32 @@ class GetRequestController {
 @HttpController
 class InterceptedController {
     class ControllerInterceptor : HttpServerInterceptor {
-        override fun intercept(ctx: Context, request: HttpServerRequest, chain: HttpServerInterceptor.InterceptChain) =
-            chain.process(ctx, request)
+        private val logger = LoggerFactory.getLogger(ControllerInterceptor::class.java)
+
+        override fun intercept(ctx: Context, request: HttpServerRequest, chain: HttpServerInterceptor.InterceptChain): CompletionStage<HttpServerResponse> {
+            logger.info("Controller Level Interceptor")
+            return chain.process(ctx, request)
+        }
     }
 
     class MethodInterceptor : HttpServerInterceptor {
-        override fun intercept(ctx: Context, request: HttpServerRequest, chain: HttpServerInterceptor.InterceptChain) =
-            chain.process(ctx, request)
+        private val logger = LoggerFactory.getLogger(MethodInterceptor::class.java)
+
+        override fun intercept(ctx: Context, request: HttpServerRequest, chain: HttpServerInterceptor.InterceptChain): CompletionStage<HttpServerResponse> {
+            logger.info("Method Level Interceptor")
+            return chain.process(ctx, request)
+        }
     }
 
     @Tag(HttpServerModule::class)
     @Component
     class ServerInterceptor : HttpServerInterceptor {
-        override fun intercept(ctx: Context, request: HttpServerRequest, chain: HttpServerInterceptor.InterceptChain) =
-            chain.process(ctx, request)
+        private val logger = LoggerFactory.getLogger(ServerInterceptor::class.java)
+
+        override fun intercept(ctx: Context, request: HttpServerRequest, chain: HttpServerInterceptor.InterceptChain): CompletionStage<HttpServerResponse> {
+            logger.info("Server Level Interceptor")
+            return chain.process(ctx, request)
+        }
     }
 
     @InterceptWith(MethodInterceptor::class)
