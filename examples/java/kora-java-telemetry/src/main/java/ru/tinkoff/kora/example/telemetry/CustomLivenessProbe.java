@@ -8,7 +8,7 @@ import ru.tinkoff.kora.common.liveness.LivenessProbeFailure;
 public final class CustomLivenessProbe implements LivenessProbe {
 
     @Override
-    public LivenessProbeFailure probe() throws Exception {
+    public LivenessProbeFailure probe() {
         return new LivenessProbeFailure("Error");
     }
 }

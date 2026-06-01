@@ -1,5 +1,4 @@
 import com.google.devtools.ksp.gradle.KspTask
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 buildscript {
@@ -10,25 +9,11 @@ buildscript {
 
 plugins {
     id("application")
-    id("jacoco")
-    kotlin("jvm") version ("1.9.25")
-    id("com.google.devtools.ksp") version ("1.9.25-1.0.20")
     id("org.openapi.generator") version ("7.14.0")
     id("org.flywaydb.flyway") version ("8.4.2")
 }
 
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom); compileOnly.get().extendsFrom(koraBom)
-    api.get().extendsFrom(koraBom); implementation.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom); kspTest.get().extendsFrom(koraBom)
-}
-
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
-    ksp("ru.tinkoff.kora:symbol-processors")
-    kspTest("ru.tinkoff.kora:symbol-processors")
-
     implementation(project(":examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-pet-api"))
     implementation(project(":examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-vet-api"))
     implementation("ru.tinkoff.kora:http-server-undertow")
@@ -40,21 +25,11 @@ dependencies {
     implementation("ru.tinkoff.kora:openapi-management")
     implementation("org.postgresql:postgresql:42.7.7")
 
+    kspTest("ru.tinkoff.kora:symbol-processors")
+
     testRuntimeOnly(project(":examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-common"))
-    testImplementation("org.json:json:20231013")
-    testImplementation("org.skyscreamer:jsonassert:1.5.1")
-    testImplementation("ru.tinkoff.kora:test-junit5")
     testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
-}
-
-kotlin {
-    jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-        vendor.set(JvmVendorSpec.ADOPTIUM)
-    }
-    sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
-    sourceSets.test { kotlin.srcDir("build/generated/ksp/test/kotlin") }
 }
 
 application {
@@ -94,6 +69,10 @@ val openApiGenerateHttpServer = tasks.register<GenerateTask>("openApiGenerateHtt
     )
 }
 
+tasks.test {
+    dependsOn("distTar")
+}
+
 kotlin.sourceSets.main { kotlin.srcDir(openApiGenerateHttpServer.get().outputDir) }
 tasks.withType<KspTask>().configureEach {
     dependsOn(openApiGenerateHttpServer)
@@ -108,37 +87,9 @@ ksp {
 
 tasks.distTar { archiveFileName.set("application.tar") }
 
-val jacocoExcludeSet = setOf("**/generated/**", "**/Application*", "**/\$*")
-tasks.test {
-    dependsOn("distTar")
-    jvmArgs("-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1")
-    useJUnitPlatform()
-    testLogging {
-        showStandardStreams = true
-        events("passed", "skipped", "failed")
-        exceptionFormat = TestExceptionFormat.FULL
-    }
-    reports {
-        html.required = false
-        junitXml.required = false
-    }
-    exclude("**/\$*")
-    jacoco { jacocoExcludeSet.forEach { exclude(it) } }
-}
-
 flyway {
     url = "jdbc:postgresql://$postgresHost:$postgresPort/$postgresDatabase"
     user = postgresUser
     password = postgresPassword
     locations = arrayOf("classpath:db/migration")
-}
-
-tasks.jacocoTestReport {
-    reports {
-        xml.required = true
-        html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
-    }
-    classDirectories.setFrom(sourceSets.main.get().output.asFileTree.matching {
-        jacocoExcludeSet.forEach { exclude(it) }
-    })
 }

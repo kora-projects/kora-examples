@@ -31,7 +31,7 @@ class VertxCrudSyncTests : KoraAppTestConfigModifier {
     override fun config(): KoraConfigModification = vertxConfig(connection)
 
     @Test
-    fun monoSingleSuccess() {
+    fun singleSuccess() {
         val entityCreate = VertxEntity("1", 1, "2", null)
         repository.insert(entityCreate)
 
@@ -57,7 +57,7 @@ class VertxCrudSyncTests : KoraAppTestConfigModifier {
     }
 
     @Test
-    fun monoBatchSuccess() {
+    fun batchSuccess() {
         val entity1 = VertxEntity("1", 1, "2", null)
         val entity2 = VertxEntity("2", 3, "4", null)
         assertEquals(2L, repository.insertBatch(listOf(entity1, entity2)).value())

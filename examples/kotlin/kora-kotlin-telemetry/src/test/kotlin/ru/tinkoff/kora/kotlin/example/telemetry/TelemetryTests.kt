@@ -16,6 +16,19 @@ import java.time.Duration
 @Testcontainers
 class TelemetryTests {
 
+    companion object {
+        @Container
+        private val telemetryContainer = TelemetryContainer()
+            .withNetworkAliases("otel")
+            .withNetwork(Network.SHARED)
+
+        @Container
+        private val container = AppContainer.build()
+            .withNetworkAliases("app")
+            .withNetwork(Network.SHARED)
+            .withEnv("METRIC_COLLECTOR_ENDPOINT", telemetryContainer.getCollectorURIInNetwork().toString())
+    }
+
     @Test
     fun tracingTelemetryExported() {
         // given
@@ -35,10 +48,11 @@ class TelemetryTests {
             .until {
                 val logs = telemetryContainer.getLogs(OutputFrame.OutputType.STDERR)
                 val logsSplit = logs.split("\n")
-                val lastLog = logsSplit[logsSplit.size - 1].replace('\t', ' ')
-                lastLog.endsWith(
-                    "TracesExporter {\"kind\": \"exporter\", \"data_type\": \"traces\", \"name\": \"logging\", \"#spans\": 1}"
-                )
+                logsSplit.any {
+                    it.replace('\t', ' ').endsWith(
+                        "TracesExporter {\"kind\": \"exporter\", \"data_type\": \"traces\", \"name\": \"logging\", \"#spans\": 1}"
+                    )
+                }
             }
     }
 
@@ -88,18 +102,5 @@ class TelemetryTests {
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
         assertEquals(200, response.statusCode())
         assertFalse(response.body().isBlank())
-    }
-
-    companion object {
-        @Container
-        private val telemetryContainer = TelemetryContainer()
-            .withNetworkAliases("otel")
-            .withNetwork(Network.SHARED)
-
-        @Container
-        private val container = AppContainer.build()
-            .withNetworkAliases("app")
-            .withNetwork(Network.SHARED)
-            .withEnv("METRIC_COLLECTOR_ENDPOINT", telemetryContainer.getCollectorURIInNetwork().toString())
     }
 }

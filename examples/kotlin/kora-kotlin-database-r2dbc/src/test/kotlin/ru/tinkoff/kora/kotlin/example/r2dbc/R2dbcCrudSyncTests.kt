@@ -31,7 +31,7 @@ class R2dbcCrudSyncTests : KoraAppTestConfigModifier {
     override fun config(): KoraConfigModification = r2dbcConfig(connection)
 
     @Test
-    fun monoSingleSuccess() {
+    fun singleSuccess() {
         repository.insert(R2dbcEntity("1", 1, "2", null))
         val foundCreated = repository.findById("1")
         assertNotNull(foundCreated)
@@ -48,7 +48,7 @@ class R2dbcCrudSyncTests : KoraAppTestConfigModifier {
     }
 
     @Test
-    fun monoBatchSuccess() {
+    fun batchSuccess() {
         assertEquals(
             2L,
             repository.insertBatch(listOf(R2dbcEntity("1", 1, "2", null), R2dbcEntity("2", 3, "4", null))).value()

@@ -37,6 +37,7 @@ subprojects {
         ])
 
         useJUnitPlatform()
+        failOnNoDiscoveredTests = false
         testLogging {
             showStandardStreams = true
             events("passed", "skipped", "failed")

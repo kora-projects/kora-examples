@@ -1,5 +1,5 @@
 <configuration debug="false">
-    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -20,9 +20,7 @@
 
     <logger level="DEBUG" name="ru.tinkoff.kora.kotlin.example"/>
 
-    <logger level="TRACE" name="ru.tinkoff.kora.telemetry"/>
-    <logger level="TRACE" name="ru.tinkoff.kora.micrometer"/>
-    <logger level="TRACE" name="ru.tinkoff.kora.logging"/>
+    <logger level="TRACE" name="ru.tinkoff.kora.camunda"/>
 
     <logger level="DEBUG" name="org.testcontainers.containers"/>
     <logger level="DEBUG" name="io.goodforgod.testcontainers.extensions"/>

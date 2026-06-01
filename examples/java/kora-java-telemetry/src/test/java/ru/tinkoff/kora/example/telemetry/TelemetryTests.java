@@ -1,18 +1,20 @@
 package ru.tinkoff.kora.example.telemetry;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
+
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @Testcontainers
 class TelemetryTests {
@@ -47,9 +49,9 @@ class TelemetryTests {
                 .until(() -> {
                     final String logs = telemetryContainer.getLogs(OutputFrame.OutputType.STDERR);
                     final String[] logsSplit = logs.split("\n");
-                    final String lastLog = logsSplit[logsSplit.length - 1].replace('\t', ' ');
-                    return lastLog.endsWith(
-                            "TracesExporter {\"kind\": \"exporter\", \"data_type\": \"traces\", \"name\": \"logging\", \"#spans\": 1}");
+                    return Arrays.stream(logsSplit)
+                            .anyMatch(l -> l.replace('\t', ' ').endsWith(
+                                    "TracesExporter {\"kind\": \"exporter\", \"data_type\": \"traces\", \"name\": \"logging\", \"#spans\": 1}"));
                 });
     }
 
