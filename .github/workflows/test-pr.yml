@@ -39,10 +39,10 @@ jobs:
           gradle-home-cache-cleanup: ${{ github.ref == 'refs/heads/master' }}
 
       - name: Gradle build classes
-        run: "./gradlew classes${GRADLE_TASK_SUFFIX} --no-daemon --no-parallel --scan --stacktrace"
+        run: "./gradlew classes${{ env.GRADLE_TASK_SUFFIX }} --no-daemon --no-parallel --scan --stacktrace"
 
       - name: Gradle build test classes
-        run: "./gradlew testClasses${GRADLE_TASK_SUFFIX} --no-daemon --no-parallel --scan --stacktrace"
+        run: "./gradlew testClasses${{ env.GRADLE_TASK_SUFFIX }} --no-daemon --no-parallel --scan --stacktrace"
 
       - name: Gradle run tests
-        run: "./gradlew test${GRADLE_TASK_SUFFIX} jacocoTestReport --no-daemon --no-parallel --scan --stacktrace"
+        run: "./gradlew test${{ env.GRADLE_TASK_SUFFIX }} --no-daemon --no-parallel --scan --stacktrace"
