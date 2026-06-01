@@ -1,6 +1,8 @@
 package ru.tinkoff.kora.example.telemetry;
 
 import java.net.URI;
+import java.time.Duration;
+
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -31,7 +33,7 @@ public final class TelemetryContainer extends GenericContainer<TelemetryContaine
         addExposedPort(4317);
         addExposedPort(8888);
         addExposedPort(13133);
-        waitingFor(Wait.forLogMessage(".*Everything is ready.*", 1));
+        waitingFor(Wait.forLogMessage(".*Everything is ready.*", 1).withStartupTimeout(Duration.ofSeconds(20)));
         withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(getClass())));
     }
 }

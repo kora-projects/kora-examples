@@ -1,0 +1,11 @@
+services:
+  redis:
+    image: redis:8.2-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --save 60 1 --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5

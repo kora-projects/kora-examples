@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         java: [ "21" ]
-        type: [ "Examples" ]
+        type: [ "Examples", "Guides" ]
         lang: [ "Java", "Kotlin" ]
         feature: [ "Database", "Client", "Server", "Graalvm", "Kafka", "Other" ]
     name: Pull Request Java ${{ matrix.java }} for ${{ matrix.type }}-${{ matrix.lang }}-${{ matrix.feature }}

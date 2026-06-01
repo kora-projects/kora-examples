@@ -1,0 +1,16 @@
+app:
+  name: ${APP_NAME:Task Management App}
+  version: ${APP_VERSION}
+  environment: "production"
+
+commonLib:
+  endpoint: "https://integration.local/api"
+  requestTimeout: "5s"
+
+libs:
+  lib1:
+    endpoint: ${commonLib.endpoint}
+    requestTimeout: ${commonLib.requestTimeout}
+  lib2:
+    endpoint: "https://integration-2.local/api"
+    requestTimeout: ${commonLib.requestTimeout}

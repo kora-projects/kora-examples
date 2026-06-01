@@ -32,7 +32,7 @@ public final class AppContainer extends GenericContainer<AppContainer> {
         super.configure();
         withEnv("GRPC_PORT", "8090");
         withExposedPorts(8090);
-        waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(50)));
+        waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(20)));
         withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(AppContainer.class)));
     }
 

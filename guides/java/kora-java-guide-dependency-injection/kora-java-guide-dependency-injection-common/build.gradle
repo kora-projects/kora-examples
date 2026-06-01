@@ -1,0 +1,9 @@
+plugins {
+    id "java-library"
+}
+
+dependencies {
+    testImplementation platform("org.junit:junit-bom:$junitVersion")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "ru.tinkoff.kora:test-junit5"
+}

@@ -1,0 +1,180 @@
+openapi: 3.0.3
+info:
+  title: Advanced Data API
+  description: Form and multipart endpoints generated from a dedicated OpenAPI contract
+  version: 1.0.0
+tags:
+  - name: data
+    description: Form and multipart operations
+paths:
+  /data/form:
+    post:
+      tags:
+        - data
+      operationId: processForm
+      summary: Process a URL-encoded form
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FormRequestTO'
+      responses:
+        '200':
+          description: Form processed
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseTO'
+        '403':
+          description: Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseTO'
+  /data/upload:
+    post:
+      tags:
+        - data
+      operationId: processUpload
+      summary: Process a multipart upload
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadRequestTO'
+      responses:
+        '200':
+          description: Upload processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponseTO'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseTO'
+        '403':
+          description: Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseTO'
+  /data/mapping-by-code/{code}:
+    get:
+      tags:
+        - data
+      operationId: mappingByCode
+      summary: Return different HTTP outcomes by code
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 200
+            maximum: 599
+      responses:
+        '200':
+          description: Success payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayloadTO'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseTO'
+        '403':
+          description: Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseTO'
+security:
+  - apiKeyAuth: []
+components:
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+  schemas:
+    ErrorResponseTO:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+        details:
+          type: array
+          nullable: true
+          items:
+            type: string
+    FormRequestTO:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+    UploadRequestTO:
+      type: object
+      required:
+        - description
+        - file
+      properties:
+        description:
+          type: string
+        file:
+          type: string
+          format: binary
+    UploadResponseTO:
+      type: object
+      required:
+        - fileCount
+        - fileNames
+      properties:
+        fileCount:
+          type: integer
+        fileNames:
+          type: array
+          items:
+            type: string
+    PayloadTO:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string

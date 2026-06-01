@@ -28,8 +28,6 @@ kotlin {
         languageVersion.set(JavaLanguageVersion.of(21))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
-    sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
-    sourceSets.test { kotlin.srcDir("build/generated/ksp/test/kotlin") }
 }
 
 application {
@@ -38,7 +36,7 @@ application {
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 
-tasks.run {
+tasks.named<JavaExec>("run") {
     environment("ENV_VALUE_REQUIRED", "valueRequired")
 }
 

@@ -1,0 +1,68 @@
+plugins {
+    id "java"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(24)
+        vendor = JvmVendorSpec.ADOPTIUM
+    }
+}
+
+
+configurations {
+    koraBom
+    annotationProcessor.extendsFrom(koraBom)
+    compileOnly.extendsFrom(koraBom)
+    implementation.extendsFrom(koraBom)
+    testImplementation.extendsFrom(koraBom)
+    testAnnotationProcessor.extendsFrom(koraBom)
+}
+
+dependencies {
+    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
+
+    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+
+    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
+
+    testRuntimeOnly "org.postgresql:postgresql:42.7.3"
+
+    testImplementation platform("org.junit:junit-bom:$junitVersion")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation project(":guides:java:kora-java-guide-database-jdbc-app")
+    testImplementation "ru.tinkoff.kora:config-hocon"
+    testImplementation "ru.tinkoff.kora:database-flyway"
+    testImplementation "ru.tinkoff.kora:database-jdbc"
+    testImplementation "ru.tinkoff.kora:http-client-common"
+    testImplementation "ru.tinkoff.kora:http-server-undertow"
+    testImplementation "ru.tinkoff.kora:json-module"
+    testImplementation "ru.tinkoff.kora:logging-logback"
+    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "org.testcontainers:junit-jupiter:1.21.4"
+    testImplementation "org.testcontainers:postgresql:1.21.4"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+}
+
+test {
+    jvmArgs += [
+            "-XX:+TieredCompilation",
+            "-XX:TieredStopAtLevel=1",
+    ]
+
+    useJUnitPlatform()
+    filter {
+        excludeTestsMatching '*$*'
+        excludeTestsMatching "*TestApplication"
+    }
+    testLogging {
+        showStandardStreams(true)
+        events("passed", "skipped", "failed")
+        exceptionFormat("full")
+    }
+}
+
+

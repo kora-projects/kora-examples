@@ -36,7 +36,7 @@ class AppContainer : GenericContainer<AppContainer> {
         withExposedPorts(8080, 8085)
         withStartupTimeout(Duration.ofSeconds(50))
         withLogConsumer(Slf4jLogConsumer(LoggerFactory.getLogger(AppContainer::class.java)))
-        waitingFor(Wait.forHttp("/system/readiness").forPort(8085).forStatusCode(200))
+        waitingFor(Wait.forHttp("/system/readiness").forPort(8085).forStatusCode(200).withStartupTimeout(Duration.ofSeconds(20)))
     }
 
     val port: Int get() = getMappedPort(8080)

@@ -1,0 +1,60 @@
+plugins {
+    id "java"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(24)
+        vendor = JvmVendorSpec.ADOPTIUM
+    }
+}
+
+
+configurations {
+    koraBom
+    annotationProcessor.extendsFrom(koraBom)
+    compileOnly.extendsFrom(koraBom)
+    implementation.extendsFrom(koraBom)
+    testImplementation.extendsFrom(koraBom)
+    testAnnotationProcessor.extendsFrom(koraBom)
+}
+
+dependencies {
+    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
+
+    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+
+    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
+
+    testImplementation platform("org.junit:junit-bom:$junitVersion")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation project(":guides:java:kora-java-guide-database-jdbc-app")
+    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "org.json:json:20231013"
+    testImplementation "org.testcontainers:junit-jupiter:1.21.4"
+    testImplementation "org.testcontainers:postgresql:1.21.4"
+    testImplementation "org.testcontainers:testcontainers:1.21.4"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+    options.compilerArgs += ["-proc:none"]
+}
+
+test {
+    dependsOn ":guides:java:kora-java-guide-database-jdbc-app:distTar"
+    inputs.file("../kora-java-guide-database-jdbc-app/Dockerfile")
+    inputs.file("../kora-java-guide-database-jdbc-app/build/distributions/application.tar")
+
+    jvmArgs += [
+            "-XX:+TieredCompilation",
+            "-XX:TieredStopAtLevel=1",
+    ]
+
+    useJUnitPlatform()
+    testLogging {
+        showStandardStreams(true)
+        events("passed", "skipped", "failed")
+        exceptionFormat("full")
+    }
+}
