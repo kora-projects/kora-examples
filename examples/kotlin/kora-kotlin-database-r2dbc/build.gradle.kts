@@ -19,9 +19,11 @@ dependencies {
     ksp("ru.tinkoff.kora:symbol-processors")
     kspTest("ru.tinkoff.kora:symbol-processors")
 
+    implementation("org.postgresql:r2dbc-postgresql:1.0.4.RELEASE")
     implementation("ru.tinkoff.kora:database-r2dbc")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.1")
+
     implementation("ru.tinkoff.kora:config-hocon")
     implementation("ru.tinkoff.kora:logging-logback")
 

@@ -19,6 +19,7 @@ import ru.tinkoff.kora.database.vertx.mapper.result.VertxRowSetMapper
 
 @Repository
 interface VertxMapperColumnRepository : VertxRepository {
+
     data class Entity(
         val id: String,
         @Mapping(VertxEntityFieldTypeResultMapper::class)

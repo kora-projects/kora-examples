@@ -20,7 +20,12 @@ dependencies {
     kspTest("ru.tinkoff.kora:symbol-processors")
 
     implementation("ru.tinkoff.kora:database-vertx")
+    implementation("io.vertx:vertx-pg-client:4.3.8")
+    implementation("com.ongres.scram:client:2.1")
+    implementation("io.projectreactor:reactor-core:3.6.18") // For reactive examples (optional)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.1")
+
     implementation("ru.tinkoff.kora:config-hocon")
     implementation("ru.tinkoff.kora:logging-logback")
 
