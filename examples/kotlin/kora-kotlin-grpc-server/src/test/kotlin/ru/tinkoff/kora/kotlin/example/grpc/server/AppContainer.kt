@@ -22,7 +22,7 @@ class AppContainer : GenericContainer<AppContainer> {
         super.configure()
         withEnv("GRPC_PORT", "8090")
         withExposedPorts(8090)
-        waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(50)))
+        waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(20)))
         withLogConsumer(Slf4jLogConsumer(LoggerFactory.getLogger(AppContainer::class.java)))
     }
 

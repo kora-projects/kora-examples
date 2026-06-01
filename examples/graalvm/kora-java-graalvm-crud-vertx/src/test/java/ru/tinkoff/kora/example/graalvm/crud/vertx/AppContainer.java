@@ -34,7 +34,7 @@ public final class AppContainer extends GenericContainer<AppContainer> {
         withExposedPorts(8080, 8085);
         withStartupTimeout(Duration.ofSeconds(50));
         withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(AppContainer.class)));
-        waitingFor(Wait.forHttp("/system/readiness").forPort(8085).forStatusCode(200));
+        waitingFor(Wait.forHttp("/system/readiness").forPort(8085).forStatusCode(200).withStartupTimeout(Duration.ofSeconds(20)));
     }
 
     public int getPort() {

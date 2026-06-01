@@ -22,7 +22,7 @@ class AppContainer : GenericContainer<AppContainer> {
     override fun configure() {
         super.configure()
         withExposedPorts(8080)
-        waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(50)))
+        waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(20)))
         withLogConsumer(Slf4jLogConsumer(LoggerFactory.getLogger(AppContainer::class.java)))
     }
 

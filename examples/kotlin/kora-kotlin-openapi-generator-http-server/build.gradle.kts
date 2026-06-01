@@ -1,4 +1,4 @@
-import com.google.devtools.ksp.gradle.KspTask
+﻿import com.google.devtools.ksp.gradle.KspTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
@@ -45,8 +45,6 @@ kotlin {
         languageVersion.set(JavaLanguageVersion.of(21))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
-    sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
-    sourceSets.test { kotlin.srcDir("build/generated/ksp/test/kotlin") }
 }
 
 val openApiGeneratePetV2 = tasks.register<GenerateTask>("openApiGeneratePetV2") {

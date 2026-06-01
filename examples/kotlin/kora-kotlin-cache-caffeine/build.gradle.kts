@@ -17,7 +17,6 @@ configurations {
 dependencies {
     koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
     ksp("ru.tinkoff.kora:symbol-processors")
-    kspTest("ru.tinkoff.kora:symbol-processors")
     implementation("ru.tinkoff.kora:cache-caffeine")
     implementation("ru.tinkoff.kora:config-hocon")
     implementation("ru.tinkoff.kora:logging-logback")
@@ -27,10 +26,7 @@ dependencies {
 kotlin {
     jvmToolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
-        vendor.set(JvmVendorSpec.ADOPTIUM)
     }
-    sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
-    sourceSets.test { kotlin.srcDir("build/generated/ksp/test/kotlin") }
 }
 
 application {

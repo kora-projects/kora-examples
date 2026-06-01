@@ -34,9 +34,8 @@ public final class AppContainer extends GenericContainer<AppContainer> {
         withExposedPorts(8080, 8085);
         withStartupTimeout(Duration.ofSeconds(50));
         withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(getClass())));
-        waitingFor(Wait.forHttp("/readiness")
-                .forPort(8085)
-                .forStatusCode(503)); // code is 503 cause tests expect failure
+        // code is 503 cause tests expect failure
+        waitingFor(Wait.forHttp("/readiness").forPort(8085).forStatusCode(503));
     }
 
     public int getPort() {

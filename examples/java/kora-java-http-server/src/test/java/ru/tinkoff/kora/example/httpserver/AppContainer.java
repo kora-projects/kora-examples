@@ -32,7 +32,7 @@ public final class AppContainer extends GenericContainer<AppContainer> {
     protected void configure() {
         super.configure();
         withExposedPorts(8080);
-        waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(50)));
+        waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(20)));
         withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(AppContainer.class)));
     }
 
