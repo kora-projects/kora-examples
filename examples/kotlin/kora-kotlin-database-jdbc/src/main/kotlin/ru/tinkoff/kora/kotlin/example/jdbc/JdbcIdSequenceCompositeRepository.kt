@@ -23,6 +23,7 @@ import java.sql.Types
 
 @Repository
 interface JdbcIdSequenceCompositeRepository : JdbcRepository {
+
     @EntityJdbc
     data class Entity(
         @field:Id @field:Embedded val id: EntityId?,

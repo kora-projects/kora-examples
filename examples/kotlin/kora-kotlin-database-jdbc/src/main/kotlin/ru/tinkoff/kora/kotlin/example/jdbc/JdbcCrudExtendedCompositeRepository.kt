@@ -25,6 +25,7 @@ import java.util.UUID
 @Repository
 interface JdbcCrudExtendedCompositeRepository :
     AbstractJdbcCrudRepository<JdbcCrudExtendedCompositeRepository.Entity.EntityId, JdbcCrudExtendedCompositeRepository.Entity> {
+
     @EntityJdbc
     @Table("entities_composite_uuid")
     data class Entity(

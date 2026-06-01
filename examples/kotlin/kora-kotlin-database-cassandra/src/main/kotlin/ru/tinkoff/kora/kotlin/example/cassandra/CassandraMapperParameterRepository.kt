@@ -22,6 +22,7 @@ import ru.tinkoff.kora.database.common.annotation.Repository
 
 @Repository
 interface CassandraMapperParameterRepository : CassandraRepository {
+
     @EntityCassandra
     data class Entity(
         val id: String,

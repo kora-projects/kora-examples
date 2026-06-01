@@ -24,6 +24,7 @@ import java.util.UUID
 
 @Repository
 interface JdbcCrudMacrosIdCompositeRepository : JdbcRepository {
+
     @EntityJdbc
     @Table("entities_composite_uuid")
     data class Entity(

@@ -24,6 +24,7 @@ import java.util.UUID
 
 @Repository
 interface JdbcIdRandomCompositeRepository : JdbcRepository {
+
     @EntityJdbc
     data class Entity(
         @field:Id @field:Embedded val id: EntityId = EntityId(),

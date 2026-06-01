@@ -22,6 +22,7 @@ import ru.tinkoff.kora.database.common.annotation.Repository
 
 @Repository
 interface CassandraUdtRepository : CassandraRepository {
+
     @Query("SELECT * FROM entities_udt WHERE id = :id")
     fun findById(id: String): CassandraUdtEntity?
 

@@ -23,6 +23,7 @@ import java.sql.Types
 
 @Module
 interface JdbcJsonbMapperModule {
+
     @Json
     fun <T> jdbcJsonParameterColumnMapper(writer: JsonWriter<T>): JdbcParameterColumnMapper<T> {
         return JdbcParameterColumnMapper { stmt, index, value ->

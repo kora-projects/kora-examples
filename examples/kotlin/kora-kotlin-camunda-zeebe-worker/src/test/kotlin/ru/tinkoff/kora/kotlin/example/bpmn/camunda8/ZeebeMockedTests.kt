@@ -14,6 +14,7 @@ import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier
 import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification
 import ru.tinkoff.kora.test.extension.junit5.TestComponent
 import java.time.Duration
+import java.util.Date
 import java.util.UUID
 
 @ZeebeProcessTest

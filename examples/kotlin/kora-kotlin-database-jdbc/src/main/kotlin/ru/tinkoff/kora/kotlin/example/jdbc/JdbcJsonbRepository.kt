@@ -24,6 +24,7 @@ import java.util.UUID
 
 @Repository
 interface JdbcJsonbRepository : JdbcRepository {
+
     @EntityJdbc
     data class Entity(
         val id: UUID,

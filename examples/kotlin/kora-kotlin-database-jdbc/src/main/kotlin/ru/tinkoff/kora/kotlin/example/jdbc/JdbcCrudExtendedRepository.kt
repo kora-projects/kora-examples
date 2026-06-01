@@ -23,6 +23,7 @@ import java.sql.Types
 
 @Repository
 interface JdbcCrudExtendedRepository : AbstractJdbcCrudRepository<String, JdbcCrudExtendedRepository.Entity> {
+
     @EntityJdbc
     @Table("entities")
     data class Entity(

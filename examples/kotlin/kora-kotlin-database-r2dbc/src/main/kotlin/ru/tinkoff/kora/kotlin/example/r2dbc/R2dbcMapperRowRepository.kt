@@ -15,6 +15,8 @@ import ru.tinkoff.kora.database.r2dbc.mapper.result.R2dbcRowMapper
 
 @Repository
 interface R2dbcMapperRowRepository : R2dbcRepository {
+
+    @Mapping(R2dbcEntityPartRowMapper::class)
     @Query("SELECT id, value1 FROM entities")
     suspend fun findAllParts(): List<R2dbcEntityPart>
 }

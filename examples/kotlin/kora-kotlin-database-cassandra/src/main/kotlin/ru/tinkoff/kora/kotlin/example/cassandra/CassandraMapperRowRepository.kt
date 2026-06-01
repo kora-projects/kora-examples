@@ -22,6 +22,7 @@ import ru.tinkoff.kora.database.common.annotation.Repository
 
 @Repository
 interface CassandraMapperRowRepository : CassandraRepository {
+
     @Mapping(CassandraEntityPartRowMapper::class)
     @Query("SELECT id, value1 FROM entities")
     fun findAllParts(): List<CassandraEntityPart>

@@ -16,6 +16,7 @@ import java.util.UUID
 
 @Repository
 interface R2dbcIdRandomRepository : R2dbcRepository {
+
     data class Entity(val id: UUID = UUID.randomUUID(), @field:Column("name") val name: String)
 
     @Query("SELECT * FROM entities_uuid WHERE id = :id")

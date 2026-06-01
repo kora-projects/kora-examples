@@ -23,6 +23,7 @@ import java.sql.Types
 
 @Repository
 interface JdbcMapperParameterRepository : JdbcRepository {
+
     @EntityJdbc
     data class Entity(
         val id: String,

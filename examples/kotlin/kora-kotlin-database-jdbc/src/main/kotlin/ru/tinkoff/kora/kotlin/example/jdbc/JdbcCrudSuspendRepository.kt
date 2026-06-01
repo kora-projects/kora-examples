@@ -23,6 +23,7 @@ import java.sql.Types
 
 @Repository
 interface JdbcCrudSuspendRepository : JdbcRepository {
+
     @EntityJdbc
     @Table("entities")
     data class Entity(

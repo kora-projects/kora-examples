@@ -23,6 +23,7 @@ import java.sql.Types
 
 @Repository
 interface JdbcIdSequenceRepository : JdbcRepository {
+
     @EntityJdbc
     data class Entity(@field:Id val id: Long?, @field:Column("name") val name: String) {
         constructor(name: String) : this(null, name)

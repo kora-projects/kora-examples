@@ -15,6 +15,7 @@ import ru.tinkoff.kora.database.r2dbc.mapper.result.R2dbcRowMapper
 
 @Repository
 interface R2dbcMapperParameterRepository : R2dbcRepository {
+
     data class Entity(
         val id: String,
         @field:Column("value1") val field1: Int,

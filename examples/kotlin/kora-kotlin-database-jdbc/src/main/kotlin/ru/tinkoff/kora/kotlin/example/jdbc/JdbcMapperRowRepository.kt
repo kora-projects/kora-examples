@@ -23,6 +23,7 @@ import java.sql.Types
 
 @Repository
 interface JdbcMapperRowRepository : JdbcRepository {
+
     @Mapping(JdbcEntityPartRowMapper::class)
     @Query("SELECT id, value1 FROM entities")
     fun findAllParts(): List<JdbcEntityPart>
