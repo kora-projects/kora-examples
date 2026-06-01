@@ -1,0 +1,118 @@
+version: "2.3"
+services:
+  postgres:
+    image: postgres:16.2-alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+
+  cassandra:
+    image: cassandra:4.1.4
+    restart: unless-stopped
+    logging:
+      driver: none
+    ports:
+      - '9160:9160'     # Thrift client API
+      - '9042:9042'     # CQL native transport port
+      - '7199:7199'     # JMX
+      - '7001:7001'     # TLS Internode communication
+      - '7000:7000'     # Internode communication
+    environment:
+      JVM_OPTS: -Dcassandra.skip_wait_for_gossip_to_settle=0 -Dcassandra.initial_token=0
+      CASSANDRA_SNITCH: GossipingPropertyFileSnitch
+      CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+      CASSANDRA_DC: datacenter1
+      CASSANDRA_NUM_TOKENS: 1
+
+
+  redis:
+    image: redis:7.2.4
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server
+
+
+  kora-graalvm-cassandra:
+    image: kora-graalvm-cassandra
+    restart: always
+    ports:
+      - "8084:8080"
+      - "8089:8085"
+    depends_on:
+      - cassandra
+      - redis
+    environment:
+      CASSANDRA_CONTACT_POINTS: cassandra:9042
+      CASSANDRA_USER: cassandra
+      CASSANDRA_PASS: cassandra
+      CASSANDRA_DC: datacenter1
+      CASSANDRA_KEYSPACE: petshop
+      REDIS_URL: redis://redis:6379/0
+      REDIS_USER: default
+      REDIS_PASS: redis
+
+
+  kora-graalvm-vertx:
+    image: kora-graalvm-vertx
+    restart: unless-stopped
+    ports:
+      - "8083:8080"
+      - "8088:8085"
+    depends_on:
+      - postgres
+    environment:
+      POSTGRES_JDBC_URL: jdbc:postgresql://postgres:5432/postgres
+      POSTGRES_R2DBC_URL: r2dbc:postgresql://postgres:5432/postgres
+      POSTGRES_VERTX_URL: postgresql://postgres:5432/postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASS: postgres
+
+
+  kora-graalvm-r2dbc:
+    image: kora-graalvm-r2dbc
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+      - "8087:8085"
+    depends_on:
+      - postgres
+    environment:
+      POSTGRES_JDBC_URL: jdbc:postgresql://postgres:5432/postgres
+      POSTGRES_R2DBC_URL: r2dbc:postgresql://postgres:5432/postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASS: postgres
+
+
+  kora-graalvm-jdbc:
+    image: kora-graalvm
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "8085:8085"
+    depends_on:
+      - postgres
+    environment:
+      POSTGRES_JDBC_URL: jdbc:postgresql://postgres:5432/postgres
+      POSTGRES_R2DBC_URL: r2dbc:postgresql://postgres:5432/postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASS: postgres
+
+
+  kora-java:
+    image: kora-java
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+      - "8086:8085"
+    depends_on:
+      - postgres
+    environment:
+      POSTGRES_JDBC_URL: jdbc:postgresql://postgres:5432/postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASS: postgres

@@ -1,0 +1,16 @@
+[
+  {
+    "name": "ru.tinkoff.kora.logging.logback.ConsoleTextRecordEncoder",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "ru.tinkoff.kora.logging.logback.KoraAsyncAppender",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "ch.qos.logback.core.status.NopStatusListener",
+    "allDeclaredConstructors": true
+  }
+]
