@@ -31,6 +31,7 @@ dependencies {
 
     testImplementation("ru.tinkoff.kora:test-junit5")
     testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
+    testImplementation("org.postgresql:postgresql:42.7.7")
 }
 
 kotlin {
