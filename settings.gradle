@@ -3,47 +3,108 @@ pluginManagement {
         gradlePluginPortal()
         mavenLocal()
         mavenCentral()
-        maven { url "https://central.sonatype.com/repository/maven-snapshots" }
+        maven { url = "https://central.sonatype.com/repository/maven-snapshots" }
     }
+}
+
+plugins {
+    id "org.gradle.toolchains.foojay-resolver-convention" version "1.0.0"
 }
 
 rootProject.name = "kora-examples"
 
-include "kora-java-http-server"
-include "kora-java-http-client"
-include "kora-java-soap-client"
-include "kora-java-openapi-generator-http-server"
-include "kora-java-openapi-generator-http-client"
-include "kora-java-database-jdbc"
-include "kora-java-database-r2dbc"
-include "kora-java-database-vertx"
-include "kora-java-database-cassandra"
-include "kora-java-telemetry"
-include "kora-java-validation"
-include "kora-java-resilient"
-include "kora-java-cache-caffeine"
-include "kora-java-cache-redis"
-include "kora-java-grpc-client"
-include "kora-java-grpc-server"
-include "kora-java-kafka"
-include "kora-java-scheduling-jdk"
-include "kora-java-scheduling-quartz"
-include "kora-java-config-hocon"
-include "kora-java-config-yaml"
-include "kora-java-s3-client-aws"
-include "kora-java-s3-client-minio"
-include "kora-java-camunda-engine"
-include "kora-java-camunda-zeebe-worker"
-include "kora-java-helloworld"
-include "kora-java-crud"
-include "kora-java-graalvm-crud-jdbc"
-include "kora-java-graalvm-crud-r2dbc"
-include "kora-java-graalvm-crud-vertx"
-include "kora-java-graalvm-crud-cassandra"
-include "kora-java-graalvm-kafka"
-include "kora-kotlin-helloworld"
-include "kora-kotlin-crud"
-include "kora-java-crud-submodule:kora-java-crud-submodule-app"
-include "kora-java-crud-submodule:kora-java-crud-submodule-common"
-include "kora-java-crud-submodule:kora-java-crud-submodule-pet-api"
-include "kora-java-crud-submodule:kora-java-crud-submodule-vet-api"
+// JAVA
+
+def javaExamples = [
+        "kora-java-http-server",
+        "kora-java-http-client",
+        "kora-java-soap-client",
+        "kora-java-openapi-generator-http-server",
+        "kora-java-openapi-generator-http-client",
+        "kora-java-database-jdbc",
+        "kora-java-database-r2dbc",
+        "kora-java-database-vertx",
+        "kora-java-database-cassandra",
+        "kora-java-telemetry",
+        "kora-java-validation",
+        "kora-java-resilient",
+        "kora-java-cache-caffeine",
+        "kora-java-cache-redis",
+        "kora-java-grpc-client",
+        "kora-java-grpc-server",
+        "kora-java-kafka",
+        "kora-java-scheduling-jdk",
+        "kora-java-scheduling-quartz",
+        "kora-java-config-hocon",
+        "kora-java-config-yaml",
+        "kora-java-s3-client-aws",
+        "kora-java-s3-client-minio",
+        "kora-java-camunda-engine",
+        "kora-java-camunda-zeebe-worker",
+        "kora-java-helloworld",
+        "kora-java-crud",
+]
+
+javaExamples.each {
+    include "examples:java:${it}"
+}
+
+include "examples:java:kora-java-crud-submodule:kora-java-crud-submodule-app"
+include "examples:java:kora-java-crud-submodule:kora-java-crud-submodule-common"
+include "examples:java:kora-java-crud-submodule:kora-java-crud-submodule-pet-api"
+include "examples:java:kora-java-crud-submodule:kora-java-crud-submodule-vet-api"
+
+// GRAALVM
+
+def graalvmExamples = [
+        "kora-java-graalvm-crud-jdbc",
+        "kora-java-graalvm-crud-r2dbc",
+        "kora-java-graalvm-crud-vertx",
+        "kora-java-graalvm-crud-cassandra",
+        "kora-java-graalvm-kafka",
+]
+
+graalvmExamples.each {
+    include "examples:graalvm:${it}"
+}
+
+// KOTLIN
+
+def kotlinExamples = [
+        "kora-kotlin-helloworld",
+        "kora-kotlin-crud",
+        "kora-kotlin-cache-caffeine",
+        "kora-kotlin-cache-redis",
+        "kora-kotlin-config-hocon",
+        "kora-kotlin-config-yaml",
+        "kora-kotlin-resilient",
+        "kora-kotlin-scheduling-jdk",
+        "kora-kotlin-scheduling-quartz",
+        "kora-kotlin-telemetry",
+        "kora-kotlin-validation",
+        "kora-kotlin-http-client",
+        "kora-kotlin-http-server",
+        "kora-kotlin-openapi-generator-http-client",
+        "kora-kotlin-openapi-generator-http-server",
+        "kora-kotlin-s3-client-minio",
+        "kora-kotlin-s3-client-aws",
+        "kora-kotlin-soap-client",
+        "kora-kotlin-grpc-client",
+        "kora-kotlin-grpc-server",
+        "kora-kotlin-kafka",
+        "kora-kotlin-camunda-engine",
+        "kora-kotlin-camunda-zeebe-worker",
+        "kora-kotlin-database-jdbc",
+        "kora-kotlin-database-r2dbc",
+        "kora-kotlin-database-vertx",
+        "kora-kotlin-database-cassandra",
+]
+
+kotlinExamples.each {
+    include "examples:kotlin:${it}"
+}
+
+include "examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-app"
+include "examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-common"
+include "examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-pet-api"
+include "examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-vet-api"

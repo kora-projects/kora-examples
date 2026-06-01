@@ -1,5 +1,3 @@
-def nonOtherModules = new HashSet<String>()
-
 def addDependency = { TaskProvider taskProvider, String dependency ->
     taskProvider.configure { Task task -> task.dependsOn(dependency) }
 }
@@ -14,45 +12,81 @@ def getProjectFullName = { Project pj ->
     return fullName
 }
 
-def addDependencyByType = { TaskProvider taskProvider, String type, String taskName ->
-    rootProject.allprojects.forEach {
-        def fullName = getProjectFullName(it)
-        if (type == "other" && it.name != rootProject.name && !nonOtherModules.contains(it.name) && it.childProjects.isEmpty()) {
-            addDependency(taskProvider, ":${fullName}:${taskName}")
-        } else if (it.name.contains(type)) {
-            addDependency(taskProvider, ":${fullName}:${taskName}")
-            nonOtherModules.add(it.name)
+def exampleGroups = [
+        "database",
+        "graalvm",
+        "server",
+        "client",
+        "kafka",
+        "other",
+]
+
+def getExampleLanguage = { Project pj ->
+    if (pj.path.startsWith(":examples:kotlin:")) {
+        return "kotlin"
+    }
+    if (pj.path.startsWith(":examples:java:") || pj.path.startsWith(":examples:graalvm:")) {
+        return "java"
+    }
+    return null
+}
+
+def getExampleGroup = { Project pj ->
+    if (pj.path.startsWith(":examples:graalvm:") || pj.name.contains("graalvm")) {
+        return "graalvm"
+    }
+    def matchedGroup = exampleGroups.find { it != "other" && pj.name.contains(it) }
+    return matchedGroup ?: "other"
+}
+
+def addDependencyByExampleGroup = { TaskProvider taskProvider, String language, String groupName, String taskName ->
+    rootProject.allprojects.forEach { Project pj ->
+        if (!pj.childProjects.isEmpty()) {
+            return
         }
+        if (getExampleLanguage(pj) != language) {
+            return
+        }
+        if (getExampleGroup(pj) != groupName) {
+            return
+        }
+
+        def fullName = getProjectFullName(pj)
+        addDependency(taskProvider, ":${fullName}:${taskName}")
     }
 }
 
-def groupModulesByType = { String type ->
-    def testByType = tasks.register("test-${type}") {
+def groupExampleModules = { String language, String groupName ->
+    def capitalizedLanguage = language.capitalize()
+    def capitalizedGroup = groupName.capitalize()
+    def taskSuffix = "Examples${capitalizedLanguage}${capitalizedGroup}"
+    def descriptionSuffix = "examples ${language} ${groupName}"
+
+    def testByType = tasks.register("test${taskSuffix}") {
         group("verification")
-        description("Run tests with ${type}")
+        description("Run tests for ${descriptionSuffix}")
     }
-    addDependencyByType(testByType, type, "test")
+    addDependencyByExampleGroup(testByType, language, groupName, "test")
 
-    def classesByType = tasks.register("classes-${type}") {
+    def classesByType = tasks.register("classes${taskSuffix}") {
         group("build")
-        description("Build classes for ${type}")
+        description("Build classes for ${descriptionSuffix}")
     }
-    addDependencyByType(classesByType, type, "classes")
+    addDependencyByExampleGroup(classesByType, language, groupName, "classes")
 
-    def testClassesByType = tasks.register("testClasses-${type}") {
+    def testClassesByType = tasks.register("testClasses${taskSuffix}") {
         group("build")
-        description("Build testClasses for ${type}")
+        description("Build testClasses for ${descriptionSuffix}")
     }
-    addDependencyByType(testClassesByType, type, "testClasses")
+    addDependencyByExampleGroup(testClassesByType, language, groupName, "testClasses")
 }
 
 
-groupModulesByType("database")
-groupModulesByType("graalvm")
-groupModulesByType("server")
-groupModulesByType("client")
-groupModulesByType("kotlin")
-groupModulesByType("other")
+["java", "kotlin"].forEach { language ->
+    exampleGroups.forEach { groupName ->
+        groupExampleModules(language, groupName)
+    }
+}
 
 
 def jacocoRootReport = tasks.register("jacocoRootReport", JacocoReport) {
@@ -61,7 +95,7 @@ def jacocoRootReport = tasks.register("jacocoRootReport", JacocoReport) {
 
     reports {
         xml.required.set(true)
-        xml.destination(file("$buildDir/reports/jacoco/test/jacocoTestReport.xml"))
+        xml.outputLocation.set(layout.buildDirectory.file("reports/jacoco/test/jacocoTestReport.xml"))
         csv.required.set(false)
         html.required.set(false)
     }

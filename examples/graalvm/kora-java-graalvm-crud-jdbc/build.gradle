@@ -1,0 +1,181 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+buildscript {
+    dependencies {
+        classpath("ru.tinkoff.kora:openapi-generator:$koraVersion")
+    }
+}
+
+plugins {
+    id "java"
+    id "jacoco"
+    id "application"
+
+    id "org.openapi.generator" version "7.14.0"
+    id "org.flywaydb.flyway" version "8.4.2"
+    id "com.gradleup.shadow" version "9.4.1"
+    id "org.graalvm.buildtools.native"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+        vendor = JvmVendorSpec.ADOPTIUM
+    }
+}
+
+configurations {
+    koraBom
+    annotationProcessor.extendsFrom(koraBom); compileOnly.extendsFrom(koraBom); implementation.extendsFrom(koraBom)
+    api.extendsFrom(koraBom); testImplementation.extendsFrom(koraBom); testAnnotationProcessor.extendsFrom(koraBom)
+}
+
+dependencies {
+    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
+    annotationProcessor "org.mapstruct:mapstruct-processor:1.5.5.Final"
+    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+    annotationProcessor "io.goodforgod:graalvm-hint-processor:1.2.0"
+    compileOnly "io.goodforgod:graalvm-hint-annotations:1.2.0"
+
+    implementation "ru.tinkoff.kora:http-server-undertow"
+    implementation "ru.tinkoff.kora:database-jdbc"
+    implementation "ru.tinkoff.kora:micrometer-module"
+    implementation "ru.tinkoff.kora:json-module"
+    implementation "ru.tinkoff.kora:validation-module"
+    implementation "ru.tinkoff.kora:cache-caffeine"
+    implementation "ru.tinkoff.kora:resilient-kora"
+    implementation "ru.tinkoff.kora:config-hocon"
+    implementation "ru.tinkoff.kora:openapi-management"
+    implementation "ru.tinkoff.kora:logging-logback"
+
+    runtimeOnly "org.postgresql:postgresql:42.7.7"
+    implementation "org.mapstruct:mapstruct:1.5.5.Final"
+
+    testImplementation "org.json:json:20231013"
+    testImplementation "org.skyscreamer:jsonassert:1.5.1"
+
+    testImplementation "org.mockito:mockito-core:5.18.0"
+    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.13.1"
+    testImplementation "org.testcontainers:junit-jupiter:1.21.4"
+}
+
+application {
+    mainClass = "ru.tinkoff.kora.example.graalvm.crud.jdbc.Application"
+}
+
+def openApiGenerateHttpServer = tasks.register("openApiGenerateHttpServer", GenerateTask) {
+    generatorName = "kora"
+    group = "openapi tools"
+    inputSpec = "$projectDir/src/main/resources/openapi/http-server.yaml"
+    outputDir = "$buildDir/generated/openapi"
+    def corePackage = "ru.tinkoff.kora.example.graalvm.crud.openapi.server"
+    apiPackage = "${corePackage}.api"
+    modelPackage = "${corePackage}.model"
+    invokerPackage = "${corePackage}.invoker"
+    configOptions = [
+            mode                  : "java-server", // так же есть java-server вариация HTTP Server"а
+            enableServerValidation: "true"
+    ]
+}
+sourceSets.main { java.srcDirs += openApiGenerateHttpServer.get().outputDir }
+compileJava.dependsOn openApiGenerateHttpServer
+
+graalvmNative {
+    binaries {
+        main {
+            imageName = "$project.name"
+            mainClass = "$application.mainClass"
+            javaLauncher = javaToolchains.launcherFor {
+                languageVersion = JavaLanguageVersion.of(21)
+                vendor = JvmVendorSpec.matching("GraalVM Community")
+            }
+        }
+    }
+    metadataRepository {
+        enabled = true
+    }
+}
+
+processResources.dependsOn tasks.collectReachabilityMetadata
+sourceSets.main { resources.srcDirs += "$buildDir/native-reachability-metadata" }
+
+//noinspection GroovyAssignabilityCheck
+run {
+    environment([
+            "POSTGRES_JDBC_URL": "jdbc:postgresql://$postgresHost:$postgresPort/$postgresDatabase",
+            "POSTGRES_USER"    : "$postgresUser",
+            "POSTGRES_PASS"    : "$postgresPassword",
+    ])
+}
+
+jar.enabled = false
+shadowJar {
+    mergeServiceFiles()
+    manifest {
+        attributes "Main-Class": application.mainClass
+        attributes "Implementation-Version": koraVersion
+    }
+}
+
+assemble.dependsOn shadowJar
+
+test {
+    dependsOn tasks.shadowJar
+
+    jvmArgs += [
+            "-XX:+TieredCompilation",
+            "-XX:TieredStopAtLevel=1",
+    ]
+
+    environment([
+            "": ""
+    ])
+
+    useJUnitPlatform()
+    testLogging {
+        showStandardStreams = true
+        events("passed", "skipped", "failed")
+        exceptionFormat = "full"
+    }
+
+    exclude("**/\$*")
+
+    jacoco {
+        excludes += ["**/generated/**", "**/Application*", "**/\$*"]
+    }
+
+    reports {
+        html.required = false
+        junitXml.required = false
+    }
+}
+
+flyway {
+    url = "jdbc:postgresql://$postgresHost:$postgresPort/$postgresDatabase"
+    user = "$postgresUser"
+    password = "$postgresPassword"
+    locations = ["classpath:db/migration"]
+}
+
+compileJava {
+    options.encoding = "UTF-8"
+    options.incremental = true
+    options.fork = false
+}
+
+check.dependsOn jacocoTestReport
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
+    }
+    classDirectories = files(classDirectories.files.collect { fileTree(dir: it, excludes: test.jacoco.excludes) })
+}
+
+javadoc {
+    options.encoding = "UTF-8"
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption("html5", true)
+    }
+}
