@@ -1,0 +1,55 @@
+plugins {
+    id "java"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(24)
+        vendor = JvmVendorSpec.ADOPTIUM
+    }
+}
+
+
+configurations {
+    koraBom
+    annotationProcessor.extendsFrom(koraBom)
+    compileOnly.extendsFrom(koraBom)
+    implementation.extendsFrom(koraBom)
+    testImplementation.extendsFrom(koraBom)
+    testAnnotationProcessor.extendsFrom(koraBom)
+}
+
+dependencies {
+    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
+
+    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+
+    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
+
+    testImplementation platform("org.junit:junit-bom:$junitVersion")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation project(":guides:java:kora-java-guide-http-server-app")
+    testImplementation "ru.tinkoff.kora:http-server-undertow"
+    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "org.mockito:mockito-core:5.23.0"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+    options.compilerArgs += ["-proc:none"]
+}
+
+test {
+    jvmArgs += [
+            "-XX:+TieredCompilation",
+            "-XX:TieredStopAtLevel=1",
+    ]
+
+    useJUnitPlatform()
+    testLogging {
+        showStandardStreams(true)
+        events("passed", "skipped", "failed")
+        exceptionFormat("full")
+    }
+}
+

@@ -12,7 +12,12 @@ def getProjectFullName = { Project pj ->
     return fullName
 }
 
-def exampleGroups = [
+def groupedCollections = [
+        "examples",
+        "guides",
+]
+
+def moduleGroups = [
         "database",
         "graalvm",
         "server",
@@ -21,33 +26,49 @@ def exampleGroups = [
         "other",
 ]
 
-def getExampleLanguage = { Project pj ->
-    if (pj.path.startsWith(":examples:kotlin:")) {
+def getCollectionName = { Project pj ->
+    def collectionName = groupedCollections.find { pj.path.startsWith(":${it}:") }
+    return collectionName
+}
+
+def getModuleLanguage = { Project pj ->
+    def collectionName = getCollectionName(pj)
+    if (collectionName == null) {
+        return null
+    }
+    if (pj.path.startsWith(":${collectionName}:kotlin:")) {
         return "kotlin"
     }
-    if (pj.path.startsWith(":examples:java:") || pj.path.startsWith(":examples:graalvm:")) {
+    if (pj.path.startsWith(":${collectionName}:java:") || pj.path.startsWith(":${collectionName}:graalvm:")) {
         return "java"
     }
     return null
 }
 
-def getExampleGroup = { Project pj ->
-    if (pj.path.startsWith(":examples:graalvm:") || pj.name.contains("graalvm")) {
+def getModuleGroup = { Project pj ->
+    def collectionName = getCollectionName(pj)
+    if (collectionName == null) {
+        return null
+    }
+    if (pj.path.startsWith(":${collectionName}:graalvm:") || pj.name.contains("graalvm")) {
         return "graalvm"
     }
-    def matchedGroup = exampleGroups.find { it != "other" && pj.name.contains(it) }
+    def matchedGroup = moduleGroups.find { it != "other" && pj.name.contains(it) }
     return matchedGroup ?: "other"
 }
 
-def addDependencyByExampleGroup = { TaskProvider taskProvider, String language, String groupName, String taskName ->
+def addDependencyByModuleGroup = { TaskProvider taskProvider, String collectionName, String language, String groupName, String taskName ->
     rootProject.allprojects.forEach { Project pj ->
         if (!pj.childProjects.isEmpty()) {
             return
         }
-        if (getExampleLanguage(pj) != language) {
+        if (getCollectionName(pj) != collectionName) {
             return
         }
-        if (getExampleGroup(pj) != groupName) {
+        if (getModuleLanguage(pj) != language) {
+            return
+        }
+        if (getModuleGroup(pj) != groupName) {
             return
         }
 
@@ -56,35 +77,38 @@ def addDependencyByExampleGroup = { TaskProvider taskProvider, String language, 
     }
 }
 
-def groupExampleModules = { String language, String groupName ->
+def groupModules = { String collectionName, String language, String groupName ->
     def capitalizedLanguage = language.capitalize()
     def capitalizedGroup = groupName.capitalize()
-    def taskSuffix = "Examples${capitalizedLanguage}${capitalizedGroup}"
-    def descriptionSuffix = "examples ${language} ${groupName}"
+    def capitalizedCollection = collectionName.capitalize()
+    def taskSuffix = "${capitalizedCollection}${capitalizedLanguage}${capitalizedGroup}"
+    def descriptionSuffix = "${collectionName} ${language} ${groupName}"
 
     def testByType = tasks.register("test${taskSuffix}") {
         group("verification")
         description("Run tests for ${descriptionSuffix}")
     }
-    addDependencyByExampleGroup(testByType, language, groupName, "test")
+    addDependencyByModuleGroup(testByType, collectionName, language, groupName, "test")
 
     def classesByType = tasks.register("classes${taskSuffix}") {
         group("build")
         description("Build classes for ${descriptionSuffix}")
     }
-    addDependencyByExampleGroup(classesByType, language, groupName, "classes")
+    addDependencyByModuleGroup(classesByType, collectionName, language, groupName, "classes")
 
     def testClassesByType = tasks.register("testClasses${taskSuffix}") {
         group("build")
         description("Build testClasses for ${descriptionSuffix}")
     }
-    addDependencyByExampleGroup(testClassesByType, language, groupName, "testClasses")
+    addDependencyByModuleGroup(testClassesByType, collectionName, language, groupName, "testClasses")
 }
 
 
-["java", "kotlin"].forEach { language ->
-    exampleGroups.forEach { groupName ->
-        groupExampleModules(language, groupName)
+groupedCollections.forEach { collectionName ->
+    ["java", "kotlin"].forEach { language ->
+        moduleGroups.forEach { groupName ->
+            groupModules(collectionName, language, groupName)
+        }
     }
 }
 

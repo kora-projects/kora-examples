@@ -1,0 +1,6 @@
+services:
+  scylla:
+    image: scylladb/scylla:2025.3
+    command: ["--smp", "1", "--memory", "750M", "--overprovisioned", "1", "--developer-mode", "1"]
+    ports:
+      - "9042:9042"

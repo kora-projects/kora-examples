@@ -1,0 +1,108 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+buildscript {
+    dependencies {
+        classpath("ru.tinkoff.kora:openapi-generator:$koraVersion")
+    }
+}
+
+plugins {
+    id "application"
+    id "org.openapi.generator" version "7.14.0"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(24)
+        vendor = JvmVendorSpec.ADOPTIUM
+    }
+}
+
+
+configurations {
+    koraBom
+    annotationProcessor.extendsFrom(koraBom)
+    compileOnly.extendsFrom(koraBom)
+    implementation.extendsFrom(koraBom)
+    testImplementation.extendsFrom(koraBom)
+    testAnnotationProcessor.extendsFrom(koraBom)
+}
+
+dependencies {
+    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
+
+    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+
+    implementation "ru.tinkoff.kora:config-hocon"
+    implementation "ru.tinkoff.kora:http-server-undertow"
+    implementation "ru.tinkoff.kora:json-module"
+    implementation "ru.tinkoff.kora:logging-logback"
+    implementation "ru.tinkoff.kora:openapi-management"
+    implementation "ru.tinkoff.kora:validation-module"
+
+    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
+
+    testImplementation platform("org.junit:junit-bom:$junitVersion")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "ru.tinkoff.kora:test-junit5"
+}
+
+def openApiGenerateDataHttpServer = tasks.register("openApiGenerateDataHttpServer", GenerateTask) {
+    generatorName = "kora"
+    group = "openapi tools"
+    inputSpec = "$projectDir/src/main/resources/openapi/data-http-server.yaml"
+    outputDir = "$buildDir/generated/data-http-server"
+    def corePackage = "ru.tinkoff.kora.guide.openapi.httpserver.data"
+    apiPackage = "${corePackage}.api"
+    modelPackage = "${corePackage}.model"
+    invokerPackage = "${corePackage}.invoker"
+    configOptions = [
+            mode                  : "java-server",
+            enableServerValidation: "true",
+            interceptors          : """
+                    {
+                      "*": [
+                        {
+                          "type": "ru.tinkoff.kora.guide.openapi.httpserver.advanced.controller.DataApiExceptionHandler"
+                        }
+                      ]
+                    }
+                    """,
+    ]
+}
+
+sourceSets.main {
+    java.srcDirs += openApiGenerateDataHttpServer.get().outputDir
+}
+
+compileJava.dependsOn openApiGenerateDataHttpServer
+
+application {
+    applicationName = "application"
+    mainClass = "ru.tinkoff.kora.guide.openapi.httpserver.advanced.Application"
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+}
+
+distTar {
+    archiveFileName = "application.tar"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+}
+
+test {
+    jvmArgs += [
+            "-XX:+TieredCompilation",
+            "-XX:TieredStopAtLevel=1",
+    ]
+
+    useJUnitPlatform()
+    testLogging {
+        showStandardStreams(true)
+        events("passed", "skipped", "failed")
+        exceptionFormat("full")
+    }
+}
+
+

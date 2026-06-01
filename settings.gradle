@@ -108,3 +108,89 @@ include "examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-a
 include "examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-common"
 include "examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-pet-api"
 include "examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-vet-api"
+
+// JAVA GUIDES
+
+def javaGuides = [
+        "kora-java-guide-cache-app",
+        "kora-java-guide-cache-multi-level-app",
+        "kora-java-guide-config-hocon-app",
+        "kora-java-guide-config-yaml-app",
+        "kora-java-guide-database-cassandra-app",
+        "kora-java-guide-database-jdbc-advanced-app",
+        "kora-java-guide-database-jdbc-app",
+        "kora-java-guide-dependency-injection-introduction-app",
+        "kora-java-guide-getting-started-app",
+        "kora-java-guide-grpc-client-advanced-app",
+        "kora-java-guide-grpc-client-app",
+        "kora-java-guide-grpc-server-advanced-app",
+        "kora-java-guide-grpc-server-app",
+        "kora-java-guide-http-client-advanced-app",
+        "kora-java-guide-http-client-app",
+        "kora-java-guide-http-server-advanced-app",
+        "kora-java-guide-http-server-app",
+        "kora-java-guide-json-app",
+        "kora-java-guide-messaging-kafka-app",
+        "kora-java-guide-observability-app",
+        "kora-java-guide-openapi-http-client-app",
+        "kora-java-guide-openapi-http-server-advanced-app",
+        "kora-java-guide-openapi-http-server-app",
+        "kora-java-guide-resilient-app",
+        "kora-java-guide-s3-app",
+        "kora-java-guide-testing-black-box-app",
+        "kora-java-guide-testing-integration-app",
+        "kora-java-guide-testing-junit-app",
+        "kora-java-guide-validation-app",
+]
+
+javaGuides.each {
+    include "guides:java:${it}"
+}
+
+include "guides:java:kora-java-guide-dependency-injection:kora-java-guide-dependency-injection-app"
+include "guides:java:kora-java-guide-dependency-injection:kora-java-guide-dependency-injection-common"
+include "guides:java:kora-java-guide-dependency-injection:kora-java-guide-dependency-injection-lib"
+include "guides:java:kora-java-guide-dependency-injection:kora-java-guide-dependency-injection-submodule"
+
+// KOTLIN GUIDES
+
+def kotlinGuides = [
+        "kora-kotlin-guide-cache-app",
+        "kora-kotlin-guide-cache-multi-level-app",
+        "kora-kotlin-guide-config-hocon-app",
+        "kora-kotlin-guide-config-yaml-app",
+        "kora-kotlin-guide-database-cassandra-app",
+        "kora-kotlin-guide-database-jdbc-advanced-app",
+        "kora-kotlin-guide-database-jdbc-app",
+        "kora-kotlin-guide-dependency-injection-introduction-app",
+        "kora-kotlin-guide-getting-started-app",
+        "kora-kotlin-guide-grpc-client-advanced-app",
+        "kora-kotlin-guide-grpc-client-app",
+        "kora-kotlin-guide-grpc-server-advanced-app",
+        "kora-kotlin-guide-grpc-server-app",
+        "kora-kotlin-guide-http-client-advanced-app",
+        "kora-kotlin-guide-http-client-app",
+        "kora-kotlin-guide-http-server-advanced-app",
+        "kora-kotlin-guide-http-server-app",
+        "kora-kotlin-guide-json-app",
+        "kora-kotlin-guide-messaging-kafka-app",
+        "kora-kotlin-guide-observability-app",
+        "kora-kotlin-guide-openapi-http-client-app",
+        "kora-kotlin-guide-openapi-http-server-advanced-app",
+        "kora-kotlin-guide-openapi-http-server-app",
+        "kora-kotlin-guide-resilient-app",
+        "kora-kotlin-guide-s3-app",
+        "kora-kotlin-guide-testing-black-box-app",
+        "kora-kotlin-guide-testing-integration-app",
+        "kora-kotlin-guide-testing-junit-app",
+        "kora-kotlin-guide-validation-app",
+]
+
+kotlinGuides.each {
+    include "guides:kotlin:${it}"
+}
+
+include "guides:kotlin:kora-kotlin-guide-dependency-injection:kora-kotlin-guide-dependency-injection-app"
+include "guides:kotlin:kora-kotlin-guide-dependency-injection:kora-kotlin-guide-dependency-injection-common"
+include "guides:kotlin:kora-kotlin-guide-dependency-injection:kora-kotlin-guide-dependency-injection-lib"
+include "guides:kotlin:kora-kotlin-guide-dependency-injection:kora-kotlin-guide-dependency-injection-submodule"

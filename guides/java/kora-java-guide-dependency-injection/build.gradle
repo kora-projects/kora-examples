@@ -1,0 +1,46 @@
+subprojects {
+    configurations {
+        koraBom
+    }
+
+    plugins.withId("java") {
+        java {
+            toolchain {
+                languageVersion = JavaLanguageVersion.of(24)
+                vendor = JvmVendorSpec.ADOPTIUM
+            }
+        }
+
+        configurations.annotationProcessor.extendsFrom(configurations.koraBom)
+        configurations.compileOnly.extendsFrom(configurations.koraBom)
+        configurations.implementation.extendsFrom(configurations.koraBom)
+        configurations.testImplementation.extendsFrom(configurations.koraBom)
+        configurations.testAnnotationProcessor.extendsFrom(configurations.koraBom)
+    }
+
+    plugins.withId("java-library") {
+        configurations.api.extendsFrom(configurations.koraBom)
+    }
+
+    dependencies {
+        koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = "UTF-8"
+    }
+
+    tasks.withType(Test).configureEach {
+        jvmArgs += [
+                "-XX:+TieredCompilation",
+                "-XX:TieredStopAtLevel=1",
+        ]
+
+        useJUnitPlatform()
+        testLogging {
+            showStandardStreams(true)
+            events("passed", "skipped", "failed")
+            exceptionFormat("full")
+        }
+    }
+}
