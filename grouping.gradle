@@ -17,6 +17,7 @@ def exampleGroups = [
         "graalvm",
         "server",
         "client",
+        "kafka",
         "other",
 ]
 
