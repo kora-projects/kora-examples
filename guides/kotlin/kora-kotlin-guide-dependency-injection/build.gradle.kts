@@ -13,7 +13,7 @@ subprojects {
     plugins.withId("org.jetbrains.kotlin.jvm") {
         extensions.configure<org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension>("kotlin") {
             jvmToolchain {
-                languageVersion.set(JavaLanguageVersion.of(24))
+                languageVersion.set(JavaLanguageVersion.of(21))
                 vendor.set(JvmVendorSpec.ADOPTIUM)
             }
         }
@@ -22,7 +22,7 @@ subprojects {
     plugins.withId("java") {
         extensions.configure<JavaPluginExtension>("java") {
             toolchain {
-                languageVersion.set(JavaLanguageVersion.of(24))
+                languageVersion.set(JavaLanguageVersion.of(21))
                 vendor.set(JvmVendorSpec.ADOPTIUM)
             }
         }
