@@ -16,12 +16,12 @@ configurations {
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
+    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
 
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation(project(":guides:kotlin:kora-kotlin-guide-database-jdbc-app"))
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.koraframework:test-junit5")
     testImplementation("org.json:json:20231013")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
     testImplementation("org.testcontainers:postgresql:1.21.4")

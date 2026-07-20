@@ -3,8 +3,12 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
     dependencies {
-        classpath("ru.tinkoff.kora:openapi-generator:${property("koraVersion")}")
+        classpath("io.koraframework:openapi-generator:${property("koraVersion")}")
     }
 }
 
@@ -13,7 +17,7 @@ plugins {
     id("jacoco")
     kotlin("jvm") version ("1.9.25")
     id("com.google.devtools.ksp") version ("1.9.25-1.0.20")
-    id("org.openapi.generator") version ("7.14.0")
+    id("org.openapi.generator") version ("7.23.0")
 }
 
 val koraBom: Configuration by configurations.creating
@@ -24,19 +28,19 @@ configurations {
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
-    ksp("ru.tinkoff.kora:symbol-processors")
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
+    ksp("io.koraframework:symbol-processors")
+    kspTest("io.koraframework:symbol-processors")
 
-    implementation("ru.tinkoff.kora:validation-module")
-    implementation("ru.tinkoff.kora:http-server-undertow")
-    implementation("ru.tinkoff.kora:json-module")
-    implementation("ru.tinkoff.kora:logging-logback")
-    implementation("ru.tinkoff.kora:config-hocon")
+    implementation("io.koraframework:validation-module")
+    implementation("io.koraframework:http-server-undertow")
+    implementation("io.koraframework:json-module")
+    implementation("io.koraframework:logging-logback")
+    implementation("io.koraframework:config-hocon")
 
     testImplementation("org.json:json:20231013")
     testImplementation("org.skyscreamer:jsonassert:1.5.1")
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.koraframework:test-junit5")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
 }
 

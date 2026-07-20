@@ -15,15 +15,15 @@ plugins {
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
+    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
 
-    ksp("ru.tinkoff.kora:symbol-processors")
+    ksp("io.koraframework:symbol-processors")
     api(project(":guides:kotlin:kora-kotlin-guide-dependency-injection:kora-kotlin-guide-dependency-injection-common"))
-    implementation("ru.tinkoff.kora:common")
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    implementation("io.koraframework:common")
+    kspTest("io.koraframework:symbol-processors")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.koraframework:test-junit5")
 }
 
 kotlin {

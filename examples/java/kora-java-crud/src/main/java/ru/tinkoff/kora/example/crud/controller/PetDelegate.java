@@ -1,12 +1,14 @@
 package ru.tinkoff.kora.example.crud.controller;
 
-import static ru.tinkoff.kora.example.crud.openapi.http.server.api.PetApiResponses.*;
-
-import ru.tinkoff.kora.common.Component;
+import io.koraframework.common.annotation.Component;
 import ru.tinkoff.kora.example.crud.model.mapper.PetMapper;
 import ru.tinkoff.kora.example.crud.openapi.http.server.api.PetApiDelegate;
-import ru.tinkoff.kora.example.crud.openapi.http.server.model.*;
+import ru.tinkoff.kora.example.crud.openapi.http.server.model.MessageTO;
+import ru.tinkoff.kora.example.crud.openapi.http.server.model.PetCreateTO;
+import ru.tinkoff.kora.example.crud.openapi.http.server.model.PetUpdateTO;
 import ru.tinkoff.kora.example.crud.service.PetService;
+
+import static ru.tinkoff.kora.example.crud.openapi.http.server.api.PetApiResponses.*;
 
 @Component
 public final class PetDelegate implements PetApiDelegate {

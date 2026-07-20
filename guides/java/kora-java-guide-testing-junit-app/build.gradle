@@ -20,17 +20,17 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
+    koraBom platform("io.koraframework:kora-parent:$koraVersion")
 
-    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+    annotationProcessor "io.koraframework:annotation-processors"
 
-    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
+    testAnnotationProcessor "io.koraframework:annotation-processors"
 
     testImplementation platform("org.junit:junit-bom:$junitVersion")
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation project(":guides:java:kora-java-guide-http-server-app")
-    testImplementation "ru.tinkoff.kora:http-server-undertow"
-    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "io.koraframework:http-server-undertow"
+    testImplementation "io.koraframework:test-junit5"
     testImplementation "org.mockito:mockito-core:5.23.0"
 }
 

@@ -1,8 +1,12 @@
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
     dependencies {
-        classpath("ru.tinkoff.kora:openapi-generator:$koraVersion")
+        classpath("io.koraframework:openapi-generator:$koraVersion")
     }
 }
 
@@ -11,7 +15,7 @@ plugins {
     id "jacoco"
     id "application"
 
-    id "org.openapi.generator" version "7.14.0"
+    id "org.openapi.generator" version "7.23.0"
 }
 
 java {
@@ -28,20 +32,20 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
-    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+    koraBom platform("io.koraframework:kora-parent:$koraVersion")
+    annotationProcessor "io.koraframework:annotation-processors"
 
-    implementation "ru.tinkoff.kora:validation-module"
-    implementation "ru.tinkoff.kora:http-client-jdk"
-    implementation "ru.tinkoff.kora:json-module"
+    implementation "io.koraframework:validation-module"
+    implementation "io.koraframework:http-client-jdk"
+    implementation "io.koraframework:json-module"
     implementation "io.projectreactor:reactor-core:3.6.18" // For reactive examples (optional)
 
-    implementation "ru.tinkoff.kora:logging-logback"
-    implementation "ru.tinkoff.kora:config-hocon"
+    implementation "io.koraframework:logging-logback"
+    implementation "io.koraframework:config-hocon"
 
     testImplementation "org.json:json:20231013"
     testImplementation "org.skyscreamer:jsonassert:1.5.1"
-    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "io.koraframework:test-junit5"
     testImplementation "io.goodforgod:testcontainers-extensions-mockserver:0.13.1"
 }
 
@@ -63,8 +67,8 @@ run {
 def openApiGeneratePetV2 = tasks.register("openApiGeneratePetV2", GenerateTask) {
     generatorName = "kora"
     group = "openapi tools"
-    inputSpec = "$projectDir/src/main/resources/openapi/petstoreV2.yaml"
-    outputDir = "$buildDir/generated/openapi"
+    inputSpec = layout.projectDirectory.file("src/main/resources/openapi/petstoreV2.yaml")
+    outputDir = layout.buildDirectory.dir("generated/openapi")
     def corePackage = "ru.tinkoff.kora.example.openapi.petV2"
     apiPackage = "${corePackage}.api"
     modelPackage = "${corePackage}.model"
@@ -81,8 +85,8 @@ compileJava.dependsOn openApiGeneratePetV2
 def openApiGeneratePetV3 = tasks.register("openApiGeneratePetV3", GenerateTask) {
     generatorName = "kora"
     group = "openapi tools"
-    inputSpec = "$projectDir/src/main/resources/openapi/petstoreV3.yaml"
-    outputDir = "$buildDir/generated/openapi"
+    inputSpec = layout.projectDirectory.file("src/main/resources/openapi/petstoreV3.yaml")
+    outputDir = layout.buildDirectory.dir("generated/openapi")
     def corePackage = "ru.tinkoff.kora.example.openapi.petV3"
     apiPackage = "${corePackage}.api"
     modelPackage = "${corePackage}.model"

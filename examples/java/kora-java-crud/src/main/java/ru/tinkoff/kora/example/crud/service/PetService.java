@@ -1,10 +1,13 @@
 package ru.tinkoff.kora.example.crud.service;
 
 import java.util.Optional;
-import ru.tinkoff.kora.cache.annotation.CacheInvalidate;
-import ru.tinkoff.kora.cache.annotation.CachePut;
-import ru.tinkoff.kora.cache.annotation.Cacheable;
-import ru.tinkoff.kora.common.Component;
+import io.koraframework.cache.annotation.CacheInvalidate;
+import io.koraframework.cache.annotation.CachePut;
+import io.koraframework.cache.annotation.Cacheable;
+import io.koraframework.common.annotation.Component;
+import io.koraframework.resilient.circuitbreaker.annotation.CircuitBreaker;
+import io.koraframework.resilient.retry.annotation.Retry;
+import io.koraframework.resilient.timeout.annotation.Timeout;
 import ru.tinkoff.kora.example.crud.model.dao.Pet;
 import ru.tinkoff.kora.example.crud.model.dao.PetCategory;
 import ru.tinkoff.kora.example.crud.model.dao.PetWithCategory;
@@ -12,9 +15,6 @@ import ru.tinkoff.kora.example.crud.openapi.http.server.model.PetCreateTO;
 import ru.tinkoff.kora.example.crud.openapi.http.server.model.PetUpdateTO;
 import ru.tinkoff.kora.example.crud.repository.CategoryRepository;
 import ru.tinkoff.kora.example.crud.repository.PetRepository;
-import ru.tinkoff.kora.resilient.circuitbreaker.annotation.CircuitBreaker;
-import ru.tinkoff.kora.resilient.retry.annotation.Retry;
-import ru.tinkoff.kora.resilient.timeout.annotation.Timeout;
 
 @Component
 public class PetService {
@@ -51,7 +51,7 @@ public class PetService {
 
     @CircuitBreaker("pet")
     @Timeout("pet")
-    @CachePut(value = PetCache.class, parameters = "id")
+    @CachePut(value = PetCache.class, args = "id")
     public Optional<PetWithCategory> update(long id, PetUpdateTO updateTO) {
         final Optional<PetWithCategory> existing = petRepository.findById(id);
         if (existing.isEmpty()) {

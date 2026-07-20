@@ -18,18 +18,18 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
-    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+    koraBom platform("io.koraframework:kora-parent:$koraVersion")
+    annotationProcessor "io.koraframework:annotation-processors"
 
-    implementation "ru.tinkoff.kora:database-vertx"
+    implementation "io.koraframework:database-vertx"
     implementation "io.vertx:vertx-pg-client:4.3.8"
     implementation "com.ongres.scram:client:2.1"
     implementation "io.projectreactor:reactor-core:3.6.18" // For reactive examples (optional)
 
-    implementation "ru.tinkoff.kora:logging-logback"
-    implementation "ru.tinkoff.kora:config-hocon"
+    implementation "io.koraframework:logging-logback"
+    implementation "io.koraframework:config-hocon"
 
-    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "io.koraframework:test-junit5"
     testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.13.1"
     testImplementation "org.postgresql:postgresql:42.7.7"
 }

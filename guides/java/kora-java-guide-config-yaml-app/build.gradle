@@ -20,18 +20,18 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
+    koraBom platform("io.koraframework:kora-parent:$koraVersion")
 
-    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+    annotationProcessor "io.koraframework:annotation-processors"
 
-    implementation "ru.tinkoff.kora:config-yaml"
-    implementation "ru.tinkoff.kora:logging-logback"
+    implementation "io.koraframework:config-yaml"
+    implementation "io.koraframework:logging-logback"
 
-    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
+    testAnnotationProcessor "io.koraframework:annotation-processors"
 
     testImplementation platform("org.junit:junit-bom:$junitVersion")
     testImplementation "org.junit.jupiter:junit-jupiter"
-    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "io.koraframework:test-junit5"
 }
 
 application {

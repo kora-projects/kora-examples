@@ -18,17 +18,17 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
-    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+    koraBom platform("io.koraframework:kora-parent:$koraVersion")
+    annotationProcessor "io.koraframework:annotation-processors"
 
     runtimeOnly "io.netty:netty-transport-native-epoll:4.1.109.Final:linux-x86_64"
     implementation "org.postgresql:r2dbc-postgresql:1.0.4.RELEASE"
-    implementation "ru.tinkoff.kora:database-r2dbc"
+    implementation "io.koraframework:database-r2dbc"
 
-    implementation "ru.tinkoff.kora:logging-logback"
-    implementation "ru.tinkoff.kora:config-hocon"
+    implementation "io.koraframework:logging-logback"
+    implementation "io.koraframework:config-hocon"
 
-    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "io.koraframework:test-junit5"
     testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.13.1"
     testImplementation "org.postgresql:postgresql:42.7.7"
 }

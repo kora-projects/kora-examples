@@ -22,21 +22,21 @@ configurations {
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
+    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
 
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
-    ksp("ru.tinkoff.kora:symbol-processors")
-    implementation("ru.tinkoff.kora:config-hocon")
-    implementation("ru.tinkoff.kora:grpc-server")
-    implementation("ru.tinkoff.kora:logging-logback")
+    ksp("io.koraframework:symbol-processors")
+    implementation("io.koraframework:config-hocon")
+    implementation("io.koraframework:grpc-server")
+    implementation("io.koraframework:logging-logback")
     implementation("io.grpc:grpc-protobuf:1.74.0")
     implementation("io.grpc:grpc-services:1.74.0")
     testCompileOnly("javax.annotation:javax.annotation-api:1.3.2")
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    kspTest("io.koraframework:symbol-processors")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("io.grpc:grpc-netty:1.74.0")
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.koraframework:test-junit5")
 }
 
 kotlin {

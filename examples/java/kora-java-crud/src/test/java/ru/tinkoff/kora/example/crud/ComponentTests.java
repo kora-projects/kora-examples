@@ -10,17 +10,17 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import ru.tinkoff.kora.example.crud.openapi.http.server.model.CategoryCreateTO;
-import ru.tinkoff.kora.example.crud.openapi.http.server.model.PetCreateTO;
-import ru.tinkoff.kora.example.crud.openapi.http.server.model.PetUpdateTO;
-import ru.tinkoff.kora.example.crud.repository.CategoryRepository;
-import ru.tinkoff.kora.example.crud.repository.PetRepository;
-import ru.tinkoff.kora.example.crud.service.PetCache;
-import ru.tinkoff.kora.example.crud.service.PetService;
-import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
-import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
-import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
-import ru.tinkoff.kora.test.extension.junit5.TestComponent;
+import io.koraframework.example.crud.openapi.http.server.model.CategoryCreateTO;
+import io.koraframework.example.crud.openapi.http.server.model.PetCreateTO;
+import io.koraframework.example.crud.openapi.http.server.model.PetUpdateTO;
+import io.koraframework.example.crud.repository.CategoryRepository;
+import io.koraframework.example.crud.repository.PetRepository;
+import io.koraframework.example.crud.service.PetCache;
+import io.koraframework.example.crud.service.PetService;
+import io.koraframework.test.extension.junit5.KoraAppTest;
+import io.koraframework.test.extension.junit5.KoraAppTestConfigModifier;
+import io.koraframework.test.extension.junit5.KoraConfigModification;
+import io.koraframework.test.extension.junit5.TestComponent;
 
 @KoraAppTest(Application.class)
 class ComponentTests implements KoraAppTestConfigModifier {

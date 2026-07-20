@@ -3,5 +3,5 @@ plugins {
 }
 
 dependencies {
-    api("ru.tinkoff.kora:common")
+    api("io.koraframework:common")
 }

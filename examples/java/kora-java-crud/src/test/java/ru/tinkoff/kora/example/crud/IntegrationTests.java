@@ -10,16 +10,16 @@ import io.goodforgod.testcontainers.extensions.jdbc.Migration;
 import io.goodforgod.testcontainers.extensions.jdbc.TestcontainersPostgreSQL;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-import ru.tinkoff.kora.example.crud.TestApplication.TestCategoryRepository;
-import ru.tinkoff.kora.example.crud.TestApplication.TestPetRepository;
-import ru.tinkoff.kora.example.crud.openapi.http.server.model.CategoryCreateTO;
-import ru.tinkoff.kora.example.crud.openapi.http.server.model.PetCreateTO;
-import ru.tinkoff.kora.example.crud.openapi.http.server.model.PetUpdateTO;
-import ru.tinkoff.kora.example.crud.service.PetService;
-import ru.tinkoff.kora.test.extension.junit5.KoraAppTest;
-import ru.tinkoff.kora.test.extension.junit5.KoraAppTestConfigModifier;
-import ru.tinkoff.kora.test.extension.junit5.KoraConfigModification;
-import ru.tinkoff.kora.test.extension.junit5.TestComponent;
+import io.koraframework.example.crud.TestApplication.TestCategoryRepository;
+import io.koraframework.example.crud.TestApplication.TestPetRepository;
+import io.koraframework.example.crud.openapi.http.server.model.CategoryCreateTO;
+import io.koraframework.example.crud.openapi.http.server.model.PetCreateTO;
+import io.koraframework.example.crud.openapi.http.server.model.PetUpdateTO;
+import io.koraframework.example.crud.service.PetService;
+import io.koraframework.test.extension.junit5.KoraAppTest;
+import io.koraframework.test.extension.junit5.KoraAppTestConfigModifier;
+import io.koraframework.test.extension.junit5.KoraConfigModification;
+import io.koraframework.test.extension.junit5.TestComponent;
 
 /**
  * Тестовый контейнер приложение, который расширяет основное приложение и например добавляет

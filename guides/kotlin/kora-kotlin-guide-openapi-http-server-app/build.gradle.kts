@@ -4,8 +4,12 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.jvm.toolchain.JvmVendorSpec
 
 buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
     dependencies {
-        classpath("ru.tinkoff.kora:openapi-generator:${property("koraVersion")}")
+        classpath("io.koraframework:openapi-generator:${property("koraVersion")}")
     }
 }
 
@@ -13,7 +17,7 @@ plugins {
     id("org.jetbrains.kotlin.jvm")
     id("com.google.devtools.ksp")
     id("application")
-    id("org.openapi.generator") version "7.14.0"
+    id("org.openapi.generator") version "7.23.0"
 }
 
 val koraBom: Configuration by configurations.creating
@@ -29,19 +33,19 @@ configurations {
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
+    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
 
-    ksp("ru.tinkoff.kora:symbol-processors")
-    implementation("ru.tinkoff.kora:config-hocon")
-    implementation("ru.tinkoff.kora:http-server-undertow")
-    implementation("ru.tinkoff.kora:json-module")
-    implementation("ru.tinkoff.kora:logging-logback")
-    implementation("ru.tinkoff.kora:openapi-management")
-    implementation("ru.tinkoff.kora:validation-module")
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    ksp("io.koraframework:symbol-processors")
+    implementation("io.koraframework:config-hocon")
+    implementation("io.koraframework:http-server-undertow")
+    implementation("io.koraframework:json-module")
+    implementation("io.koraframework:logging-logback")
+    implementation("io.koraframework:openapi-management")
+    implementation("io.koraframework:validation-module")
+    kspTest("io.koraframework:symbol-processors")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.koraframework:test-junit5")
 }
 
 kotlin {
@@ -63,8 +67,8 @@ java {
 val openApiGenerateUsersHttpServer = tasks.register<GenerateTask>("openApiGenerateUsersHttpServer") {
     generatorName = "kora"
     group = "openapi tools"
-    inputSpec = "$projectDir/src/main/resources/openapi/user-http-server.yaml"
-    outputDir = "$buildDir/generated/user-http-server"
+    inputSpec.set(layout.projectDirectory.file("src/main/resources/openapi/user-http-server.yaml"))
+    outputDir.set(layout.buildDirectory.dir("generated/user-http-server"))
     val corePackage = "ru.tinkoff.kora.guide.openapi.httpserver.user"
     apiPackage = "${corePackage}.api"
     modelPackage = "${corePackage}.model"

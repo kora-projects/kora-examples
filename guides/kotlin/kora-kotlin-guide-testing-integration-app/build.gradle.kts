@@ -19,22 +19,22 @@ configurations {
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
+    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
 
-    ksp("ru.tinkoff.kora:symbol-processors")
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    ksp("io.koraframework:symbol-processors")
+    kspTest("io.koraframework:symbol-processors")
     testRuntimeOnly("org.postgresql:postgresql:42.7.3")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation(project(":guides:kotlin:kora-kotlin-guide-database-jdbc-app"))
-    testImplementation("ru.tinkoff.kora:config-hocon")
-    testImplementation("ru.tinkoff.kora:database-flyway")
-    testImplementation("ru.tinkoff.kora:database-jdbc")
-    testImplementation("ru.tinkoff.kora:http-client-common")
-    testImplementation("ru.tinkoff.kora:http-server-undertow")
-    testImplementation("ru.tinkoff.kora:json-module")
-    testImplementation("ru.tinkoff.kora:logging-logback")
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.koraframework:config-hocon")
+    testImplementation("io.koraframework:database-flyway")
+    testImplementation("io.koraframework:database-jdbc")
+    testImplementation("io.koraframework:http-client-common")
+    testImplementation("io.koraframework:http-server-undertow")
+    testImplementation("io.koraframework:json-module")
+    testImplementation("io.koraframework:logging-logback")
+    testImplementation("io.koraframework:test-junit5")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
     testImplementation("org.testcontainers:postgresql:1.21.4")
 }

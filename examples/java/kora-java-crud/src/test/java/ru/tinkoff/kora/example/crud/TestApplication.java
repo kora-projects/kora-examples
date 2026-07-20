@@ -1,14 +1,14 @@
 package ru.tinkoff.kora.example.crud;
 
 import java.util.List;
-import ru.tinkoff.kora.common.Component;
-import ru.tinkoff.kora.common.KoraApp;
-import ru.tinkoff.kora.common.annotation.Root;
-import ru.tinkoff.kora.database.common.annotation.Query;
-import ru.tinkoff.kora.database.common.annotation.Repository;
-import ru.tinkoff.kora.database.jdbc.JdbcRepository;
-import ru.tinkoff.kora.example.crud.model.dao.Pet;
-import ru.tinkoff.kora.example.crud.model.dao.PetCategory;
+import io.koraframework.common.Component;
+import io.koraframework.common.KoraApp;
+import io.koraframework.common.annotation.Root;
+import io.koraframework.database.common.annotation.Query;
+import io.koraframework.database.common.annotation.Repository;
+import io.koraframework.database.jdbc.JdbcRepository;
+import io.koraframework.example.crud.model.dao.Pet;
+import io.koraframework.example.crud.model.dao.PetCategory;
 
 /**
  * Тестовый контейнер приложение, который расширяет основное приложение и например добавляет

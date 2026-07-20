@@ -15,12 +15,12 @@ configurations {
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
-    ksp("ru.tinkoff.kora:symbol-processors")
-    kspTest("ru.tinkoff.kora:symbol-processors")
-    implementation("ru.tinkoff.kora:config-yaml")
-    implementation("ru.tinkoff.kora:logging-logback")
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
+    ksp("io.koraframework:symbol-processors")
+    kspTest("io.koraframework:symbol-processors")
+    implementation("io.koraframework:config-yaml")
+    implementation("io.koraframework:logging-logback")
+    testImplementation("io.koraframework:test-junit5")
 }
 
 kotlin {

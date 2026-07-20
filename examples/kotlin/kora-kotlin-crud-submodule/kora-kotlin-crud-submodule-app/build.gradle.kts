@@ -2,30 +2,34 @@ import com.google.devtools.ksp.gradle.KspTask
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
     dependencies {
-        classpath("ru.tinkoff.kora:openapi-generator:${property("koraVersion")}")
+        classpath("io.koraframework:openapi-generator:${property("koraVersion")}")
     }
 }
 
 plugins {
     id("application")
-    id("org.openapi.generator") version ("7.14.0")
+    id("org.openapi.generator") version ("7.23.0")
     id("org.flywaydb.flyway") version ("8.4.2")
 }
 
 dependencies {
     implementation(project(":examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-pet-api"))
     implementation(project(":examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-vet-api"))
-    implementation("ru.tinkoff.kora:http-server-undertow")
-    implementation("ru.tinkoff.kora:config-hocon")
-    implementation("ru.tinkoff.kora:logging-logback")
-    implementation("ru.tinkoff.kora:json-module")
-    implementation("ru.tinkoff.kora:micrometer-module")
-    implementation("ru.tinkoff.kora:validation-module")
-    implementation("ru.tinkoff.kora:openapi-management")
+    implementation("io.koraframework:http-server-undertow")
+    implementation("io.koraframework:config-hocon")
+    implementation("io.koraframework:logging-logback")
+    implementation("io.koraframework:json-module")
+    implementation("io.koraframework:micrometer-module")
+    implementation("io.koraframework:validation-module")
+    implementation("io.koraframework:openapi-management")
     implementation("org.postgresql:postgresql:42.7.7")
 
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    kspTest("io.koraframework:symbol-processors")
 
     testRuntimeOnly(project(":examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-common"))
     testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")

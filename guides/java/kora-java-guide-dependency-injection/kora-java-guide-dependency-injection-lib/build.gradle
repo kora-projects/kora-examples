@@ -5,9 +5,9 @@ plugins {
 dependencies {
     api project(":guides:java:kora-java-guide-dependency-injection:kora-java-guide-dependency-injection-common")
 
-    implementation "ru.tinkoff.kora:config-common"
+    implementation "io.koraframework:config-common"
 
     testImplementation platform("org.junit:junit-bom:$junitVersion")
     testImplementation "org.junit.jupiter:junit-jupiter"
-    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "io.koraframework:test-junit5"
 }

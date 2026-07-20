@@ -15,20 +15,20 @@ configurations {
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
-    ksp("ru.tinkoff.kora:symbol-processors")
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
+    ksp("io.koraframework:symbol-processors")
+    kspTest("io.koraframework:symbol-processors")
 
     implementation("ru.tinkoff.kora.experimental:s3-client-minio")
-    implementation("ru.tinkoff.kora:http-client-ok")
+    implementation("io.koraframework:http-client-ok")
     implementation("io.projectreactor:reactor-core:3.6.18")
-    implementation("ru.tinkoff.kora:logging-logback")
-    implementation("ru.tinkoff.kora:config-hocon")
+    implementation("io.koraframework:logging-logback")
+    implementation("io.koraframework:config-hocon")
 
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
     testImplementation("org.testcontainers:minio:1.21.4")
     testImplementation("io.goodforgod:testcontainers-extensions-minio:0.13.1")
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.koraframework:test-junit5")
 }
 
 kotlin {

@@ -1,17 +1,17 @@
 package ru.tinkoff.kora.example.crud;
 
-import ru.tinkoff.kora.application.graph.KoraApplication;
-import ru.tinkoff.kora.cache.caffeine.CaffeineCacheModule;
-import ru.tinkoff.kora.common.KoraApp;
-import ru.tinkoff.kora.config.hocon.HoconConfigModule;
-import ru.tinkoff.kora.database.jdbc.JdbcDatabaseModule;
-import ru.tinkoff.kora.http.server.undertow.UndertowHttpServerModule;
-import ru.tinkoff.kora.json.module.JsonModule;
-import ru.tinkoff.kora.logging.logback.LogbackModule;
-import ru.tinkoff.kora.micrometer.module.MetricsModule;
-import ru.tinkoff.kora.openapi.management.OpenApiManagementModule;
-import ru.tinkoff.kora.resilient.ResilientModule;
-import ru.tinkoff.kora.validation.module.ValidationModule;
+import io.koraframework.application.graph.KoraApplication;
+import io.koraframework.cache.caffeine.CaffeineCacheModule;
+import io.koraframework.common.annotation.KoraApp;
+import io.koraframework.config.hocon.HoconConfigModule;
+import io.koraframework.database.jdbc.JdbcDatabaseModule;
+import io.koraframework.http.server.undertow.UndertowPublicHttpServerModule;
+import io.koraframework.json.common.JsonModule;
+import io.koraframework.logging.logback.LogbackModule;
+import io.koraframework.micrometer.module.MetricsModule;
+import io.koraframework.openapi.management.OpenApiManagementModule;
+import io.koraframework.resilient.ResilientModule;
+import io.koraframework.validation.module.ValidationModule;
 
 @KoraApp
 public interface Application extends
@@ -24,7 +24,7 @@ public interface Application extends
         ResilientModule,
         MetricsModule,
         OpenApiManagementModule,
-        UndertowHttpServerModule {
+        UndertowPublicHttpServerModule {
 
     static void main(String[] args) {
         KoraApplication.run(ApplicationGraph::graph);

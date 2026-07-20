@@ -16,14 +16,14 @@ subprojects {
     }
 
     dependencies {
-        koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
-        annotationProcessor "ru.tinkoff.kora:annotation-processors"
+        koraBom platform("io.koraframework:kora-parent:$koraVersion")
+        annotationProcessor "io.koraframework:annotation-processors"
 
         testImplementation "org.json:json:20231013"
         testImplementation "org.skyscreamer:jsonassert:1.5.1"
 
         testImplementation "org.mockito:mockito-core:5.18.0"
-        testImplementation "ru.tinkoff.kora:test-junit5"
+        testImplementation "io.koraframework:test-junit5"
     }
 
     test {

@@ -3,19 +3,19 @@ plugins {
 }
 
 dependencies {
-    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+    annotationProcessor "io.koraframework:annotation-processors"
 
     implementation project(":guides:java:kora-java-guide-dependency-injection:kora-java-guide-dependency-injection-common")
     implementation project(":guides:java:kora-java-guide-dependency-injection:kora-java-guide-dependency-injection-lib")
     implementation project(":guides:java:kora-java-guide-dependency-injection:kora-java-guide-dependency-injection-submodule")
-    implementation "ru.tinkoff.kora:config-hocon"
-    implementation "ru.tinkoff.kora:logging-logback"
+    implementation "io.koraframework:config-hocon"
+    implementation "io.koraframework:logging-logback"
 
-    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
+    testAnnotationProcessor "io.koraframework:annotation-processors"
 
     testImplementation platform("org.junit:junit-bom:$junitVersion")
     testImplementation "org.junit.jupiter:junit-jupiter"
-    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "io.koraframework:test-junit5"
 }
 
 application {

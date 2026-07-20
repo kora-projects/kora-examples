@@ -21,7 +21,7 @@ kafka:
 logging:
   level:
     root: ${?LOGGING_LEVEL_ROOT:WARN}
-    ru.tinkoff.kora: ${?LOGGING_LEVEL_KORA:INFO}
+    io.koraframework: ${?LOGGING_LEVEL_KORA:INFO}
     ru.tinkoff.kora.kafka: ${?LOGGING_LEVEL_KORA_KAFKA:INFO}
     ru.tinkoff.kora.example: ${?LOGGING_LEVEL_APP:INFO}
     ru.tinkoff.kora.application.graph.internal.loom.VirtualThreadExecutorHolder: ${?LOGGING_LEVEL_VIRTUAL_THREAD_EXECUTOR:DEBUG}

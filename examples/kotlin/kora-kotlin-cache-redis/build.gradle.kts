@@ -15,13 +15,13 @@ configurations {
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
-    ksp("ru.tinkoff.kora:symbol-processors")
-    kspTest("ru.tinkoff.kora:symbol-processors")
-    implementation("ru.tinkoff.kora:cache-redis")
-    implementation("ru.tinkoff.kora:config-hocon")
-    implementation("ru.tinkoff.kora:logging-logback")
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
+    ksp("io.koraframework:symbol-processors")
+    kspTest("io.koraframework:symbol-processors")
+    implementation("io.koraframework:cache-redis")
+    implementation("io.koraframework:config-hocon")
+    implementation("io.koraframework:logging-logback")
+    testImplementation("io.koraframework:test-junit5")
     testImplementation("io.goodforgod:testcontainers-extensions-redis:0.13.1")
     testImplementation("redis.clients:jedis:4.4.3")
 }

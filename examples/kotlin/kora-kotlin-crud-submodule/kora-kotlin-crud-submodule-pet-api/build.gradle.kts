@@ -4,10 +4,10 @@ plugins {
 
 dependencies {
     api(project(":examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-common"))
-    api("ru.tinkoff.kora:database-jdbc")
-    api("ru.tinkoff.kora:cache-caffeine")
-    api("ru.tinkoff.kora:resilient-kora")
+    api("io.koraframework:database-jdbc")
+    api("io.koraframework:cache-caffeine")
+    api("io.koraframework:resilient-kora")
 
-    testImplementation("ru.tinkoff.kora:config-hocon")
+    testImplementation("io.koraframework:config-hocon")
     testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
 }
