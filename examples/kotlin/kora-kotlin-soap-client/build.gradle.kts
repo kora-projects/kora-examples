@@ -16,13 +16,13 @@ configurations {
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
-    ksp("ru.tinkoff.kora:symbol-processors")
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
+    ksp("io.koraframework:symbol-processors")
+    kspTest("io.koraframework:symbol-processors")
 
-    implementation("ru.tinkoff.kora:json-module")
-    implementation("ru.tinkoff.kora:http-client-jdk")
-    implementation("ru.tinkoff.kora:soap-client") {
+    implementation("io.koraframework:json-module")
+    implementation("io.koraframework:http-client-jdk")
+    implementation("io.koraframework:soap-client") {
         exclude(group = "jakarta.xml")
         exclude(group = "jakarta.jws")
         exclude(group = "jakarta.xml.ws")
@@ -31,10 +31,10 @@ dependencies {
         exclude(group = "com.sun.activation")
     }
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.1")
-    implementation("ru.tinkoff.kora:logging-logback")
-    implementation("ru.tinkoff.kora:config-hocon")
+    implementation("io.koraframework:logging-logback")
+    implementation("io.koraframework:config-hocon")
 
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.koraframework:test-junit5")
     testImplementation("io.goodforgod:testcontainers-extensions-mockserver:0.13.1")
 }
 

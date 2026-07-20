@@ -30,12 +30,12 @@ subprojects {
     }
 
     dependencies {
-        koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
-        add("ksp", "ru.tinkoff.kora:symbol-processors")
+        koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
+        add("ksp", "io.koraframework:symbol-processors")
 
         add("testImplementation", "org.json:json:20231013")
         add("testImplementation", "org.skyscreamer:jsonassert:1.5.1")
-        add("testImplementation", "ru.tinkoff.kora:test-junit5")
+        add("testImplementation", "io.koraframework:test-junit5")
         add("testImplementation", "org.mockito.kotlin:mockito-kotlin:5.4.0")
     }
 

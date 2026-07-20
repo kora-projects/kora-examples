@@ -2,8 +2,12 @@
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
     dependencies {
-        classpath("ru.tinkoff.kora:openapi-generator:${property("koraVersion")}")
+        classpath("io.koraframework:openapi-generator:${property("koraVersion")}")
     }
 }
 
@@ -13,7 +17,7 @@ plugins {
 //    kotlin("kapt") version ("1.9.25") // KAPT & KSP broken since 1.9.11
     kotlin("jvm") version ("1.9.25")
     id("com.google.devtools.ksp") version ("1.9.25-1.0.20")
-    id("org.openapi.generator") version ("7.14.0")
+    id("org.openapi.generator") version ("7.23.0")
     id("org.flywaydb.flyway") version ("8.4.2")
 }
 
@@ -24,33 +28,33 @@ configurations {
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
+    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
 
 //    kapt("org.mapstruct:mapstruct-processor:1.5.5.Final") // KAPT & KSP broken since 1.9.11
-    ksp("ru.tinkoff.kora:symbol-processors")
+    ksp("io.koraframework:symbol-processors")
 
-    implementation("ru.tinkoff.kora:http-server-undertow")
-    implementation("ru.tinkoff.kora:http-client-ok")
-    implementation("ru.tinkoff.kora:database-jdbc")
-    implementation("ru.tinkoff.kora:micrometer-module")
-    implementation("ru.tinkoff.kora:json-module")
-    implementation("ru.tinkoff.kora:validation-module")
-    implementation("ru.tinkoff.kora:cache-caffeine")
-    implementation("ru.tinkoff.kora:resilient-kora")
-    implementation("ru.tinkoff.kora:config-hocon")
-    implementation("ru.tinkoff.kora:openapi-management")
-    implementation("ru.tinkoff.kora:logging-logback")
+    implementation("io.koraframework:http-server-undertow")
+    implementation("io.koraframework:http-client-ok")
+    implementation("io.koraframework:database-jdbc")
+    implementation("io.koraframework:micrometer-module")
+    implementation("io.koraframework:json-module")
+    implementation("io.koraframework:validation-module")
+    implementation("io.koraframework:cache-caffeine")
+    implementation("io.koraframework:resilient-kora")
+    implementation("io.koraframework:config-hocon")
+    implementation("io.koraframework:openapi-management")
+    implementation("io.koraframework:logging-logback")
 
     implementation("org.postgresql:postgresql:42.7.7")
 //    implementation("org.mapstruct:mapstruct:1.5.5.Final") // KAPT & KSP broken since 1.9.11
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.1")
 
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    kspTest("io.koraframework:symbol-processors")
     testImplementation("org.json:json:20231013")
     testImplementation("org.skyscreamer:jsonassert:1.5.1")
 
     testImplementation("io.mockk:mockk:1.13.8")
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.koraframework:test-junit5")
     testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
 }
@@ -86,8 +90,8 @@ tasks.withType<JavaExec> {
 val openApiGenerateHttpServer = tasks.register<GenerateTask>("openApiGenerateHttpServer") {
     generatorName = "kora"
     group = "openapi tools"
-    inputSpec = "$projectDir/src/main/resources/openapi/http-server.yaml"
-    outputDir = layout.buildDirectory.dir("generated/openapi").get().asFile.path
+    inputSpec.set(layout.projectDirectory.file("src/main/resources/openapi/http-server.yaml"))
+    outputDir.set(layout.buildDirectory.dir("generated/openapi"))
     val corePackage = "ru.tinkoff.kora.example.crud.openapi.http.server"
     apiPackage = "${corePackage}.api"
     modelPackage = "${corePackage}.model"

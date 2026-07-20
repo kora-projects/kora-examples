@@ -20,25 +20,25 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
+    koraBom platform("io.koraframework:kora-parent:$koraVersion")
 
-    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+    annotationProcessor "io.koraframework:annotation-processors"
 
-    implementation "ru.tinkoff.kora:config-hocon"
-    implementation "ru.tinkoff.kora:http-server-undertow"
-    implementation "ru.tinkoff.kora:json-module"
-    implementation "ru.tinkoff.kora:logging-logback"
-    implementation "ru.tinkoff.kora:micrometer-module"
-    implementation "ru.tinkoff.kora:opentelemetry-tracing-exporter-http"
+    implementation "io.koraframework:config-hocon"
+    implementation "io.koraframework:http-server-undertow"
+    implementation "io.koraframework:json-module"
+    implementation "io.koraframework:logging-logback"
+    implementation "io.koraframework:micrometer-module"
+    implementation "io.koraframework:opentelemetry-tracing-exporter-http"
 
-    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
+    testAnnotationProcessor "io.koraframework:annotation-processors"
 
     testImplementation platform("org.junit:junit-bom:$junitVersion")
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.json:json:20231013"
     testImplementation "org.testcontainers:junit-jupiter:1.21.4"
     testImplementation "org.testcontainers:testcontainers:1.21.4"
-    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "io.koraframework:test-junit5"
 }
 
 application {

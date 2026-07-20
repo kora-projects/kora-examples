@@ -23,7 +23,7 @@ subprojects {
     }
 
     dependencies {
-        koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
+        koraBom platform("io.koraframework:kora-parent:$koraVersion")
     }
 
     tasks.withType(JavaCompile).configureEach {

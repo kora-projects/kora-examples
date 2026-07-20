@@ -15,21 +15,21 @@ configurations {
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
-    ksp("ru.tinkoff.kora:symbol-processors")
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
+    ksp("io.koraframework:symbol-processors")
+    kspTest("io.koraframework:symbol-processors")
 
-    implementation("ru.tinkoff.kora:http-server-undertow")
+    implementation("io.koraframework:http-server-undertow")
     implementation("ru.tinkoff.kora.experimental:camunda-engine-bpmn")
     implementation("ru.tinkoff.kora.experimental:camunda-rest-undertow")
-    implementation("ru.tinkoff.kora:json-module")
+    implementation("io.koraframework:json-module")
     implementation("org.postgresql:postgresql:42.7.7")
-    implementation("ru.tinkoff.kora:database-jdbc")
-    implementation("ru.tinkoff.kora:logging-logback")
-    implementation("ru.tinkoff.kora:config-hocon")
+    implementation("io.koraframework:database-jdbc")
+    implementation("io.koraframework:logging-logback")
+    implementation("io.koraframework:config-hocon")
 
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.koraframework:test-junit5")
     testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
     testRuntimeOnly("com.h2database:h2:2.2.224")
     testImplementation("org.camunda.bpm:camunda-bpm-assert:7.21.0")

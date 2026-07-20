@@ -20,22 +20,22 @@ configurations {
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
+    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
 
-    ksp("ru.tinkoff.kora:symbol-processors")
-    implementation("ru.tinkoff.kora:config-hocon")
-    implementation("ru.tinkoff.kora:http-server-undertow")
-    implementation("ru.tinkoff.kora:json-module")
-    implementation("ru.tinkoff.kora:logging-logback")
-    implementation("ru.tinkoff.kora:micrometer-module")
-    implementation("ru.tinkoff.kora:opentelemetry-tracing-exporter-http")
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    ksp("io.koraframework:symbol-processors")
+    implementation("io.koraframework:config-hocon")
+    implementation("io.koraframework:http-server-undertow")
+    implementation("io.koraframework:json-module")
+    implementation("io.koraframework:logging-logback")
+    implementation("io.koraframework:micrometer-module")
+    implementation("io.koraframework:opentelemetry-tracing-exporter-http")
+    kspTest("io.koraframework:symbol-processors")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.json:json:20231013")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
     testImplementation("org.testcontainers:testcontainers:1.21.4")
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.koraframework:test-junit5")
 }
 
 kotlin {

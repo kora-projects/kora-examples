@@ -15,21 +15,21 @@ configurations {
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
-    ksp("ru.tinkoff.kora:symbol-processors")
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
+    ksp("io.koraframework:symbol-processors")
+    kspTest("io.koraframework:symbol-processors")
 
-    implementation("ru.tinkoff.kora:database-vertx")
+    implementation("io.koraframework:database-vertx")
     implementation("io.vertx:vertx-pg-client:4.3.8")
     implementation("com.ongres.scram:client:2.1")
     implementation("io.projectreactor:reactor-core:3.6.18") // For reactive examples (optional)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.1")
 
-    implementation("ru.tinkoff.kora:config-hocon")
-    implementation("ru.tinkoff.kora:logging-logback")
+    implementation("io.koraframework:config-hocon")
+    implementation("io.koraframework:logging-logback")
 
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.koraframework:test-junit5")
     testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
     testImplementation("org.postgresql:postgresql:42.7.7")
 }

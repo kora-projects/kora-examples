@@ -12,13 +12,13 @@ java {
 dependencies {
     api project(":examples:java:kora-java-crud-submodule:kora-java-crud-submodule-common")
 
-    api "ru.tinkoff.kora:database-jdbc"
-    api "ru.tinkoff.kora:cache-caffeine"
-    api "ru.tinkoff.kora:resilient-kora"
+    api "io.koraframework:database-jdbc"
+    api "io.koraframework:cache-caffeine"
+    api "io.koraframework:resilient-kora"
 
-    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
+    testAnnotationProcessor "io.koraframework:annotation-processors"
 
-    testImplementation "ru.tinkoff.kora:config-hocon"
+    testImplementation "io.koraframework:config-hocon"
 
     testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.13.1"
 }

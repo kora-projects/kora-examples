@@ -24,16 +24,16 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
-    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+    koraBom platform("io.koraframework:kora-parent:$koraVersion")
+    annotationProcessor "io.koraframework:annotation-processors"
 
     implementation "ru.tinkoff.kora.experimental:camunda-zeebe-worker"
-    implementation "ru.tinkoff.kora:scheduling-jdk"
-    implementation "ru.tinkoff.kora:logging-logback"
-    implementation "ru.tinkoff.kora:config-hocon"
+    implementation "io.koraframework:scheduling-jdk"
+    implementation "io.koraframework:logging-logback"
+    implementation "io.koraframework:config-hocon"
 
     testImplementation "org.mockito:mockito-core:5.18.0"
-    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "io.koraframework:test-junit5"
     testImplementation "io.camunda:zeebe-process-test-extension-testcontainer:8.8.24"
     testImplementation "org.testcontainers:junit-jupiter:1.21.4"
 }

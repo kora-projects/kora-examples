@@ -15,21 +15,21 @@ configurations {
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
-    ksp("ru.tinkoff.kora:symbol-processors")
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
+    ksp("io.koraframework:symbol-processors")
+    kspTest("io.koraframework:symbol-processors")
 
-    implementation("ru.tinkoff.kora:http-server-undertow")
-    implementation("ru.tinkoff.kora:json-module")
-    implementation("ru.tinkoff.kora:validation-module")
+    implementation("io.koraframework:http-server-undertow")
+    implementation("io.koraframework:json-module")
+    implementation("io.koraframework:validation-module")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
-    implementation("ru.tinkoff.kora:config-hocon")
-    implementation("ru.tinkoff.kora:logging-logback")
+    implementation("io.koraframework:config-hocon")
+    implementation("io.koraframework:logging-logback")
 
     testImplementation("org.skyscreamer:jsonassert:1.5.1")
     testImplementation("com.squareup.okhttp:okhttp:2.7.5")
-    testImplementation("ru.tinkoff.kora:http-client-jdk")
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.koraframework:http-client-jdk")
+    testImplementation("io.koraframework:test-junit5")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
 }
 

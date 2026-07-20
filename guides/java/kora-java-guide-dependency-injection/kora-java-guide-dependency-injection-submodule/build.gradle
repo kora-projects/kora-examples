@@ -3,15 +3,15 @@ plugins {
 }
 
 dependencies {
-    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+    annotationProcessor "io.koraframework:annotation-processors"
 
     api project(":guides:java:kora-java-guide-dependency-injection:kora-java-guide-dependency-injection-common")
 
-    implementation "ru.tinkoff.kora:common"
+    implementation "io.koraframework:common"
 
-    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
+    testAnnotationProcessor "io.koraframework:annotation-processors"
 
     testImplementation platform("org.junit:junit-bom:$junitVersion")
     testImplementation "org.junit.jupiter:junit-jupiter"
-    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "io.koraframework:test-junit5"
 }

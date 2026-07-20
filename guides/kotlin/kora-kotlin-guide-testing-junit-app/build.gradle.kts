@@ -19,18 +19,18 @@ configurations {
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
+    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
 
-    ksp("ru.tinkoff.kora:symbol-processors")
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    ksp("io.koraframework:symbol-processors")
+    kspTest("io.koraframework:symbol-processors")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation(project(":guides:kotlin:kora-kotlin-guide-http-server-app"))
-    testImplementation("ru.tinkoff.kora:config-hocon")
-    testImplementation("ru.tinkoff.kora:http-server-undertow")
-    testImplementation("ru.tinkoff.kora:json-module")
-    testImplementation("ru.tinkoff.kora:logging-logback")
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.koraframework:config-hocon")
+    testImplementation("io.koraframework:http-server-undertow")
+    testImplementation("io.koraframework:json-module")
+    testImplementation("io.koraframework:logging-logback")
+    testImplementation("io.koraframework:test-junit5")
     testImplementation("org.mockito:mockito-core:5.12.0")
 }
 

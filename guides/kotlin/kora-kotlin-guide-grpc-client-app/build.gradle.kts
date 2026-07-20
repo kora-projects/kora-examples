@@ -22,15 +22,15 @@ configurations {
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
+    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
 
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
-    ksp("ru.tinkoff.kora:symbol-processors")
-    implementation("ru.tinkoff.kora:config-hocon")
-    implementation("ru.tinkoff.kora:grpc-client")
-    implementation("ru.tinkoff.kora:http-server-undertow")
-    implementation("ru.tinkoff.kora:json-module")
-    implementation("ru.tinkoff.kora:logging-logback")
+    ksp("io.koraframework:symbol-processors")
+    implementation("io.koraframework:config-hocon")
+    implementation("io.koraframework:grpc-client")
+    implementation("io.koraframework:http-server-undertow")
+    implementation("io.koraframework:json-module")
+    implementation("io.koraframework:logging-logback")
     implementation("io.grpc:grpc-protobuf:1.74.0")
     testRuntimeOnly(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

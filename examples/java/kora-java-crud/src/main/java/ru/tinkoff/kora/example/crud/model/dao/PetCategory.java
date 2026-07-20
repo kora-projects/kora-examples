@@ -1,8 +1,8 @@
 package ru.tinkoff.kora.example.crud.model.dao;
 
-import ru.tinkoff.kora.database.common.annotation.Id;
-import ru.tinkoff.kora.database.common.annotation.Table;
-import ru.tinkoff.kora.database.jdbc.EntityJdbc;
+import io.koraframework.database.common.annotation.Id;
+import io.koraframework.database.common.annotation.Table;
+import io.koraframework.database.jdbc.annotation.EntityJdbc;
 
 @EntityJdbc
 @Table("categories")

@@ -15,18 +15,18 @@ configurations {
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
-    ksp("ru.tinkoff.kora:symbol-processors")
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
+    ksp("io.koraframework:symbol-processors")
+    kspTest("io.koraframework:symbol-processors")
 
     implementation("ru.tinkoff.kora.experimental:camunda-zeebe-worker")
-    implementation("ru.tinkoff.kora:scheduling-jdk")
-    implementation("ru.tinkoff.kora:logging-logback")
-    implementation("ru.tinkoff.kora:config-hocon")
-    implementation("ru.tinkoff.kora:json-module")
+    implementation("io.koraframework:scheduling-jdk")
+    implementation("io.koraframework:logging-logback")
+    implementation("io.koraframework:config-hocon")
+    implementation("io.koraframework:json-module")
 
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.koraframework:test-junit5")
     testImplementation("io.camunda:zeebe-process-test-extension-testcontainer:8.8.24")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
 }

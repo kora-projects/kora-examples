@@ -1,10 +1,10 @@
 package ru.tinkoff.kora.example.crud.repository;
 
 import java.util.Optional;
-import ru.tinkoff.kora.database.common.annotation.Id;
-import ru.tinkoff.kora.database.common.annotation.Query;
-import ru.tinkoff.kora.database.common.annotation.Repository;
-import ru.tinkoff.kora.database.jdbc.JdbcRepository;
+import io.koraframework.database.common.annotation.Id;
+import io.koraframework.database.common.annotation.Query;
+import io.koraframework.database.common.annotation.Repository;
+import io.koraframework.database.jdbc.JdbcRepository;
 import ru.tinkoff.kora.example.crud.model.dao.PetCategory;
 
 @Repository

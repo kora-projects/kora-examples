@@ -1,8 +1,13 @@
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
     dependencies {
-        classpath("ru.tinkoff.kora:openapi-generator:$koraVersion")
+        classpath("io.koraframework:openapi-generator:$koraVersion")
+        classpath("org.flywaydb:flyway-database-postgresql:12.10.0")
     }
 }
 
@@ -11,13 +16,13 @@ plugins {
     id "jacoco"
     id "application"
 
-    id "org.openapi.generator" version "7.14.0"
-    id "org.flywaydb.flyway" version "8.4.2"
+    id "org.openapi.generator" version "7.23.0"
+    id "org.flywaydb.flyway" version "13.0.0"
 }
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
         vendor = JvmVendorSpec.ADOPTIUM
     }
 }
@@ -29,31 +34,31 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
+    koraBom platform("io.koraframework:kora-parent:$koraVersion")
     annotationProcessor "org.mapstruct:mapstruct-processor:1.5.5.Final"
-    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+    annotationProcessor "io.koraframework:annotation-processors"
 
-    implementation "ru.tinkoff.kora:http-server-undertow"
-    implementation "ru.tinkoff.kora:database-jdbc"
-    implementation "ru.tinkoff.kora:micrometer-module"
-    implementation "ru.tinkoff.kora:json-module"
-    implementation "ru.tinkoff.kora:validation-module"
-    implementation "ru.tinkoff.kora:cache-caffeine"
-    implementation "ru.tinkoff.kora:resilient-kora"
-    implementation "ru.tinkoff.kora:config-hocon"
-    implementation "ru.tinkoff.kora:openapi-management"
-    implementation "ru.tinkoff.kora:logging-logback"
+    implementation "io.koraframework:http-server-undertow"
+    implementation "io.koraframework:database-jdbc"
+    implementation "io.koraframework:micrometer-module"
+    implementation "io.koraframework:json-common"
+    implementation "io.koraframework:validation-module"
+    implementation "io.koraframework:cache-caffeine"
+    implementation "io.koraframework:resilient-kora"
+    implementation "io.koraframework:config-hocon"
+    implementation "io.koraframework:openapi-management"
+    implementation "io.koraframework:logging-logback"
 
     implementation "org.mapstruct:mapstruct:1.5.5.Final"
     implementation "org.postgresql:postgresql:42.7.7"
 
-    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
+    testAnnotationProcessor "io.koraframework:annotation-processors"
 
     testImplementation "org.json:json:20231013"
     testImplementation "org.skyscreamer:jsonassert:1.5.1"
 
     testImplementation "org.mockito:mockito-core:5.18.0"
-    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "io.koraframework:test-junit5"
     testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.13.1"
     testImplementation "org.testcontainers:junit-jupiter:1.21.4"
 }
@@ -76,8 +81,8 @@ run {
 def openApiGenerateHttpServer = tasks.register("openApiGenerateHttpServer", GenerateTask) {
     generatorName = "kora"
     group = "openapi tools"
-    inputSpec = "$projectDir/src/main/resources/openapi/http-server.yaml"
-    outputDir = "$buildDir/generated/openapi"
+    inputSpec = layout.projectDirectory.file("src/main/resources/openapi/http-server.yaml")
+    outputDir = layout.buildDirectory.dir("generated/openapi")
     def corePackage = "ru.tinkoff.kora.example.crud.openapi.http.server"
     apiPackage = "${corePackage}.api"
     modelPackage = "${corePackage}.model"
@@ -130,6 +135,8 @@ flyway {
     user = "$postgresUser"
     password = "$postgresPassword"
     locations = ["classpath:db/migration"]
+    baselineOnMigrate = true
+    cleanDisabled = false
 }
 
 compileJava {

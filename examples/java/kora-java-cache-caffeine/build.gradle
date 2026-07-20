@@ -18,15 +18,15 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
-    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+    koraBom platform("io.koraframework:kora-parent:$koraVersion")
+    annotationProcessor "io.koraframework:annotation-processors"
 
-    implementation "ru.tinkoff.kora:cache-caffeine"
+    implementation "io.koraframework:cache-caffeine"
 
-    implementation "ru.tinkoff.kora:logging-logback"
-    implementation "ru.tinkoff.kora:config-hocon"
+    implementation "io.koraframework:logging-logback"
+    implementation "io.koraframework:config-hocon"
 
-    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "io.koraframework:test-junit5"
 }
 
 application {

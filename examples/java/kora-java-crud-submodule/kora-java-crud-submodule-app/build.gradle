@@ -1,8 +1,12 @@
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
     dependencies {
-        classpath("ru.tinkoff.kora:openapi-generator:$koraVersion")
+        classpath("io.koraframework:openapi-generator:$koraVersion")
     }
 }
 
@@ -10,7 +14,7 @@ plugins {
     id "java"
     id "application"
 
-    id "org.openapi.generator" version "7.14.0"
+    id "org.openapi.generator" version "7.23.0"
     id "org.flywaydb.flyway" version "8.4.2"
 }
 
@@ -27,18 +31,18 @@ dependencies {
     implementation project(":examples:java:kora-java-crud-submodule:kora-java-crud-submodule-pet-api")
     implementation project(":examples:java:kora-java-crud-submodule:kora-java-crud-submodule-vet-api")
 
-    implementation "ru.tinkoff.kora:http-server-undertow"
-    implementation "ru.tinkoff.kora:config-hocon"
-    implementation "ru.tinkoff.kora:logging-logback"
-    implementation "ru.tinkoff.kora:json-module"
-    implementation "ru.tinkoff.kora:micrometer-module"
-    implementation "ru.tinkoff.kora:validation-module"
-    implementation "ru.tinkoff.kora:openapi-management"
+    implementation "io.koraframework:http-server-undertow"
+    implementation "io.koraframework:config-hocon"
+    implementation "io.koraframework:logging-logback"
+    implementation "io.koraframework:json-module"
+    implementation "io.koraframework:micrometer-module"
+    implementation "io.koraframework:validation-module"
+    implementation "io.koraframework:openapi-management"
 
     implementation "org.mapstruct:mapstruct:1.5.5.Final"
     implementation "org.postgresql:postgresql:42.7.7"
 
-    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
+    testAnnotationProcessor "io.koraframework:annotation-processors"
 
     // access to flyway migrations in tests
     testRuntimeOnly project(":examples:java:kora-java-crud-submodule:kora-java-crud-submodule-common")
@@ -65,8 +69,8 @@ run {
 def openApiGenerateHttpServer = tasks.register("openApiGenerateHttpServer", GenerateTask) {
     generatorName = "kora"
     group = "openapi tools"
-    inputSpec = "$projectDir/src/main/resources/openapi/http-server.yaml"
-    outputDir = "$buildDir/generated/openapi"
+    inputSpec = layout.projectDirectory.file("src/main/resources/openapi/http-server.yaml")
+    outputDir = layout.buildDirectory.dir("generated/openapi")
     def corePackage = "ru.tinkoff.kora.example.submodule.openapi.http.server"
     apiPackage = "${corePackage}.api"
     modelPackage = "${corePackage}.model"

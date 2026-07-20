@@ -15,16 +15,16 @@ configurations {
 
 val koraVersion: String by project
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:$koraVersion"))
+    koraBom(platform("io.koraframework:kora-parent:$koraVersion"))
 
-    ksp("ru.tinkoff.kora:symbol-processors")
+    ksp("io.koraframework:symbol-processors")
 
-    implementation("ru.tinkoff.kora:http-server-undertow")
-    implementation("ru.tinkoff.kora:json-module")
-    implementation("ru.tinkoff.kora:config-hocon")
-    implementation("ru.tinkoff.kora:logging-logback")
+    implementation("io.koraframework:http-server-undertow")
+    implementation("io.koraframework:json-module")
+    implementation("io.koraframework:config-hocon")
+    implementation("io.koraframework:logging-logback")
 
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.koraframework:test-junit5")
     testImplementation("org.skyscreamer:jsonassert:1.5.1")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
 }

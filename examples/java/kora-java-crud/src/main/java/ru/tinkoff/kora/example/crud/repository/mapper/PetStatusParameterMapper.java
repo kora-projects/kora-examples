@@ -3,8 +3,9 @@ package ru.tinkoff.kora.example.crud.repository.mapper;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-import ru.tinkoff.kora.common.Component;
-import ru.tinkoff.kora.database.jdbc.mapper.parameter.JdbcParameterColumnMapper;
+
+import io.koraframework.common.annotation.Component;
+import io.koraframework.database.jdbc.mapper.parameter.JdbcParameterColumnMapper;
 import ru.tinkoff.kora.example.crud.model.dao.Pet;
 
 @Component

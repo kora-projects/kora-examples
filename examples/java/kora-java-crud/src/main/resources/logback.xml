@@ -2,14 +2,14 @@
     <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="ru.tinkoff.kora.logging.logback.ConsoleTextRecordEncoder"/>
+        <encoder class="io.koraframework.logging.logback.ConsoleTextRecordEncoder"/>
     </appender>
 
-    <appender name="ASYNC" class="ru.tinkoff.kora.logging.logback.KoraAsyncAppender">
+    <appender name="ASYNC" class="io.koraframework.logging.logback.KoraAsyncAppender">
         <appender-ref ref="STDOUT"/>
     </appender>
 
-    <root level="WARN">
+    <root level="INFO">
         <appender-ref ref="ASYNC"/>
     </root>
     <!-- Logging levels configured in application.conf -->

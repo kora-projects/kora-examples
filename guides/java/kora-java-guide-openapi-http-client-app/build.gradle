@@ -1,14 +1,18 @@
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
     dependencies {
-        classpath("ru.tinkoff.kora:openapi-generator:$koraVersion")
+        classpath("io.koraframework:openapi-generator:$koraVersion")
     }
 }
 
 plugins {
     id "application"
-    id "org.openapi.generator" version "7.14.0"
+    id "org.openapi.generator" version "7.23.0"
 }
 
 java {
@@ -29,23 +33,23 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
+    koraBom platform("io.koraframework:kora-parent:$koraVersion")
 
-    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+    annotationProcessor "io.koraframework:annotation-processors"
 
-    implementation "ru.tinkoff.kora:config-hocon"
-    implementation "ru.tinkoff.kora:http-client-common"
-    implementation "ru.tinkoff.kora:http-client-ok"
-    implementation "ru.tinkoff.kora:http-server-undertow"
-    implementation "ru.tinkoff.kora:json-module"
-    implementation "ru.tinkoff.kora:logging-logback"
-    implementation "ru.tinkoff.kora:validation-module"
+    implementation "io.koraframework:config-hocon"
+    implementation "io.koraframework:http-client-common"
+    implementation "io.koraframework:http-client-ok"
+    implementation "io.koraframework:http-server-undertow"
+    implementation "io.koraframework:json-module"
+    implementation "io.koraframework:logging-logback"
+    implementation "io.koraframework:validation-module"
 
-    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
+    testAnnotationProcessor "io.koraframework:annotation-processors"
 
     testImplementation platform("org.junit:junit-bom:$junitVersion")
     testImplementation "org.junit.jupiter:junit-jupiter"
-    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "io.koraframework:test-junit5"
     testImplementation "org.testcontainers:junit-jupiter:1.21.4"
     testImplementation "org.testcontainers:testcontainers:1.21.4"
 }
@@ -53,8 +57,8 @@ dependencies {
 def openApiGenerateUsersHttpClient = tasks.register("openApiGenerateUsersHttpClient", GenerateTask) {
     generatorName = "kora"
     group = "openapi tools"
-    inputSpec = "$projectDir/../kora-java-guide-openapi-http-server-app/src/main/resources/openapi/user-http-server.yaml"
-    outputDir = "$buildDir/generated/user-http-client"
+    inputSpec = layout.projectDirectory.file("../kora-java-guide-openapi-http-server-app/src/main/resources/openapi/user-http-server.yaml")
+    outputDir = layout.buildDirectory.dir("generated/user-http-client")
     def corePackage = "ru.tinkoff.kora.guide.openapi.httpclient.user"
     apiPackage = "${corePackage}.api"
     modelPackage = "${corePackage}.model"
