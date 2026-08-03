@@ -23,7 +23,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: ${{ matrix.java }}
-          distribution: "adopt"
+          distribution: "temurin"
 
       - name: Gradle setup
         uses: gradle/actions/setup-gradle@v4
