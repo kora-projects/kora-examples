@@ -4,7 +4,7 @@ import io.koraframework.common.annotation.Component;
 import io.koraframework.common.annotation.Tag;
 import io.koraframework.example.crud.openapi.http.server.model.MessageTO;
 import io.koraframework.http.common.body.HttpBody;
-import io.koraframework.http.server.common.HttpServerModule;
+import io.koraframework.http.server.common.HttpServer;
 import io.koraframework.http.server.common.interceptor.HttpServerInterceptor;
 import io.koraframework.http.server.common.request.HttpServerRequest;
 import io.koraframework.http.server.common.response.HttpServerResponse;
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeoutException;
 
-@Tag(HttpServerModule.class)
+@Tag(HttpServer.class)
 @Component
 public final class HttpExceptionHandler implements HttpServerInterceptor {
 
