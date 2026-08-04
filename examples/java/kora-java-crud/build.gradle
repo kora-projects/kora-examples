@@ -65,7 +65,7 @@ dependencies {
 
 application {
     applicationName = "application"
-    mainClass = "ru.tinkoff.kora.example.crud.Application"
+    mainClass = "io.koraframework.example.crud.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 
@@ -83,7 +83,7 @@ def openApiGenerateHttpServer = tasks.register("openApiGenerateHttpServer", Gene
     group = "openapi tools"
     inputSpec = layout.projectDirectory.file("src/main/resources/openapi/http-server.yaml")
     outputDir = layout.buildDirectory.dir("generated/openapi")
-    def corePackage = "ru.tinkoff.kora.example.crud.openapi.http.server"
+    def corePackage = "io.koraframework.example.crud.openapi.http.server"
     apiPackage = "${corePackage}.api"
     modelPackage = "${corePackage}.model"
     invokerPackage = "${corePackage}.invoker"
