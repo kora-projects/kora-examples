@@ -729,7 +729,7 @@ Kora хранит контекст OpenTelemetry в `ScopedValue`, поэтом�
 
 ## Issue: KSP-процессоры Kora 2.0 падают с внутренним исключением вместо диагностики
 
-- Status: Investigating
+- Status: Fixed по всем воспроизведённым случаям (зонтичная запись; конкретные причины — в записях ниже)
 - Severity: Blocker
 - Type: Framework bug
 - Language: Kotlin
@@ -1173,7 +1173,7 @@ e: [ksp] java.util.NoSuchElementException: No TypeParameter found for index E
 
 ## Issue: `ForwardingServerBuilder<*>` не разрешается в KSP-графе gRPC-сервера
 
-- Status: Investigating
+- Status: Fixed (`fix/ksp-template-match-star-projection`)
 - Severity: Blocker
 - Type: Framework bug
 - Language: Kotlin
@@ -1203,15 +1203,22 @@ Required at:
 - Java-путь работает, то есть расхождение именно в KSP.
 - Не проверено, влияет ли на это изменение `fillMap` из `fix/ksp-template-match-star-projection` (до него это место падало с NPE, поэтому «раньше работало» сказать нельзя).
 
-### Next step
+### Resolution
 
-Сравнить сгенерированные `ApplicationGraph` Java- и Kotlin-примеров и разрешение `Tag.Factory` в `TagUtils` обоих процессоров.
+Закрыт фиксом `fix/ksp-template-match-star-projection`. Причина была именно в том, что KSP считал
+star-проекцию `<?>` переменной типа: `hasGenericVariable()` при `KSTypeArgument.type == null`
+возвращал `true`, из-за чего конкретный `ForwardingServerBuilder<?>` уезжал в множество шаблонов и
+не находился как обычный компонент. Java-процессор в той же ситуации возвращает `false`
+(`TypeParameterUtils#visitWildcard`) — отсюда и расхождение языков.
+
+После фикса все Kotlin-модули с gRPC компилируются; их тесты закрыл отдельный дефект
+`fix/grpc-server-keeps-process-alive` (запись ниже).
 
 ---
 
 ## Issue: тест gRPC-сервера не может подключиться (Java, `UNAVAILABLE`)
 
-- Status: Open
+- Status: Closed — дубликат
 - Severity: Major
 - Type: Migration blocker
 - Language: Java
@@ -1224,9 +1231,11 @@ Required at:
 
 `examples/java/kora-java-grpc-server` компилируется, но `GrpcServerTests#createUser` падает с `StatusRuntimeException: UNAVAILABLE / Connection refused` — сервер не слушает порт. Обнаружено при прогоне тестов Java-модулей, которые ранее только компилировались.
 
-### Next step
+### Resolution
 
-Проверить конфигурацию `grpcServer.port` относительно 2.0 и порядок старта компонента `GrpcServer` в графе теста.
+Оказался тем же дефектом, что описан ниже как «gRPC-приложение завершается сразу после старта
+сервера»: сервер стартовал и процесс немедленно завершался, поэтому подключиться было не к чему.
+Закрыт фиксом `fix/grpc-server-keeps-process-alive`. Конфигурация `grpcServer.port` ни при чём.
 
 ---
 
