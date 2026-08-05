@@ -61,7 +61,7 @@ Dependency requires at least JVM runtime version 25. This build uses a Java 21 J
 | `json-module` | `json-common` |
 | `cache-redis` | `cache-redis-lettuce` |
 | `http-client-async` | **удалён**, замены нет — переходить на `http-client-jdk` или `http-client-ok` |
-| `ru.tinkoff.kora.experimental:s3-client-aws` | `io.koraframework:s3-client-aws` (вышел из experimental) |
+| `ru.tinkoff.kora.experimental:s3-client-aws` | см. §15 — S3 разделён на два разных артефакта, одного соответствия нет |
 
 Эталонный набор зависимостей — `examples/java/kora-java-crud/build.gradle`:
 
@@ -560,6 +560,23 @@ Quartz: `@ScheduleWithTrigger` принимает класс-тег напрям
 Kora 2.0 строится на синхронных контрактах, исполняемых на виртуальных потоках. При миграции реактивного кода, который был реактивным только ради неблокирующего доступа к БД, следует переходить на синхронный эквивалент.
 
 Это не механическое снятие обёрток: меняются отмена операции, границы транзакции и распространение исключений. Там, где требуется смысловая переработка, она документируется отдельно в `KORA_MIGRATION_NEURO.md`.
+
+---
+
+## 15. S3: два разных артефакта вместо одного
+
+В 2.0 под именем `s3-client-aws` существуют **два разных модуля**, и это легко перепутать:
+
+| Артефакт | Что внутри |
+|---|---|
+| `io.koraframework:s3-client-aws` | только обёртка над AWS SDK: `AwsS3ClientModule`, конфиг, телеметрия. **Ни аннотаций `@S3`, ни моделей** |
+| `io.koraframework.experimental:s3-client-kora` | декларативный клиент: `@S3` из `io.koraframework.s3.client.kora.annotation`, `S3Client`, фабрики |
+
+Группа у всего, что лежит в `experimental/`, — `io.koraframework.experimental` (задаётся в `build.gradle` фреймворка). Туда же относятся `s3-client-minio`, `camunda-*`.
+
+**Симптом неправильного артефакта:** `package S3 does not exist`, `package io.koraframework.s3.client.model does not exist`, `package io.koraframework.s3.client.annotation does not exist`.
+
+Пакеты также переехали: `io.koraframework.s3.client.annotation.S3` → `io.koraframework.s3.client.kora.annotation.S3`. Модели (`S3Body` и пр.) в прежнем виде не найдены — миграция S3-модулей требует сверки с `experimental/s3-client-kora` пофайлово и пока не выполнена.
 
 ---
 

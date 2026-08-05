@@ -76,7 +76,7 @@ tasks.matching { it.name.startsWith("ksp") }.configureEach { … }
 | `json-module` | `json-common` |
 | `cache-redis` | `cache-redis-lettuce` |
 | `http-client-async` | **удалён** → `http-client-jdk` / `http-client-ok` |
-| `ru.tinkoff.kora.experimental:s3-client-aws` | `io.koraframework:s3-client-aws` |
+| `ru.tinkoff.kora.experimental:s3-client-aws` | два разных артефакта: `io.koraframework:s3-client-aws` (только AWS SDK-обёртка) и `io.koraframework.experimental:s3-client-kora` (декларативный `@S3`, пакет `io.koraframework.s3.client.kora.annotation`) |
 
 ### 1.4 Первая сборка после смены пакетов — `clean` + `--no-build-cache`
 

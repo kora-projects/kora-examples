@@ -30,11 +30,6 @@ public interface Application extends
         return request -> "bearer-token";
     }
 
-    @Tag(ApiSecurity.apiKeyAuth.class)
-    default HttpClientTokenProvider apiKeyAuthTokenProvider() {
-        return request -> "api-key";
-    }
-
     @Tag(ApiSecurity.oAuth.class)
     default HttpClientTokenProvider oAuthTokenProvider() {
         return request -> "oauth-token";
