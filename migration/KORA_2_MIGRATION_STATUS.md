@@ -49,6 +49,24 @@ export JAVA_HOME=<JDK 25>
 | `examples/java/kora-java-crud-submodule` | `MIGRATED` | компиляция всех четырёх проектов + 6 тестов; blackbox в Docker — см. ниже |
 | `examples/graalvm/kora-java-graalvm-*` | `MIGRATION_IN_PROGRESS` | resilient-спецификации и конфигурация мигрированы; JVM-сборка не перепроверена, native отложен |
 | прочие `examples/java/*` | `MIGRATED` | вся ветка `examples/java` компилируется (main+test), кроме `database-cassandra` |
+| `examples/graalvm/kora-java-graalvm-crud-{jdbc,r2dbc,vertx}` | `MIGRATION_IN_PROGRESS` | JVM-компиляция проходит; native отложен по решению |
+| `examples/graalvm/kora-java-graalvm-{crud-cassandra,kafka}` | `READY_FOR_MIGRATION` | cassandra — тот же дефект генератора; kafka не разбирался |
+| `guides/java/*` (6 из 15) | `MIGRATION_IN_PROGRESS` | config-hocon, config-yaml, resilient, validation, openapi-http-client, database-jdbc компилируются |
+| `guides/java/*` (остальные 7) | `READY_FOR_MIGRATION` | интерцепторы HTTP-сервера и клиента, S3-редизайн — те же классы правок, что уже сделаны в examples |
+| `examples/kotlin/*`, `guides/kotlin/*` | `READY_FOR_MIGRATION` | не начинались в этом проходе |
+
+### Динамика сплошной сборки
+
+`./gradlew testClasses --continue --no-build-cache` по всему репозиторию:
+
+| Проход | Упавших задач |
+|---|---|
+| начало сессии | 58 |
+| после S3, camunda, resilient-спецификаций | 54 |
+| после конфигурации в текстовых блоках тестов | 52 |
+| после `ConfigValueMapper` | 47 |
+
+Все оставшиеся падения — либо Kotlin (не начинали), либо перечисленные выше Java-модули.
 
 ### Открытый вопрос по `kora-java-crud-submodule`
 
