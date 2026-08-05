@@ -1,25 +1,24 @@
 package io.koraframework.guide.httpserver.advanced.controller
 
 import io.koraframework.common.annotation.Component
-import io.koraframework.common.Context
 import io.koraframework.http.server.common.interceptor.HttpServerInterceptor
 import io.koraframework.http.server.common.request.HttpServerRequest
 import io.koraframework.http.server.common.response.HttpServerResponse
-import java.util.concurrent.CompletionStage
 
 @Component
 class LoggingInterceptor : HttpServerInterceptor {
 
-    override fun intercept(
-        context: Context,
-        request: HttpServerRequest,
-        chain: HttpServerInterceptor.InterceptChain
-    ): CompletionStage<HttpServerResponse> {
+    override fun intercept(request: HttpServerRequest, chain: HttpServerInterceptor.InterceptChain): HttpServerResponse {
         val started = System.nanoTime()
-        return chain.process(context, request).whenComplete { response, _ ->
+        // stays 500 when the chain throws, matching the reactive version that logged 500 on failure
+        var statusCode = 500
+        try {
+            val response = chain.process(request)
+            statusCode = response.code()
+            return response
+        } finally {
             val durationMs = (System.nanoTime() - started) / 1_000_000
-            val statusCode = response?.code() ?: 500
-            println("Request: ${request.method()} ${request.path()} -> $statusCode (${durationMs} ms)")
+            println("Request: ${request.method()} ${request.path()} -> $statusCode ($durationMs ms)")
         }
     }
 }
