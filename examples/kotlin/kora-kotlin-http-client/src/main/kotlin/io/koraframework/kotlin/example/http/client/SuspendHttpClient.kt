@@ -1,36 +1,31 @@
-﻿package io.koraframework.kotlin.example.http.client
+package io.koraframework.kotlin.example.http.client
 
-import org.slf4j.LoggerFactory
-import io.koraframework.common.annotation.Component
-import io.koraframework.common.Context
-import io.koraframework.common.annotation.Mapping
-import io.koraframework.common.annotation.Root
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import io.koraframework.http.client.common.annotation.HttpClient
-import io.koraframework.http.client.common.annotation.ResponseCodeMapper
-import io.koraframework.http.client.common.annotation.ResponseCodeMapper.DEFAULT
-import io.koraframework.http.client.common.interceptor.HttpClientInterceptor
-import io.koraframework.http.client.common.request.HttpClientRequest
-import io.koraframework.http.client.common.request.HttpClientRequestMapper
-import io.koraframework.http.client.common.response.HttpClientResponse
-import io.koraframework.http.client.common.response.HttpClientResponseMapper
 import io.koraframework.http.common.HttpMethod
 import io.koraframework.http.common.HttpResponseEntity
-import io.koraframework.http.common.annotation.*
-import io.koraframework.http.common.body.HttpBody
-import io.koraframework.http.common.body.HttpBodyOutput
-import io.koraframework.http.common.form.FormMultipart
-import io.koraframework.http.common.form.FormUrlEncoded
-import io.koraframework.json.common.annotation.Json
-import java.nio.charset.StandardCharsets
-import java.util.concurrent.CompletionStage
+import io.koraframework.http.common.annotation.Header
+import io.koraframework.http.common.annotation.HttpRoute
+import io.koraframework.http.common.annotation.Path
+import io.koraframework.http.common.annotation.Query
 
+/**
+ * Kora 2.0 generates blocking HTTP clients and rejects a `suspend` method outright:
+ * "Suspend methods are not supported by the HTTP client generator". A coroutine-facing API
+ * therefore belongs to application code — this non-generated default function bridges to the
+ * generated blocking call.
+ */
 @HttpClient("httpClient.default")
 interface SuspendHttpClient {
+
     @HttpRoute(method = HttpMethod.GET, path = "/suspend/{path}")
-    suspend fun get(
+    fun getBlocking(
         @Path path: String,
         @Query query: String?,
         @Header header: String?
     ): HttpResponseEntity<ByteArray>
-}
 
+    suspend fun get(path: String, query: String?, header: String?): HttpResponseEntity<ByteArray> =
+        withContext(Dispatchers.IO) { getBlocking(path, query, header) }
+}

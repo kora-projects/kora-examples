@@ -2,7 +2,6 @@
 
 import org.slf4j.LoggerFactory
 import io.koraframework.common.annotation.Component
-import io.koraframework.common.Context
 import io.koraframework.common.annotation.Mapping
 import io.koraframework.common.annotation.Root
 import io.koraframework.http.client.common.annotation.HttpClient
@@ -22,7 +21,6 @@ import io.koraframework.http.common.form.FormMultipart
 import io.koraframework.http.common.form.FormUrlEncoded
 import io.koraframework.json.common.annotation.Json
 import java.nio.charset.StandardCharsets
-import java.util.concurrent.CompletionStage
 
 @Root
 @Component
