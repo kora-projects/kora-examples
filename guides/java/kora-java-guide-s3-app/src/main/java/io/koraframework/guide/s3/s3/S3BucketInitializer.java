@@ -2,6 +2,7 @@ package io.koraframework.guide.s3.s3;
 
 import io.koraframework.application.graph.Lifecycle;
 import io.koraframework.common.annotation.Component;
+import io.koraframework.common.annotation.Root;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
@@ -11,6 +12,7 @@ import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
  * Bucket administration is not part of the declarative {@code @S3} contract, so it goes through the
  * AWS SDK client that {@code s3-client-aws} publishes.
  */
+@Root
 @Component
 public final class S3BucketInitializer implements Lifecycle {
 
