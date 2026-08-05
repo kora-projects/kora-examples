@@ -153,6 +153,17 @@ class UserRequest(val name: String?)
 
 Обработка HTTP синхронная: из контрактов уходят `suspend`, реактивные обёртки и явный Kora `Context` (он удалён из синхронных HTTP API — механической замены нет, сигнатура переписывается).
 
+**Тег глобального интерцептора сменился:**
+
+| Было | Стало |
+|---|---|
+| `@Tag(HttpServerModule::class)` | `@Tag(HttpServer::class)` |
+| `import …http.server.common.HttpServerModule` | `import …http.server.common.HttpServer` |
+
+В 2.0 фреймворк собирает глобальные интерцепторы по тегу `HttpServer` (`@Tag(HttpServer.class) All<HttpServerInterceptor>` в `HttpServerModule`).
+
+**Коварство:** старый тег компилируется без ошибок — класс существует, просто по нему никто не ищет интерцепторы. Интерцептор молча перестаёт вызываться — ловится только тестом.
+
 Интерцептор (сигнатура 2.0):
 
 ```kotlin
@@ -211,6 +222,30 @@ class UserContextRequestMapper : HttpServerRequestMapper<UserContext> { … }
 ---
 
 ## 5. Конфигурация
+
+### 5.1 Порты HTTP-сервера — молчаливый убийца старта
+
+| Было (1.x) | Стало (2.0) |
+|---|---|
+| `httpServer.publicApiHttpPort` | `httpServer.port` |
+| `httpServer.privateApiHttpPort` | `httpServer.system.port` |
+| `httpServer.privateApiHttpReadinessPath` | `httpServer.system.readinessPath` |
+| `httpServer.privateApiHttpLivenessPath` | `httpServer.system.livenessPath` |
+| `httpServer.privateApiHttpMetricsPath` | `httpServer.system.metricsPath` |
+
+```hocon
+# Было                       # Стало
+httpServer {                 httpServer {
+  publicApiHttpPort = 8080     port = 8080
+  privateApiHttpPort = 8085    system.port = 8085
+}                            }
+```
+
+**Почему критично.** `SystemHttpServerConfig extends HttpServerConfig`, то есть системный сервер наследует `port()` = `8080`. Пока старый ключ не распознан, **оба** сервера берут 8080 и приложение падает на старте (`Address already in use`). Компиляция при этом зелёная: лишние ключи просто игнорируются.
+
+**Автоматизация:** `python migration/scripts/migrate_http_server_config.py --apply`.
+
+### 5.2 Остальное
 
 | Было | Стало |
 |---|---|

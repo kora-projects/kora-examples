@@ -8,13 +8,13 @@ import io.koraframework.common.annotation.Tag;
 import io.koraframework.guide.httpserver.advanced.dto.ErrorResponse;
 import io.koraframework.http.common.body.HttpBody;
 import io.koraframework.http.server.common.interceptor.HttpServerInterceptor;
-import io.koraframework.http.server.common.HttpServerModule;
+import io.koraframework.http.server.common.HttpServer;
 import io.koraframework.http.server.common.request.HttpServerRequest;
 import io.koraframework.http.server.common.response.HttpServerResponse;
 import io.koraframework.http.server.common.response.HttpServerResponseException;
 import io.koraframework.json.common.JsonWriter;
 
-@Tag(HttpServerModule.class)
+@Tag(HttpServer.class)
 @Component
 public final class ExceptionHandler implements HttpServerInterceptor {
 

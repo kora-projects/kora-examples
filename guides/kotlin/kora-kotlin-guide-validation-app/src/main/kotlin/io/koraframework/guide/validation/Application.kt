@@ -7,7 +7,7 @@ import io.koraframework.config.hocon.HoconConfigModule
 import io.koraframework.guide.validation.dto.ValidationErrorDetails
 import io.koraframework.guide.validation.dto.ValidationErrorResponse
 import io.koraframework.http.common.body.HttpBody
-import io.koraframework.http.server.common.HttpServerModule
+import io.koraframework.http.server.common.HttpServer
 import io.koraframework.http.server.common.response.HttpServerResponse
 import io.koraframework.http.server.undertow.UndertowPublicHttpServerModule
 import io.koraframework.json.common.JsonWriter
@@ -41,7 +41,7 @@ interface Application :
         }
     }
 
-    @Tag(HttpServerModule::class)
+    @Tag(HttpServer::class)
     override fun validationHttpServerInterceptor(
         violationExceptionHttpServerResponseMapper: ViolationExceptionHttpServerResponseMapper
     ): ValidationHttpServerInterceptor {

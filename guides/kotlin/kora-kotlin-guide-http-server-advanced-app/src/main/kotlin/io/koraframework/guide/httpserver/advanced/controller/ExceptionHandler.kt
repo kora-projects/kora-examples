@@ -10,7 +10,7 @@ import io.koraframework.json.common.JsonWriter
 import java.util.concurrent.CompletionException
 import java.util.concurrent.CompletionStage
 
-@Tag(HttpServerModule::class)
+@Tag(HttpServer::class)
 @Component
 class ExceptionHandler(
     private val errorJsonWriter: JsonWriter<ErrorResponse>

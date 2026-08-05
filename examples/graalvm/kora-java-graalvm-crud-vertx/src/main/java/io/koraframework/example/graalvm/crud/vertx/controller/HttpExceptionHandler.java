@@ -13,7 +13,7 @@ import io.koraframework.http.common.body.HttpBody;
 import io.koraframework.http.server.common.*;
 import io.koraframework.json.common.JsonWriter;
 
-@Tag(HttpServerModule.class)
+@Tag(HttpServer.class)
 @Component
 public final class HttpExceptionHandler implements HttpServerInterceptor {
 

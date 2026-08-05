@@ -52,7 +52,7 @@ class InterceptedController {
         }
     }
 
-    @Tag(HttpServerModule::class)
+    @Tag(HttpServer::class)
     @Component
     class ServerInterceptor : HttpServerInterceptor {
         private val logger = LoggerFactory.getLogger(ServerInterceptor::class.java)

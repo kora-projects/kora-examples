@@ -12,7 +12,7 @@ import io.koraframework.json.common.JsonWriter
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.TimeoutException
 
-@Tag(HttpServerModule::class)
+@Tag(HttpServer::class)
 @Component
 class HttpExceptionHandler(private val errorJsonWriter: JsonWriter<MessageTO>) : HttpServerInterceptor {
 

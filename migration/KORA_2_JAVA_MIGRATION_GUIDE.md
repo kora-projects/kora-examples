@@ -201,7 +201,16 @@ public final class HttpExceptionHandler implements HttpServerInterceptor {
 }
 ```
 
-Обратите внимание на тег глобального интерцептора: `@Tag(HttpServer.class)` (тип `io.koraframework.http.server.common.HttpServer`).
+**Тег глобального интерцептора сменился:**
+
+| Было | Стало |
+|---|---|
+| `@Tag(HttpServerModule.class)` | `@Tag(HttpServer.class)` |
+| `import …http.server.common.HttpServerModule;` | `import …http.server.common.HttpServer;` |
+
+В 2.0 фреймворк собирает глобальные интерцепторы именно по этому тегу — в `HttpServerModule` параметр объявлен как `@Tag(HttpServer.class) All<HttpServerInterceptor> interceptors`.
+
+**Коварство:** старый тег **компилируется без ошибок** — класс `HttpServerModule` существует, просто по нему никто не ищет интерцепторы. Глобальный интерцептор молча перестаёт вызываться: обработка ошибок, аутентификация или логирование исчезают без единого предупреждения. Проверяйте это тестом, а не компилятором.
 
 **Проверка:** компилируется и работает в `examples/java/kora-java-crud`.
 
@@ -296,6 +305,49 @@ public interface UserApiClient { … }
 ---
 
 ## 5. Конфигурация
+
+### 5.1 Порты HTTP-сервера — молчаливый убийца старта
+
+Системный (приватный) сервер получил собственную секцию `httpServer.system`:
+
+| Было (1.x) | Стало (2.0) |
+|---|---|
+| `httpServer.publicApiHttpPort` | `httpServer.port` |
+| `httpServer.privateApiHttpPort` | `httpServer.system.port` |
+| `httpServer.privateApiHttpReadinessPath` | `httpServer.system.readinessPath` |
+| `httpServer.privateApiHttpLivenessPath` | `httpServer.system.livenessPath` |
+| `httpServer.privateApiHttpMetricsPath` | `httpServer.system.metricsPath` |
+
+**Было:**
+
+```hocon
+httpServer {
+  publicApiHttpPort = 8080
+  privateApiHttpPort = 8085
+}
+```
+
+**Стало:**
+
+```hocon
+httpServer {
+  port = 8080
+  system.port = 8085
+}
+```
+
+**Почему это критично, а не косметика.** `SystemHttpServerConfig extends HttpServerConfig`, то есть системный сервер наследует `port()` со значением по умолчанию `8080`. Пока в конфиге стоит нераспознаваемый `privateApiHttpPort`, **оба** сервера пытаются сесть на 8080, и приложение падает на старте:
+
+```
+HTTP server 'kora-undertow-system' (Undertow) failed to start on port '8080': port is already in use
+Caused by: java.net.BindException: Address already in use
+```
+
+Компиляция при этом проходит успешно — лишние ключи HOCON просто игнорируются. Ошибка всплывает только в рантайме, а в blackbox-тестах выглядит как `HTTP/1.1 header parser received no bytes` и таймауты, что уводит от причины.
+
+**Автоматизация:** `python migration/scripts/migrate_http_server_config.py --apply` (идемпотентен, есть dry-run).
+
+### 5.2 Остальное
 
 | Было | Стало |
 |---|---|
