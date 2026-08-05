@@ -1,4 +1,4 @@
-package io.koraframework.kotlin.example.s3.minio
+package io.koraframework.kotlin.example.s3.aws
 
 import io.goodforgod.testcontainers.extensions.ContainerMode
 import io.goodforgod.testcontainers.extensions.minio.Bucket
@@ -7,26 +7,25 @@ import io.goodforgod.testcontainers.extensions.minio.MinioConnection
 import io.goodforgod.testcontainers.extensions.minio.TestcontainersMinio
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
-import io.koraframework.s3.client.kora.exception.S3ClientNoSuchKeyException
 import io.koraframework.test.extension.junit5.KoraAppTest
 import io.koraframework.test.extension.junit5.KoraAppTestConfigModifier
 import io.koraframework.test.extension.junit5.KoraConfigModification
 import io.koraframework.test.extension.junit5.TestComponent
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 import java.nio.charset.StandardCharsets
 
 @TestcontainersMinio(
     mode = ContainerMode.PER_RUN,
     bucket = Bucket(
-        value = [SyncS3ClientTests.BUCKET],
+        value = [AwsS3ServiceTests.BUCKET],
         create = Bucket.Mode.PER_METHOD,
         drop = Bucket.Mode.PER_METHOD
     )
 )
 @KoraAppTest(Application::class)
-class SyncS3ClientTests : KoraAppTestConfigModifier {
+class AwsS3ServiceTests : KoraAppTestConfigModifier {
 
     companion object {
         const val BUCKET = "simple"
@@ -36,7 +35,7 @@ class SyncS3ClientTests : KoraAppTestConfigModifier {
     lateinit var minioConnection: MinioConnection
 
     @TestComponent
-    lateinit var client: SyncS3Client
+    lateinit var service: AwsS3Service
 
     override fun config(): KoraConfigModification = KoraConfigModification
         .ofSystemProperty("S3_URL", minioConnection.params().uri().toString())
@@ -49,31 +48,15 @@ class SyncS3ClientTests : KoraAppTestConfigModifier {
         // given
         val key = "k1"
         val value = "value".toByteArray(StandardCharsets.UTF_8)
-        client.putObject(key, value)
+        service.putObject(key, value)
 
         // when
-        client.getObject(key).use { found ->
-            found.body().asInputStream().use { body ->
-                assertArrayEquals(value, body.readAllBytes())
-            }
+        service.getObject(key).use { found ->
+            assertArrayEquals(value, found.readAllBytes())
         }
 
         // then
-        assertThrows(S3ClientNoSuchKeyException::class.java) { client.getObject("k2") }
-    }
-
-    @Test
-    fun putAndGetObjectAsBytes() {
-        // given
-        val key = "k1"
-        val value = "value".toByteArray(StandardCharsets.UTF_8)
-        client.putObject(key, value)
-
-        // when
-        val found = client.getObjectAsBytes(key)
-
-        // then
-        assertArrayEquals(value, found)
+        assertThrows(NoSuchKeyException::class.java) { service.getObject("k2") }
     }
 
     @Test
@@ -81,42 +64,28 @@ class SyncS3ClientTests : KoraAppTestConfigModifier {
         // given
         val key = "k1"
         val value = "value".toByteArray(StandardCharsets.UTF_8)
-        client.putObject(key, value)
+        service.putObject(key, value)
 
         // when
-        val found = client.getObjectMeta(key)
-        assertEquals(value.size.toLong(), found.size())
+        val found = service.getObjectMeta(key)
+        assertEquals(value.size.toLong(), found.contentLength())
 
         // then
-        assertThrows(S3ClientNoSuchKeyException::class.java) { client.getObjectMeta("k2") }
+        assertThrows(NoSuchKeyException::class.java) { service.getObjectMeta("k2") }
     }
 
     @Test
     fun putAndListObjects() {
         // given
         val value = "value".toByteArray(StandardCharsets.UTF_8)
-        client.putObject("k1", value)
-        client.putObject("k2", value)
+        service.putObject("k1", value)
+        service.putObject("k2", value)
 
         // when
-        val found = client.listObjects("k")
+        val found = service.listObjects("k")
 
         // then
-        assertEquals(2, found.items().size)
-    }
-
-    @Test
-    fun putAndListObjectKeys() {
-        // given
-        val value = "value".toByteArray(StandardCharsets.UTF_8)
-        client.putObject("k1", value)
-        client.putObject("k2", value)
-
-        // when
-        val found = client.listObjectKeys("k")
-
-        // then
-        assertIterableEquals(listOf("pre-k1", "pre-k2"), found)
+        assertEquals(2, found.contents().size)
     }
 
     @Test
@@ -124,12 +93,27 @@ class SyncS3ClientTests : KoraAppTestConfigModifier {
         // given
         val key = "k1"
         val value = "value".toByteArray(StandardCharsets.UTF_8)
-        client.putObject(key, value)
+        service.putObject(key, value)
 
         // when
-        client.deleteObject(key)
+        service.deleteObject(key)
 
         // then
-        assertThrows(S3ClientNoSuchKeyException::class.java) { client.getObject(key) }
+        assertThrows(NoSuchKeyException::class.java) { service.getObject(key) }
+    }
+
+    @Test
+    fun putAndDeleteMany() {
+        // given
+        val value = "value".toByteArray(StandardCharsets.UTF_8)
+        service.putObject("k1", value)
+        service.putObject("k2", value)
+
+        // when
+        service.deleteObjects(listOf("k1", "k2"))
+
+        // then
+        assertThrows(NoSuchKeyException::class.java) { service.getObject("k1") }
+        assertThrows(NoSuchKeyException::class.java) { service.getObject("k2") }
     }
 }

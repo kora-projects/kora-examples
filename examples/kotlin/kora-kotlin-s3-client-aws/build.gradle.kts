@@ -21,8 +21,6 @@ dependencies {
 
     implementation("io.koraframework:s3-client-aws")
     implementation("io.koraframework:http-client-jdk")
-    implementation("io.projectreactor:reactor-core:3.6.18")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.1")
     implementation("io.koraframework:logging-logback")
     implementation("io.koraframework:config-hocon")
 

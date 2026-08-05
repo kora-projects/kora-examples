@@ -19,9 +19,8 @@ dependencies {
     ksp("io.koraframework:symbol-processors")
     kspTest("io.koraframework:symbol-processors")
 
-    implementation("io.koraframework.experimental:s3-client-minio")
+    implementation("io.koraframework.experimental:s3-client-kora")
     implementation("io.koraframework:http-client-ok")
-    implementation("io.projectreactor:reactor-core:3.6.18")
     implementation("io.koraframework:logging-logback")
     implementation("io.koraframework:config-hocon")
 
