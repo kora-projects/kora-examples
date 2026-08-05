@@ -120,7 +120,7 @@ resilient {
 ### Common mistakes
 
 - Создавать по spec-интерфейсу на каждый метод — нужен один на логическое имя.
-- Забыть `type = FIXED_WINDOW` и получить ошибку валидации конфигурации на старте.
+- Забыть блок `countBased` и получить NPE на инициализации графа: в `CircuitBreakerConfig` он объявлен `@Nullable`, но реализация по умолчанию (`StripedApproxKoraCircuitBreaker`) разыменовывает `config.countBased()` без проверки. Сам `type` при этом опционален — по умолчанию `STRIPED_APPROX`.
 - Оставить `@Fallback(value = "…")` — атрибут `value` удалён, остаётся только `method`.
 - Заменить `@Timeout("pet")` на `@Timeoutable(...)` — такой аннотации нет, имя `@Timeout` сохранилось, изменился только тип атрибута.
 
@@ -132,6 +132,86 @@ resilient {
 ### Escalate when
 
 Одно строковое имя используется с разными наборами параметров в разных местах — это архитектурное решение (одна спецификация или несколько), его принимает человек.
+
+---
+
+## Migration pattern: конфигурация, зашитая в исходники тестов
+
+### Applies when
+
+Тест переопределяет конфигурацию графа через `KoraConfigModification.ofString("""…""")`,
+и внутри текстового блока лежит HOCON с ключами 1.x.
+
+### Search for
+
+```
+rg -n 'ofString\(' --type java --type kotlin
+rg -n 'slidingWindowSize|publicApiHttpPort|privateApiHttpPort|^\s*db\s*\{' -g '*.java' -g '*.kt'
+```
+
+### Required analysis
+
+Это самый неприятный класс расхождений: ресурсные `.conf` уже мигрированы, код компилируется,
+а тест падает на инициализации графа — иногда с внятным `ConfigValueException`, иногда
+(как с circuit breaker) с NPE в реализации. Скрипты, которые сканируют только `.conf` и `.yaml`,
+такие места не видят по определению.
+
+Проверять нужно те же три вещи, что и в ресурсах:
+
+- секция датасорса `db` → `jdbc`;
+- порты `publicApiHttpPort` / `privateApiHttpPort` → `port` / `system.port`;
+- окно circuit breaker `slidingWindowSize` → `countBased.windowSize`.
+
+### Target Kora 2.0 design
+
+Внутри текстового блока — ровно тот же HOCON, что и в ресурсах модуля. Расхождение между
+`src/main/resources/application.conf` и тестовым блоком само по себе подозрительно: если тест
+переопределяет секцию целиком, он обязан использовать актуальные имена ключей.
+
+### Java migration
+
+```java
+return KoraConfigModification.ofString("""
+        jdbc {
+          jdbcUrl = ${POSTGRES_JDBC_URL}
+          username = ${POSTGRES_USER}
+          password = ${POSTGRES_PASS}
+        }
+        resilient.circuitbreaker.pet {
+          type = FIXED_WINDOW
+          countBased.windowSize = 2
+        }
+        """);
+```
+
+### Kotlin migration
+
+Идентично: в Kotlin тот же разделитель `"""`, отличается только синтаксис вокруг.
+
+### Gradle changes
+
+Нет.
+
+### Test migration
+
+Это и есть миграция теста. Отдельно стоит проверить `withSystemProperty(...)`: имена
+переменных окружения меняться не обязаны, но подставляются они уже в новые ключи.
+
+### Common mistakes
+
+- Прогнать скрипт миграции конфигурации и решить, что конфигурация мигрирована целиком.
+- Применить правила конфигурации ко всему `.java`/`.kt` файлу: `int slidingWindowSize = 2;`
+  внешне похож на строку HOCON. Переписывать можно только содержимое текстового блока.
+- Починить `application.conf` и забыть, что у теста своя копия секции.
+
+### Validation
+
+`./gradlew <module>:test` — граф инициализируется. Компиляция дефект не ловит вообще.
+
+### Escalate when
+
+Тестовый блок содержит ключи, которых нет ни в ресурсах модуля, ни в конфигурации 2.0 —
+значит тест полагается на что-то удалённое, и нужно решение о смысле теста.
 
 ---
 
