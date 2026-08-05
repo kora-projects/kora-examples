@@ -11,7 +11,7 @@ import java.util.concurrent.ThreadLocalRandom
 @Root
 @Component
 open class ComboService {
-    @Fallback(value = "my_fallback", method = "getFallback()")
+    @Fallback(method = "getFallback()")
     @CircuitBreaker("my_cb")
     @Retry("my_retry")
     @Timeout("my_timeout")

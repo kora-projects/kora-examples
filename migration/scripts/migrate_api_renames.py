@@ -17,7 +17,10 @@ Rules
    The `@ConfigMapper` *annotation* keeps its name and lives in
    `io.koraframework.config.common.annotation` - it must not be renamed, which is why the
    rule keys off the old package and off the generic parameter.
-4. JSpecify placement (Java only): JSpecify annotations are type-use, so on a qualified
+4. Fallback lost its name: 2.0 has no FallbackSpec and no named fallback configuration,
+   so the `value` attribute is gone and only `method` remains:
+                                @Fallback(value = "default", method = "f()") -> @Fallback(method = "f()")
+5. JSpecify placement (Java only): JSpecify annotations are type-use, so on a qualified
    nested type they must sit right before the simple name:
                                 @Nullable Entity.FieldType -> Entity.@Nullable FieldType
    javac itself suggests this form:
@@ -31,11 +34,11 @@ Usage:
 
 Limitations
 -----------
-- Rule 4 only rewrites `@Nullable` / `@NonNull` / `@NullMarked` immediately followed by a
+- Rule 5 only rewrites `@Nullable` / `@NonNull` / `@NullMarked` immediately followed by a
   dotted type whose every segment starts with an upper-case letter (a nested type). Package
   qualified names (`java.lang.String`) are intentionally not touched, since the correct
   placement there depends on the surrounding declaration.
-- Rule 4 is skipped for Kotlin: there nullability is expressed by the type (`T?`), and the
+- Rule 5 is skipped for Kotlin: there nullability is expressed by the type (`T?`), and the
   annotation is removed rather than moved.
 """
 
@@ -60,6 +63,9 @@ TEXT_RENAMES = (
 # annotation of 2.0, which shares the simple name, is never touched.
 CONFIG_EXTRACTOR_IMPORT = "io.koraframework.config.common.extractor.ConfigMapper"
 CONFIG_VALUE_MAPPER_IMPORT = "io.koraframework.config.common.mapper.ConfigValueMapper"
+
+# @Fallback(value = "name", method = "f()")  ->  @Fallback(method = "f()")
+FALLBACK_VALUE = re.compile(r'@Fallback\(\s*value\s*=\s*"[^"]*"\s*,\s*')
 
 # @Nullable Outer.Inner  ->  Outer.@Nullable Inner
 QUALIFIED_TYPE_ANNOTATION = re.compile(
@@ -90,6 +96,10 @@ def migrate_text(path: Path, text: str) -> tuple[str, list[str]]:
         text, generics = re.subn(r"\bConfigMapper<", "ConfigValueMapper<", text)
         text, calls = re.subn(r"\.extract\(", ".mapOrThrow(", text)
         changes.append(f"ConfigMapper -> ConfigValueMapper ({generics}), extract -> mapOrThrow ({calls})")
+
+    text, count = FALLBACK_VALUE.subn("@Fallback(", text)
+    if count:
+        changes.append(f"@Fallback value attribute removed ({count})")
 
     if path.suffix == ".java":
         text, count = QUALIFIED_TYPE_ANNOTATION.subn(r"\g<2>@\g<1> \g<3>", text)

@@ -23,7 +23,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    @Fallback(value = "default", method = "createUserFallback(request)")
+    @Fallback(method = "createUserFallback(request)")
     public UserResponse createUser(UserRequest request) {
         var generatedId = userRepository.save(request.name(), request.email());
         return new UserResponse(generatedId, request.name(), request.email(), LocalDateTime.now());

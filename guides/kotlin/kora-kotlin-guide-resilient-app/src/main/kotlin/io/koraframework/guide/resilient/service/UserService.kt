@@ -14,7 +14,7 @@ import java.time.LocalDateTime
 @Component
 open class UserService(private val userRepository: UserRepository) {
 
-    @Fallback(value = "default", method = "createUserFallback(request)")
+    @Fallback(method = "createUserFallback(request)")
     open fun createUser(request: UserRequest): UserResponse {
         val generatedId = userRepository.save(request.name, request.email)
         return UserResponse(generatedId, request.name, request.email, LocalDateTime.now())

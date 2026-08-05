@@ -10,7 +10,7 @@ import java.util.concurrent.ThreadLocalRandom
 
 @Component
 open class FallbackService {
-    @Fallback(value = "my_fallback", method = "getFallback()")
+    @Fallback(method = "getFallback()")
     open fun getValue(fail: Boolean): String {
         if (fail) {
             throw IllegalStateException("Failed")

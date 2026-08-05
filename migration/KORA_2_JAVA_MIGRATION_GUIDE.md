@@ -489,6 +489,39 @@ resilient.circuitbreaker.pet {
 
 ---
 
+### 6.2. `CircuitBreakerPredicate` больше не выбирается по имени
+
+В 1.x предикат отказа реализовывал `name()` и `test(Throwable)`, а circuit breaker находил его
+по ключу конфигурации `failurePredicateName`.
+
+В 2.0 это функциональный интерфейс с единственным методом, а связывание идёт через тег
+спецификации:
+
+```java
+@Tag(DefaultCircuitBreaker.class)
+@Component
+public final class CircuitBreakerFailurePredicate implements CircuitBreakerPredicate {
+
+    @Override
+    public boolean isCircuitBreakerFailure(Throwable throwable) {
+        return !(throwable instanceof HttpServerResponseException e) || e.code() >= 500;
+    }
+}
+```
+
+Ключ `failurePredicateName` из конфигурации удаляется — он больше ничего не выбирает.
+
+### 6.3. `@Fallback` потерял имя
+
+`FallbackSpec` в 2.0 нет, именованной конфигурации фолбэка тоже, поэтому атрибут `value`
+удалён и остаётся только `method`:
+
+```java
+@Fallback(method = "createUserFallback(request)")
+```
+
+---
+
 ## 7. Кеш
 
 | Было | Стало |
