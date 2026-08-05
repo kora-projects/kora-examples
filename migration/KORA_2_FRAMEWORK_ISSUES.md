@@ -313,6 +313,57 @@ io.koraframework.camunda.zeebe.worker.exception.JobWorkerException: [DOESNT_WORK
 
 ---
 
+## Issue: генератор OpenAPI схлопывает две одинаковые именованные схемы в одну
+
+- Status: Observed (не расследовался)
+- Severity: Minor — ломает компиляцию один раз, чинится сменой типа в сигнатуре
+- Type: Изменение поведения генератора
+- Language: Java (Kotlin-режимы не проверялись)
+- Runtime: JVM
+- Component: `openapi-generator`, режим `java-server`
+- Affected framework module: `openapi/openapi-generator`
+- Affected example modules: `examples/java/kora-java-crud-submodule`
+- Framework commit: `66800169f`
+
+### Description
+
+В спеке объявлены две разные именованные схемы с идентичным содержимым:
+
+```yaml
+VetCreateTO:
+  allOf: [ { $ref: '#/components/schemas/VetFieldTO' } ]
+VetUpdateTO:
+  allOf: [ { $ref: '#/components/schemas/VetFieldTO' } ]
+```
+
+Сгенерирована только `VetCreateTO`; `VetUpdateTO` отсутствует, и `VetApiDelegate#updateVet`
+принимает `VetCreateTO`. Код примера, написанный под 1.x, ссылался на `VetUpdateTO` — значит
+в 1.x модель генерировалась.
+
+### Actual behavior
+
+```
+error: cannot find symbol
+  import io.koraframework.example.submodule.openapi.http.server.model.VetUpdateTO;
+```
+
+### Investigation notes
+
+Не расследовано, дедупликация одинаковых схем может быть намеренной (в upstream
+openapi-generator есть соответствующие опции). Проверять надо две вещи: делает ли это сам
+upstream-генератор или форк Kora, и управляется ли поведение опцией.
+
+### Workaround
+
+Привести сигнатуру к сгенерированной модели (`VetCreateTO`) либо сделать схемы различимыми,
+добавив в одну из них собственное поле или описание.
+
+### Resolution
+
+Не закрыт. В примере применён обходной путь.
+
+---
+
 ## Issue: KSP-процессоры Kora 2.0 падают с внутренним исключением вместо диагностики
 
 - Status: Investigating

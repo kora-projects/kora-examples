@@ -40,7 +40,8 @@ class ComponentTests implements KoraAppTestConfigModifier {
         return KoraConfigModification.ofString("""
                 resilient {
                    circuitbreaker.pet {
-                     slidingWindowSize = 2
+                     type = FIXED_WINDOW
+                     countBased.windowSize = 2
                      minimumRequiredCalls = 2
                      failureRateThreshold = 100
                      permittedCallsInHalfOpenState = 1

@@ -57,7 +57,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SCAN = (ROOT / "examples", ROOT / "guides")
 SUFFIXES = {".conf", ".yaml", ".yml", ".properties"}
+SOURCE_SUFFIXES = {".java", ".kt"}
 SKIP_PARTS = {"build", ".gradle", ".git", "agents-md"}
+
+# Tests configure the graph with HOCON embedded in a text block:
+#     KoraConfigModification.ofString("""
+#         jdbc { ... }
+#         """)
+# Those keys need the same migration as the .conf files, but the rewrite has to stay inside the
+# text block - applying config rules to arbitrary Java or Kotlin would corrupt real code.
+EMBEDDED_CONFIG = re.compile(r'(ofString\(\s*""")(.*?)(""")', re.S)
 
 RENAMES = (
     ("publicApiHttpPort", "port"),
@@ -76,7 +85,9 @@ def config_files(scan_roots):
             yield scan_root
             continue
         for path in scan_root.rglob("*"):
-            if path.is_file() and path.suffix in SUFFIXES and not SKIP_PARTS.intersection(path.parts):
+            if not path.is_file() or SKIP_PARTS.intersection(path.parts):
+                continue
+            if path.suffix in SUFFIXES or path.suffix in SOURCE_SUFFIXES:
                 yield path
 
 
@@ -89,9 +100,21 @@ def migrate_text(text: str) -> tuple[str, list[str]]:
         if count:
             changes.append(f"{old} -> {new} ({count})")
 
+    # A 1.x circuit breaker had one count-based sliding window; 2.0 has several implementations,
+    # and the window moved into the `countBased` block. The default implementation
+    # (STRIPED_APPROX) dereferences `countBased()` without a null check, so the block is
+    # effectively required once a circuit breaker is in use.
+    pattern = re.compile(r"^(\s*)slidingWindowSize(\s*[:=]\s*)(\S+)\s*$", re.M)
+    text, count = pattern.subn(
+        lambda m: f"{m.group(1)}type = FIXED_WINDOW\n{m.group(1)}countBased.windowSize{m.group(2)}{m.group(3)}",
+        text)
+    if count:
+        changes.append(f"slidingWindowSize -> type + countBased.windowSize ({count})")
+
     # `db` section is JDBC only when it configures a datasource
     if "jdbcUrl" in text:
-        text, count = re.subn(r"^db(\s*[{:])", r"jdbc\g<1>", text, flags=re.M)
+        # leading whitespace is allowed because the same config appears indented inside test text blocks
+        text, count = re.subn(r"^(\s*)db(\s*[{:])", r"\g<1>jdbc\g<2>", text, flags=re.M)
         if count:
             changes.append(f"db -> jdbc section ({count})")
 
@@ -104,13 +127,24 @@ def main() -> int:
     parser.add_argument("paths", nargs="*", type=Path, help="files or directories to scan")
     args = parser.parse_args()
 
-    scan_roots = args.paths or list(DEFAULT_SCAN)
+    scan_roots = [path.resolve() for path in (args.paths or list(DEFAULT_SCAN))]
 
     changed_files = 0
     warned = []
     for path in config_files(scan_roots):
         original = path.read_text(encoding="utf-8")
-        updated, changes = migrate_text(original)
+
+        if path.suffix in SOURCE_SUFFIXES:
+            changes = []
+
+            def migrate_block(match):
+                migrated, block_changes = migrate_text(match.group(2))
+                changes.extend(block_changes)
+                return match.group(1) + migrated + match.group(3)
+
+            updated = EMBEDDED_CONFIG.sub(migrate_block, original)
+        else:
+            updated, changes = migrate_text(original)
 
         for unknown in UNKNOWN_KEYS:
             if re.search(rf"^\s*{re.escape(unknown)}\s*[:=]", original, re.M):

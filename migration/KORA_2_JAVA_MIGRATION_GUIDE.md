@@ -457,6 +457,38 @@ resilient {
 
 ---
 
+### 6.1. Окно circuit breaker переехало в `countBased`
+
+В 1.x у circuit breaker было одно счётное окно:
+
+```hocon
+resilient.circuitbreaker.pet {
+  slidingWindowSize = 50
+}
+```
+
+В 2.0 реализаций несколько (`STRIPED_APPROX` по умолчанию, `FIXED_WINDOW`, `RING_BUFFER`,
+`TIME_BASED`), а окно переехало в отдельный блок:
+
+```hocon
+resilient.circuitbreaker.pet {
+  type = FIXED_WINDOW
+  countBased.windowSize = 50
+}
+```
+
+Блок `countBased` в конфигурации формально `@Nullable`, но реализация по умолчанию
+(`StripedApproxKoraCircuitBreaker`) разыменовывает `config.countBased()` без проверки, поэтому
+на практике он обязателен, как только circuit breaker вообще используется. Без него — NPE
+на инициализации графа, а не внятная ошибка конфигурации.
+
+По смыслу ближе всего к счётному окну 1.x — `RING_BUFFER` (точная история последних N вызовов);
+примеры репозитория используют `FIXED_WINDOW` — он дешевле и достаточен для демонстрации.
+Скрипт `migrate_config_keys.py` переписывает ключ именно в `FIXED_WINDOW`; если поведение
+критично, тип стоит выбрать осознанно.
+
+---
+
 ## 7. Кеш
 
 | Было | Стало |

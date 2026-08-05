@@ -57,7 +57,7 @@ class IntegrationTests(@ConnectionPostgreSQL val connection: JdbcConnection) : K
 
     override fun config(): KoraConfigModification = KoraConfigModification.ofString(
         """
-        db {
+        jdbc {
           jdbcUrl = "${connection.params().jdbcUrl()}"
           username = "${connection.params().username()}"
           password = "${connection.params().password()}"
@@ -66,7 +66,8 @@ class IntegrationTests(@ConnectionPostgreSQL val connection: JdbcConnection) : K
         pet-cache.maximumSize = 0
         resilient {
            circuitbreaker.pet {
-             slidingWindowSize = 2
+             type = FIXED_WINDOW
+             countBased.windowSize = 2
              minimumRequiredCalls = 2
              failureRateThreshold = 100
              permittedCallsInHalfOpenState = 1
