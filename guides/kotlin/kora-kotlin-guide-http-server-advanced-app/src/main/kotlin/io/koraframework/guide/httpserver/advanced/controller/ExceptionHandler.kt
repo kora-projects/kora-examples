@@ -36,7 +36,7 @@ class ExceptionHandler(
     private fun jsonResponse(statusCode: Int, message: String): HttpServerResponse {
         return HttpServerResponse.of(
             statusCode,
-            HttpBody.json(errorJsonWriter.toByteArrayUnchecked(ErrorResponse(message)))
+            HttpBody.json(errorJsonWriter.toByteArray(ErrorResponse(message)))
         )
     }
 

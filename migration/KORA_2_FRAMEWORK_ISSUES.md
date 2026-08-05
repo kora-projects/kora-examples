@@ -7,6 +7,72 @@
 
 ---
 
+## Issue: Cassandra-репозиторий с `CompletableFuture<T>` генерирует некомпилируемый код
+
+- Status: Confirmed (не исправлен)
+- Severity: Major
+- Type: Framework bug
+- Language: Java
+- Runtime: JVM
+- Component: `database-annotation-processor`, генератор Cassandra-репозиториев
+- Affected framework module: `database/database-annotation-processor`
+- Affected example modules: `examples/java/kora-java-database-cassandra`
+- Framework commit: `66800169f`
+
+### Description
+
+Метод Cassandra-репозитория, возвращающий `CompletableFuture<T>` (а не `CompletionStage<T>`), приводит к генерации кода, который не компилируется.
+
+### Minimal reproduction
+
+```java
+@Repository
+public interface CassandraCrudAsyncRepository extends CassandraRepository {
+
+    @EntityCassandra
+    record Entity(String id, @Column("value1") int field1, String value2, @Nullable String value3) {}
+
+    @Query("SELECT * FROM entities WHERE id = :id")
+    CompletableFuture<Entity> findById(String id);   // CompletionStage<Entity> работает
+}
+```
+
+### Actual behavior
+
+```
+$CassandraCrudAsyncRepository_Impl.java:110: error: incompatible types: inference variable R has incompatible bounds
+  .call(() -> {
+    upper bounds: CompletableFuture<Entity>,Object
+```
+
+### Investigation notes
+
+Поддержка `CompletableFuture` в генераторе **заявлена явно** — `CassandraRepositoryGenerator.java:143-145`:
+
+```java
+if (((DeclaredType) returnType).asElement().toString().equals(CompletableFuture.class.getCanonicalName())) {
+    st.add(".toCompletableFuture()");
+}
+```
+
+Цепочка строится внутри обёртки `CommonUtils.observe(..., "call", ...)`, и добавленный `.toCompletableFuture()` ломает вывод типа параметра `R` у этой обёртки.
+
+Тесты фреймворка покрывают `CompletionStage<Integer>` и `CompletionStage<Void>` (`CassandraResultsTest`), но **ни одного теста с `CompletableFuture`** в `database-annotation-processor` нет — поэтому регрессия не ловится.
+
+### Workaround
+
+Заменить тип возврата на `CompletionStage<T>`.
+
+### Proposed fix
+
+Привести тип выражения внутри `observe(...).call(...)` к `CompletionStage`, а `.toCompletableFuture()` применять снаружи обёртки; добавить тест с `CompletableFuture<T>` в `CassandraResultsTest`.
+
+### Resolution
+
+Не закрыт. Модуль `kora-java-database-cassandra` остаётся `BLOCKED_BY_FRAMEWORK_BUG`: код примера корректен и демонстрирует заявленную функциональность — подгонять его под баг не стали.
+
+---
+
 ## Issue: JSON-фабрика `httpClientResponseJsonEntityResponseMapper` не помечена `@Json`
 
 - Status: **Fixed** (локально, готово к PR)

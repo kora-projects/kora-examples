@@ -34,7 +34,7 @@ public final class HttpExceptionHandler implements HttpServerInterceptor {
             }
 
             e.printStackTrace();
-            var body = HttpBody.json(errorJsonWriter.toByteArrayUnchecked(new MessageTO(e.getMessage())));
+            var body = HttpBody.json(errorJsonWriter.toByteArray(new MessageTO(e.getMessage())));
             if (e instanceof IllegalArgumentException || e instanceof ValidationException) {
                 return HttpServerResponse.of(400, body);
             } else if (e instanceof TimeoutException) {

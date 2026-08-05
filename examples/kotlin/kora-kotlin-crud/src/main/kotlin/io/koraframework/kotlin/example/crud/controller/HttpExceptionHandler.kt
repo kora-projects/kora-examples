@@ -30,7 +30,7 @@ class HttpExceptionHandler(private val errorJsonWriter: JsonWriter<MessageTO>) :
                 return@exceptionally e
             }
 
-            val body = HttpBody.json(errorJsonWriter.toByteArrayUnchecked(MessageTO(e.message)))
+            val body = HttpBody.json(errorJsonWriter.toByteArray(MessageTO(e.message)))
             when (e) {
                 is ValidationException -> HttpServerResponse.of(400, body)
                 is IllegalArgumentException -> HttpServerResponse.of(400, body)

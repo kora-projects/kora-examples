@@ -46,7 +46,7 @@ public final class ExceptionHandler implements HttpServerInterceptor {
     }
 
     private HttpServerResponse jsonResponse(int statusCode, String message) {
-        return HttpServerResponse.of(statusCode, HttpBody.json(this.errorJsonWriter.toByteArrayUnchecked(new ErrorResponse(message))));
+        return HttpServerResponse.of(statusCode, HttpBody.json(this.errorJsonWriter.toByteArray(new ErrorResponse(message))));
     }
 
     private static Throwable unwrap(Throwable throwable) {

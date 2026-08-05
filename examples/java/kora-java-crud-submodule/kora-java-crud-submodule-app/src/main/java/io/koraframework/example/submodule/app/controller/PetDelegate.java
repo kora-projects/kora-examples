@@ -77,7 +77,7 @@ public final class PetDelegate implements PetApiDelegate {
     }
 
     @Nullable
-    private static Pet.Status toStatus(@Nullable PetUpdateTO.StatusEnum statusEnum) {
+    private static Pet.Status toStatus(PetUpdateTO.@Nullable StatusEnum statusEnum) {
         if (statusEnum == null) {
             return null;
         }

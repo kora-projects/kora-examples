@@ -8,8 +8,6 @@ import io.koraframework.common.annotation.Root;
 public final class RootService {
 
     private final JdbcCrudSyncRepository jdbcCrudSyncRepository;
-    private final JdbcCrudAsyncRepository jdbcCrudAsyncRepository;
-    private final JdbcCrudReactorRepository jdbcCrudReactorRepository;
     private final JdbcMapperResultSetRepository jdbcMapperResultSetRepository;
     private final JdbcMapperRowRepository jdbcMapperRowRepository;
     private final JdbcMapperColumnRepository jdbcMapperColumnRepository;
@@ -25,8 +23,6 @@ public final class RootService {
     private final JdbcCrudExtendedCompositeRepository jdbcCrudExtendedCompositeRepository;
 
     public RootService(JdbcCrudSyncRepository jdbcCrudSyncRepository,
-                       JdbcCrudAsyncRepository jdbcCrudAsyncRepository,
-                       JdbcCrudReactorRepository jdbcCrudReactorRepository,
                        JdbcMapperResultSetRepository jdbcMapperResultSetRepository,
                        JdbcMapperRowRepository jdbcMapperRowRepository,
                        JdbcMapperColumnRepository jdbcMapperColumnRepository,
@@ -41,8 +37,6 @@ public final class RootService {
                        JdbcCrudExtendedRepository jdbcCrudExtendedRepository,
                        JdbcCrudExtendedCompositeRepository jdbcCrudExtendedCompositeRepository) {
         this.jdbcCrudSyncRepository = jdbcCrudSyncRepository;
-        this.jdbcCrudAsyncRepository = jdbcCrudAsyncRepository;
-        this.jdbcCrudReactorRepository = jdbcCrudReactorRepository;
         this.jdbcMapperResultSetRepository = jdbcMapperResultSetRepository;
         this.jdbcMapperRowRepository = jdbcMapperRowRepository;
         this.jdbcMapperColumnRepository = jdbcMapperColumnRepository;

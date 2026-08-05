@@ -45,7 +45,7 @@ public interface Application extends
             var response = new ErrorResponseTO("Encountered '%s' validation violations".formatted(details.size()), details);
             return HttpServerResponse.of(
                     400,
-                    HttpBody.json(errorResponseJsonWriter.toByteArrayUnchecked(response)));
+                    HttpBody.json(errorResponseJsonWriter.toByteArray(response)));
         };
     }
 

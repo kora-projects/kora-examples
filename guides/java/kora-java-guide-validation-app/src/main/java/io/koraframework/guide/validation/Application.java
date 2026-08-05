@@ -36,7 +36,7 @@ public interface Application extends
             JsonWriter<ValidationErrorResponse> errorResponseJsonWriter) {
         return (request, exception) -> HttpServerResponse.of(
                 400,
-                HttpBody.json(errorResponseJsonWriter.toByteArrayUnchecked(
+                HttpBody.json(errorResponseJsonWriter.toByteArray(
                         ValidationErrorResponse.of(toValidationErrors(exception.getViolations())))));
     }
 

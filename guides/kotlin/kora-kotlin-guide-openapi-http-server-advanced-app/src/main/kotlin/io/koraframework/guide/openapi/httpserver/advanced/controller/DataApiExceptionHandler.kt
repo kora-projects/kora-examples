@@ -38,7 +38,7 @@ class DataApiExceptionHandler(
     private fun jsonResponse(statusCode: Int, message: String): HttpServerResponse {
         return HttpServerResponse.of(
             statusCode,
-            HttpBody.json(errorJsonWriter.toByteArrayUnchecked(ErrorResponseTO(message, null)))
+            HttpBody.json(errorJsonWriter.toByteArray(ErrorResponseTO(message, null)))
         )
     }
 

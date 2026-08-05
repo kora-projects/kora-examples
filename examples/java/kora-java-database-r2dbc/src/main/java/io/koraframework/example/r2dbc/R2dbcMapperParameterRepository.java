@@ -15,7 +15,7 @@ public interface R2dbcMapperParameterRepository extends R2dbcRepository {
     final class EntityFieldTypeParameterMapper implements R2dbcParameterColumnMapper<Entity.FieldType> {
 
         @Override
-        public void apply(Statement stmt, int index, @Nullable Entity.FieldType value) {
+        public void apply(Statement stmt, int index, Entity.@Nullable FieldType value) {
             if (value != null) {
                 stmt.bind(index, value.code());
             }

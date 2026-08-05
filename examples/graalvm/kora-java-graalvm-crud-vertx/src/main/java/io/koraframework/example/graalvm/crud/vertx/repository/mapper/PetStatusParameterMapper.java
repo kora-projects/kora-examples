@@ -9,7 +9,7 @@ import io.koraframework.example.graalvm.crud.vertx.model.dao.Pet;
 public final class PetStatusParameterMapper implements VertxParameterColumnMapper<Pet.Status> {
 
     @Override
-    public Object apply(@Nullable Pet.Status value) {
+    public Object apply(Pet.@Nullable Status value) {
         if (value == null) {
             return null;
         } else {

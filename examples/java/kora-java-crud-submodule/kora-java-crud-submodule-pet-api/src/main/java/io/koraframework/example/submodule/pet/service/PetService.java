@@ -54,7 +54,7 @@ public class PetService {
     public Optional<PetWithCategory> update(long petId,
                                             @Nullable String petNameUpdate,
                                             @Nullable String petCategoryUpdate,
-                                            @Nullable Pet.Status petStatusUpdate) {
+                                            Pet.@Nullable Status petStatusUpdate) {
         final Optional<PetWithCategory> existing = petRepository.findById(petId);
         if (existing.isEmpty()) {
             return Optional.empty();

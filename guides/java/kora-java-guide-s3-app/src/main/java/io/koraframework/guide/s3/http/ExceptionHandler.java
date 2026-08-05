@@ -31,21 +31,21 @@ public final class ExceptionHandler implements HttpServerInterceptor {
             Throwable cause = unwrap(throwable);
             if (cause instanceof HttpServerResponseException responseException) {
                 return HttpServerResponse.of(responseException.code(),
-                        HttpBody.json(errorJsonWriter.toByteArrayUnchecked(
+                        HttpBody.json(errorJsonWriter.toByteArray(
                                 ErrorResponse.of("HTTP_" + responseException.code(), responseException.getMessage()))));
             }
             if (cause instanceof IllegalArgumentException) {
                 return HttpServerResponse.of(400,
-                        HttpBody.json(errorJsonWriter.toByteArrayUnchecked(
+                        HttpBody.json(errorJsonWriter.toByteArray(
                                 ErrorResponse.of("BAD_REQUEST", "Invalid request parameters"))));
             }
             if (cause instanceof SecurityException) {
                 return HttpServerResponse.of(403,
-                        HttpBody.json(errorJsonWriter.toByteArrayUnchecked(
+                        HttpBody.json(errorJsonWriter.toByteArray(
                                 ErrorResponse.of("FORBIDDEN", "Access denied"))));
             }
             return HttpServerResponse.of(500,
-                    HttpBody.json(errorJsonWriter.toByteArrayUnchecked(
+                    HttpBody.json(errorJsonWriter.toByteArray(
                             ErrorResponse.of("INTERNAL_ERROR", "An unexpected error occurred"))));
         });
     }

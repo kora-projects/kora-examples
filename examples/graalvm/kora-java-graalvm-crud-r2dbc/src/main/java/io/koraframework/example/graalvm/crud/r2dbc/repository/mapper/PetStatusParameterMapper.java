@@ -10,7 +10,7 @@ import io.koraframework.example.graalvm.crud.r2dbc.model.dao.Pet;
 public final class PetStatusParameterMapper implements R2dbcParameterColumnMapper<Pet.Status> {
 
     @Override
-    public void apply(Statement stmt, int index, @Nullable Pet.Status value) {
+    public void apply(Statement stmt, int index, Pet.@Nullable Status value) {
         if (value == null) {
             stmt.bindNull(index, Integer.class);
         } else {

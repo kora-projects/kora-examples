@@ -23,7 +23,6 @@ dependencies {
 
     implementation "org.postgresql:postgresql:42.7.7"
     implementation "io.koraframework:database-jdbc"
-    implementation "io.projectreactor:reactor-core:3.6.18" // For reactive examples (optional)
 
     implementation "io.koraframework:logging-logback"
     implementation "io.koraframework:config-hocon"

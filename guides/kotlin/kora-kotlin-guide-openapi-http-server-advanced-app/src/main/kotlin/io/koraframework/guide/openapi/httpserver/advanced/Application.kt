@@ -38,7 +38,7 @@ interface Application :
                 "Path ${violation.path()} violated: ${violation.message()}"
             }
             val response = ErrorResponseTO("Encountered '${details.size}' validation violations", details)
-            HttpServerResponse.of(400, HttpBody.json(errorResponseJsonWriter.toByteArrayUnchecked(response)))
+            HttpServerResponse.of(400, HttpBody.json(errorResponseJsonWriter.toByteArray(response)))
         }
     }
 

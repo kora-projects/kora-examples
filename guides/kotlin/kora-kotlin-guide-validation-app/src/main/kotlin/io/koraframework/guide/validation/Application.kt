@@ -33,7 +33,7 @@ interface Application :
             HttpServerResponse.of(
                 400,
                 HttpBody.json(
-                    errorResponseJsonWriter.toByteArrayUnchecked(
+                    errorResponseJsonWriter.toByteArray(
                         ValidationErrorResponse.of(toValidationErrors(exception.violations))
                     )
                 )

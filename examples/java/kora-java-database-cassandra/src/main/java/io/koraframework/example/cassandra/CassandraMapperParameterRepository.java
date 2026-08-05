@@ -2,6 +2,7 @@ package io.koraframework.example.cassandra;
 
 import com.datastax.oss.driver.api.core.data.SettableByName;
 import org.jspecify.annotations.Nullable;
+import io.koraframework.common.annotation.Component;
 import io.koraframework.common.annotation.Mapping;
 import io.koraframework.database.cassandra.CassandraRepository;
 import io.koraframework.database.cassandra.mapper.parameter.CassandraParameterColumnMapper;
@@ -10,10 +11,12 @@ import io.koraframework.database.common.annotation.*;
 @Repository
 public interface CassandraMapperParameterRepository extends CassandraRepository {
 
+    @Component
+
     final class EntityFieldTypeParameterMapper implements CassandraParameterColumnMapper<Entity.FieldType> {
 
         @Override
-        public void apply(SettableByName<?> stmt, int index, @Nullable Entity.FieldType value) {
+        public void apply(SettableByName<?> stmt, int index, Entity.@Nullable FieldType value) {
             if (value != null) {
                 stmt.setInt(index, value.code());
             }

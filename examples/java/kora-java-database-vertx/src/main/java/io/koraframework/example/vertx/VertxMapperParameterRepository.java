@@ -14,7 +14,7 @@ public interface VertxMapperParameterRepository extends VertxRepository {
 
         @Nullable
         @Override
-        public Object apply(@Nullable Entity.FieldType fieldType) {
+        public Object apply(Entity.@Nullable FieldType fieldType) {
             return (fieldType == null)
                     ? null
                     : fieldType.code();

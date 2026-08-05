@@ -44,7 +44,7 @@ public final class DataApiExceptionHandler implements HttpServerInterceptor {
     }
 
     private HttpServerResponse jsonResponse(int statusCode, String message) {
-        return HttpServerResponse.of(statusCode, HttpBody.json(this.errorJsonWriter.toByteArrayUnchecked(new ErrorResponseTO(message, null))));
+        return HttpServerResponse.of(statusCode, HttpBody.json(this.errorJsonWriter.toByteArray(new ErrorResponseTO(message, null))));
     }
 
     private static Throwable unwrap(Throwable throwable) {
