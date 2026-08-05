@@ -41,9 +41,11 @@ interface Application :
         }
     }
 
+    // the module default is untagged, so it is overridden only to bind the interceptor to the server;
+    // 2.0 declares the mapper parameter as @Nullable, which Kotlin enforces on the override
     @Tag(HttpServer::class)
     override fun validationHttpServerInterceptor(
-        violationExceptionHttpServerResponseMapper: ViolationExceptionHttpServerResponseMapper
+        violationExceptionHttpServerResponseMapper: ViolationExceptionHttpServerResponseMapper?
     ): ValidationHttpServerInterceptor {
         return ValidationHttpServerInterceptor(violationExceptionHttpServerResponseMapper)
     }
