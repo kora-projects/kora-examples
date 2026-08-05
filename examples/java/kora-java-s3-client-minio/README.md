@@ -1,9 +1,15 @@
 # Kora Java S3 Minio
 
-Пример модуля S3 Minio в Kora.
+Пример декларативного S3 клиента Kora, который работает против Minio как S3-совместимого хранилища.
 
 В примере использовались модули:
-- [S3 Minio](https://kora-projects.github.io/kora-docs/ru/documentation/s3-client/#minio)
+- `io.koraframework.experimental:s3-client-kora`
+
+> В Kora 1.x декларативный клиент `@S3.Client` был реализован поверх SDK Minio
+> (`s3-client-minio`). В Kora 2.0 этой реализации больше нет: декларативный клиент
+> собран поверх собственного HTTP клиента Kora и живёт в артефакте `s3-client-kora`.
+> Minio здесь остаётся только как хранилище, против которого гоняются тесты.
+> Обёртка над AWS SDK — отдельный модуль, см. `kora-java-s3-client-aws`.
 
 ## Build
 

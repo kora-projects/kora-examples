@@ -7,14 +7,10 @@ import io.goodforgod.testcontainers.extensions.minio.Bucket;
 import io.goodforgod.testcontainers.extensions.minio.ConnectionMinio;
 import io.goodforgod.testcontainers.extensions.minio.MinioConnection;
 import io.goodforgod.testcontainers.extensions.minio.TestcontainersMinio;
-import io.minio.MinioClient;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
 import org.junit.jupiter.api.Test;
-import io.koraframework.s3.client.S3NotFoundException;
-import io.koraframework.s3.client.model.S3Body;
-import io.koraframework.s3.client.model.S3Object;
+import io.koraframework.s3.client.kora.exception.S3ClientNoSuchKeyException;
 import io.koraframework.test.extension.junit5.KoraAppTest;
 import io.koraframework.test.extension.junit5.KoraAppTestConfigModifier;
 import io.koraframework.test.extension.junit5.KoraConfigModification;
@@ -36,8 +32,6 @@ class SyncS3ClientTests implements KoraAppTestConfigModifier {
 
     @TestComponent
     private SyncS3Client client;
-    @TestComponent
-    private MinioClient s3Client;
 
     @Override
     public KoraConfigModification config() {
@@ -49,19 +43,33 @@ class SyncS3ClientTests implements KoraAppTestConfigModifier {
     }
 
     @Test
-    void putAndGetObject() {
+    void putAndGetObject() throws IOException {
         // given
         var key = "k1";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key, S3Body.ofBytes(value));
+        client.putObject(key, value);
 
         // when
-        var found = client.getObject(key);
-        assertNotNull(found);
-        assertTrue(Arrays.equals(value, found.body().asBytes()));
+        try (var found = client.getObject(key); var body = found.body().asInputStream()) {
+            assertArrayEquals(value, body.readAllBytes());
+        }
 
         // then
-        assertThrows(S3NotFoundException.class, () -> client.getObject("k2"));
+        assertThrows(S3ClientNoSuchKeyException.class, () -> client.getObject("k2"));
+    }
+
+    @Test
+    void putAndGetObjectAsBytes() {
+        // given
+        var key = "k1";
+        var value = "value".getBytes(StandardCharsets.UTF_8);
+        client.putObject(key, value);
+
+        // when
+        var found = client.getObjectAsBytes(key);
+
+        // then
+        assertArrayEquals(value, found);
     }
 
     @Test
@@ -69,76 +77,42 @@ class SyncS3ClientTests implements KoraAppTestConfigModifier {
         // given
         var key = "k1";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key, S3Body.ofBytes(value));
+        client.putObject(key, value);
 
         // when
-        var found = client.getObjectMeta("pre-" + key);
-        assertNotNull(found);
+        var found = client.getObjectMeta(key);
+        assertEquals(value.length, found.size());
 
         // then
-        assertThrows(S3NotFoundException.class, () -> client.getObjectMeta("k2"));
-    }
-
-    @Test
-    void putAndGetManyObjects() {
-        // given
-        var key1 = "k1";
-        var key2 = "k2";
-        var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key1, S3Body.ofBytes(value));
-        client.putObject(key2, S3Body.ofBytes(value));
-
-        // when
-        var found = client.getObjects(List.of("pre-" + key1, "pre-" + key2));
-        assertEquals(2, found.size());
-        for (S3Object object : found) {
-            assertEquals("value", new String(object.body().asBytes(), StandardCharsets.UTF_8));
-        }
-    }
-
-    @Test
-    void putAndGetManyMetas() {
-        // given
-        var key1 = "k1";
-        var key2 = "k2";
-        var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key1, S3Body.ofBytes(value));
-        client.putObject(key2, S3Body.ofBytes(value));
-
-        // when
-        var found = client.getObjectMetas(List.of("pre-" + key1, "pre-" + key2));
-        assertEquals(2, found.size());
+        assertThrows(S3ClientNoSuchKeyException.class, () -> client.getObjectMeta("k2"));
     }
 
     @Test
     void putAndListObjects() {
         // given
-        var key1 = "k1";
-        var key2 = "k2";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key1, S3Body.ofBytes(value));
-        client.putObject(key2, S3Body.ofBytes(value));
+        client.putObject("k1", value);
+        client.putObject("k2", value);
 
         // when
-        var found = client.listObject("k");
-        assertEquals(2, found.metas().size());
-        for (S3Object object : found.objects()) {
-            assertEquals("value", new String(object.body().asBytes(), StandardCharsets.UTF_8));
-        }
+        var found = client.listObjects("k");
+
+        // then
+        assertEquals(2, found.items().size());
     }
 
     @Test
-    void putAndListMetas() {
+    void putAndListObjectKeys() {
         // given
-        var key1 = "k1";
-        var key2 = "k2";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key1, S3Body.ofBytes(value));
-        client.putObject(key2, S3Body.ofBytes(value));
+        client.putObject("k1", value);
+        client.putObject("k2", value);
 
         // when
-        var found = client.listObjectMeta("k");
-        assertEquals(2, found.metas().size());
+        var found = client.listObjectKeys("k");
+
+        // then
+        assertIterableEquals(java.util.List.of("pre-k1", "pre-k2"), found);
     }
 
     @Test
@@ -146,27 +120,12 @@ class SyncS3ClientTests implements KoraAppTestConfigModifier {
         // given
         var key = "k1";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key, S3Body.ofBytes(value));
+        client.putObject(key, value);
 
         // when
         client.deleteObject(key);
 
         // then
-        assertThrows(S3NotFoundException.class, () -> client.getObject("k1"));
-    }
-
-    @Test
-    void putAndDeleteMany() {
-        // given
-        var key1 = "k1";
-        var key2 = "k2";
-        var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key1, S3Body.ofBytes(value));
-        client.putObject(key2, S3Body.ofBytes(value));
-
-        // when
-        client.deleteObjects(List.of("pre-k1", "pre-k2"));
-        assertThrows(S3NotFoundException.class, () -> client.getObject("k1"));
-        assertThrows(S3NotFoundException.class, () -> client.getObject("k2"));
+        assertThrows(S3ClientNoSuchKeyException.class, () -> client.getObject(key));
     }
 }

@@ -7,25 +7,24 @@ import io.goodforgod.testcontainers.extensions.minio.Bucket;
 import io.goodforgod.testcontainers.extensions.minio.ConnectionMinio;
 import io.goodforgod.testcontainers.extensions.minio.MinioConnection;
 import io.goodforgod.testcontainers.extensions.minio.TestcontainersMinio;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import io.koraframework.s3.client.model.S3Body;
 import io.koraframework.test.extension.junit5.KoraAppTest;
 import io.koraframework.test.extension.junit5.KoraAppTestConfigModifier;
 import io.koraframework.test.extension.junit5.KoraConfigModification;
 import io.koraframework.test.extension.junit5.TestComponent;
-import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 
 @TestcontainersMinio(
         mode = ContainerMode.PER_RUN,
         bucket = @Bucket(
-                value = AwsS3ClientTests.BUCKET,
+                value = AwsS3ServiceTests.BUCKET,
                 create = Bucket.Mode.PER_METHOD,
                 drop = Bucket.Mode.PER_METHOD))
 @KoraAppTest(Application.class)
-class AwsS3ClientTests implements KoraAppTestConfigModifier {
+class AwsS3ServiceTests implements KoraAppTestConfigModifier {
 
     static final String BUCKET = "simple";
 
@@ -33,9 +32,7 @@ class AwsS3ClientTests implements KoraAppTestConfigModifier {
     private MinioConnection minioConnection;
 
     @TestComponent
-    private AwsS3Client client;
-    @TestComponent
-    private S3Client s3Client;
+    private AwsS3Service service;
 
     @Override
     public KoraConfigModification config() {
@@ -47,18 +44,19 @@ class AwsS3ClientTests implements KoraAppTestConfigModifier {
     }
 
     @Test
-    void putAndGetObject() {
+    void putAndGetObject() throws IOException {
         // given
         var key = "k1";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key, S3Body.ofBytes(value));
+        service.putObject(key, value);
 
         // when
-        var found = client.getObject(key);
-        assertNotNull(found);
+        try (var found = service.getObject(key)) {
+            assertArrayEquals(value, found.readAllBytes());
+        }
 
         // then
-        assertThrows(NoSuchKeyException.class, () -> client.getObject("k2"));
+        assertThrows(NoSuchKeyException.class, () -> service.getObject("k2"));
     }
 
     @Test
@@ -66,27 +64,27 @@ class AwsS3ClientTests implements KoraAppTestConfigModifier {
         // given
         var key = "k1";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key, S3Body.ofBytes(value));
+        service.putObject(key, value);
 
         // when
-        var found = client.getObjectMeta("pre-" + key);
-        assertNotNull(found);
+        var found = service.getObjectMeta(key);
+        assertEquals(value.length, found.contentLength());
 
         // then
-        assertThrows(NoSuchKeyException.class, () -> client.getObjectMeta("k2"));
+        assertThrows(NoSuchKeyException.class, () -> service.getObjectMeta("k2"));
     }
 
     @Test
-    void putAndListMetas() {
+    void putAndListObjects() {
         // given
-        var key1 = "k1";
-        var key2 = "k2";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key1, S3Body.ofBytes(value));
-        client.putObject(key2, S3Body.ofBytes(value));
+        service.putObject("k1", value);
+        service.putObject("k2", value);
 
         // when
-        var found = client.listObjectMeta("k");
+        var found = service.listObjects("k");
+
+        // then
         assertEquals(2, found.contents().size());
     }
 
@@ -95,27 +93,27 @@ class AwsS3ClientTests implements KoraAppTestConfigModifier {
         // given
         var key = "k1";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key, S3Body.ofBytes(value));
+        service.putObject(key, value);
 
         // when
-        client.deleteObject(key);
+        service.deleteObject(key);
 
         // then
-        assertThrows(NoSuchKeyException.class, () -> client.getObject("k1"));
+        assertThrows(NoSuchKeyException.class, () -> service.getObject(key));
     }
 
     @Test
     void putAndDeleteMany() {
         // given
-        var key1 = "k1";
-        var key2 = "k2";
         var value = "value".getBytes(StandardCharsets.UTF_8);
-        client.putObject(key1, S3Body.ofBytes(value));
-        client.putObject(key2, S3Body.ofBytes(value));
+        service.putObject("k1", value);
+        service.putObject("k2", value);
 
         // when
-        client.deleteObjects(List.of("pre-k1", "pre-k2"));
-        assertThrows(NoSuchKeyException.class, () -> client.getObject("k1"));
-        assertThrows(NoSuchKeyException.class, () -> client.getObject("k2"));
+        service.deleteObjects(List.of("k1", "k2"));
+
+        // then
+        assertThrows(NoSuchKeyException.class, () -> service.getObject("k1"));
+        assertThrows(NoSuchKeyException.class, () -> service.getObject("k2"));
     }
 }

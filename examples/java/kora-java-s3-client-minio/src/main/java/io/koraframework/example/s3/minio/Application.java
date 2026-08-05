@@ -5,13 +5,13 @@ import io.koraframework.common.annotation.KoraApp;
 import io.koraframework.config.hocon.HoconConfigModule;
 import io.koraframework.http.client.ok.OkHttpClientModule;
 import io.koraframework.logging.logback.LogbackModule;
-import io.koraframework.s3.client.minio.MinioS3ClientModule;
+import io.koraframework.s3.client.kora.KoraS3ClientModule;
 
 @KoraApp
 public interface Application extends
         HoconConfigModule,
         LogbackModule,
-        MinioS3ClientModule,
+        KoraS3ClientModule,
         OkHttpClientModule {
 
     static void main(String[] args) {
