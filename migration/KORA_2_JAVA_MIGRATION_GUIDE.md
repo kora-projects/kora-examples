@@ -572,11 +572,122 @@ Kora 2.0 строится на синхронных контрактах, исп
 | `io.koraframework:s3-client-aws` | только обёртка над AWS SDK: `AwsS3ClientModule`, конфиг, телеметрия. **Ни аннотаций `@S3`, ни моделей** |
 | `io.koraframework.experimental:s3-client-kora` | декларативный клиент: `@S3` из `io.koraframework.s3.client.kora.annotation`, `S3Client`, фабрики |
 
-Группа у всего, что лежит в `experimental/`, — `io.koraframework.experimental` (задаётся в `build.gradle` фреймворка). Туда же относятся `s3-client-minio`, `camunda-*`.
+Группа у всего, что лежит в `experimental/`, — `io.koraframework.experimental` (задаётся в `build.gradle` фреймворка). Туда же относятся `camunda-*`.
 
 **Симптом неправильного артефакта:** `package S3 does not exist`, `package io.koraframework.s3.client.model does not exist`, `package io.koraframework.s3.client.annotation does not exist`.
 
-Пакеты также переехали: `io.koraframework.s3.client.annotation.S3` → `io.koraframework.s3.client.kora.annotation.S3`. Модели (`S3Body` и пр.) в прежнем виде не найдены — миграция S3-модулей требует сверки с `experimental/s3-client-kora` пофайлово и пока не выполнена.
+### 15.1. `s3-client-minio` в 2.0 не существует
+
+Реализация декларативного клиента поверх SDK Minio удалена (`experimental/s3-client-minio` остался
+пустым каталогом и в `settings.gradle` фреймворка не подключён). Замена — `s3-client-kora`,
+клиент поверх собственного HTTP-клиента Kora. Minio при этом прекрасно годится как S3-совместимое
+хранилище для тестов — меняется артефакт, не тестовое окружение.
+
+### 15.2. `s3-client-aws`: обёртка над SDK, а не декларативный клиент
+
+Модуль отдаёт в контейнер сам `software.amazon.awssdk.services.s3.S3Client`, и работать с S3
+предполагается через API AWS SDK:
+
+```java
+@Component
+public class AwsS3Service {
+
+    private final S3Client s3Client;
+
+    public AwsS3Service(S3Client s3Client) {
+        this.s3Client = s3Client;
+    }
+}
+```
+
+Бин выдаётся `AwsS3ClientFactoryModule` под `@Tag(Tag.Factory.class)`. Пугаться тега не нужно:
+внутри `@FactoryModule` `@Tag.Factory` разворачивается в тег **самого метода фабричного модуля**
+(`ComponentDeclaration.fromModule`), а `AwsS3ClientModule#awsS3ClientFactoryModule()` тега не имеет —
+значит компонент нетегированный. Именно этот механизм позволяет объявить несколько фабричных модулей
+с разными тегами и получить несколько независимо сконфигурированных клиентов.
+
+Конфигурация переехала под `s3client.aws`, а ключи доступа — во вложенный объект:
+
+```hocon
+s3client.aws {
+  url = ${S3_URL}
+  credentials {
+    accessKey = ${S3_ACCESS_KEY}
+    secretKey = ${S3_SECRET_KEY}
+  }
+}
+```
+
+### 15.3. Новый API декларативного клиента
+
+| 1.x | 2.0 |
+|---|---|
+| `io.koraframework.s3.client.annotation.S3` | `io.koraframework.s3.client.kora.annotation.S3` |
+| `@S3.Get` для метаданных | `@S3.Head` → `HeadObjectResult` |
+| `S3Object` | `GetObjectResult` (это `HttpClientResponse`, тело — `body().asInputStream()`) или `byte[]` |
+| `S3ObjectMeta` | `HeadObjectResult` |
+| `S3ObjectList` / `S3ObjectMetaList` | `ListBucketResult`, `List<String>`, `Iterator<ListBucketResult.ListBucketItem>` |
+| `S3Body` | `byte[]`, `ByteBuffer`, `InputStream`, `S3Client.ContentWriter` |
+| `S3ObjectUpload putObject(...)` | `String putObject(...)` (ETag) или `void` |
+| `S3NotFoundException` | `io.koraframework.s3.client.kora.exception.S3ClientNoSuchKeyException` |
+| `@S3.List(limit = 50)` | лимит задаётся через `ListObjectsArgs` |
+
+Имя бакета больше не берётся из конфигурации клиента само — его указывают через `@S3.Bucket`:
+путь с ведущей точкой (`@S3.Bucket(".bucket")`) отсчитывается от пути клиента из `@S3.Client`,
+без точки — это абсолютный путь в конфигурации. Альтернатива — параметр метода под `@S3.Bucket`.
+
+Конфигурация клиента: `endpoint` (было `url`), `credentials { accessKey, secretKey }`,
+опционально `region`, `addressStyle`, `requestTimeout`, `upload`.
+
+**Пакетного удаления в декларативном клиенте больше нет.** `@S3.Delete` генерирует только
+`deleteObject`; метод вида `void deleteObjects(List<String> keys)` в 2.0 не поддерживается,
+хотя `S3Client#deleteObjects` в runtime-API есть. Асинхронные и реактивные варианты клиента
+убраны вместе с реактивной моделью.
+
+---
+
+## 16. Camunda 8 / Zeebe
+
+### 16.1. Клиент переименован
+
+Camunda 8.8 переименовала клиент, и Kora 2.0 использует уже новый (`io.camunda:camunda-client-java`):
+
+| 1.x | 2.0 |
+|---|---|
+| `io.camunda.zeebe.client.ZeebeClient` | `io.camunda.client.CamundaClient` |
+| `io.camunda.zeebe.client.api.response.*` | `io.camunda.client.api.response.*` |
+| `io.koraframework.camunda.zeebe.worker.JobWorkerException` | `io.koraframework.camunda.zeebe.worker.exception.JobWorkerException` |
+
+`CamundaClient` инжектируется напрямую — `ZeebeWorkerModule` отдаёт его как `Wrapped<CamundaClient>`.
+
+Отдельная засада в тестах: `io.camunda:zeebe-process-test-*` даже в версии 8.9.x всё ещё живёт на
+старом `ZeebeClient`, и `BpmnAssert.assertThat(...)` принимает только его типы ответов. В тесте
+поэтому остаётся старый клиент, тогда как само приложение работает на `CamundaClient` — это
+нормально, объекты независимые.
+
+### 16.2. REST-адрес стал обязательным
+
+`ZeebeClientConfig#rest()` не помечен `@Nullable` и `RestConfig#url()` не имеет значения по умолчанию,
+а `ZeebeWorkerModule` безусловно вызывает `clientConfig.rest().url()`. Конфигурация только с gRPC
+теперь падает на старте:
+
+```hocon
+zeebe.client {
+  grpc.url = ${ZEEBE_GRPC_URL}
+  rest.url = ${ZEEBE_REST_URL}
+}
+```
+
+### 16.3. Воркеры: два дефекта фреймворка, исправленные при миграции
+
+Оба описаны в `KORA_2_FRAMEWORK_ISSUES.md` и лежат отдельными ветками в `../kora`:
+
+- `@Component`-воркер с `public`-методом под `@JobWorker` молча исчезал из графа
+  (`No component found for dependency: X`, при том что `@Component` на `X` стоит);
+- `JobWorkerException` перестал поднимать BPMN-ошибку — задача просто ретраилась.
+
+Если фиксов нет, обходные пути такие: объявить метод-обработчик package-private (тогда класс
+регистрируется) и не рассчитывать на boundary error event.
 
 ---
 

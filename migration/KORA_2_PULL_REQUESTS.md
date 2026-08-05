@@ -121,6 +121,190 @@ public void process(@Nullable ConsumerRecord<String, String> record,
 
 ---
 
+## PR 3 — `fix(openapi-generator): generate public client API interfaces`
+
+- Ветка: `fix/openapi-client-api-interface-public`
+- База: `master` @ `66800169f`
+- Коммит: `a5e7694e6`
+- Затронутый модуль: `openapi/openapi-generator`
+
+### Проблема
+
+Интерфейсы, которые генератор Kora выпускает в режиме `java-client`, получаются package-private,
+поэтому приложение не может ими пользоваться:
+
+```
+error: PetApi is not public in io.koraframework.example.openapi.petV2.api; cannot be accessed from outside package
+```
+
+### Воспроизведение
+
+Сгенерировать любой клиент в режиме `java-client` и обратиться к интерфейсу из другого пакета —
+именно так устроен каждый реальный проект, где спека лежит в своём пакете.
+
+### Корневая причина
+
+`ClientApiGenerator` создаёт тип через `TypeSpec.interfaceBuilder(...)`, не задавая модификаторы.
+JavaPoet ничего не подставляет по умолчанию, и интерфейс выходит с пакетной видимостью.
+Серверный генератор проставляет `PUBLIC` явно, поэтому там проблемы нет.
+
+### Реализованный фикс
+
+`.addModifiers(Modifier.PUBLIC)` в `ClientApiGenerator` и для вложенных типов
+в `ClientRequestMapperGenerator`.
+
+### Покрытие тестами
+
+`HttpClientJavaOpenapiTest#clientApiInterfaceIsPublic`.
+
+### Влияние на совместимость
+
+Обратно совместимо — только расширение видимости.
+
+### Связанные модули kora-examples
+
+`examples/java/kora-java-openapi-generator-http-client`, `guides/java/kora-java-guide-openapi-http-client-app`.
+
+---
+
+## PR 4 — `fix(camunda-zeebe-worker): stop marking job worker annotations as AOP annotations`
+
+- Ветка: `fix/zeebe-worker-annotations-not-aop`
+- База: `master` @ `66800169f`
+- Коммит: `9873eeb69`
+- Затронутые модули: `experimental/camunda-zeebe-worker`, `experimental/camunda-zeebe-worker-annotation-processor`
+
+### Проблема
+
+`@Component`-класс с `public`-методом под `@JobWorker` не попадает в граф. Компилятор советует
+добавить `@Component`, который уже стоит:
+
+```
+error: No component found for dependency:
+    io.koraframework.example.camunda.zeebe.Step1JobWorker (no tags)
+  ^--- io.koraframework.example.camunda.zeebe.Step1JobWorker    [MISSING]
+  Fix:
+    - Add @Component to an implementation of io.koraframework.example.camunda.zeebe.Step1JobWorker.
+```
+
+### Воспроизведение
+
+```java
+@Component
+public final class Handler {
+
+    @JobWorker("worker")
+    public void handle(@JobVariable String var1) {}
+}
+```
+
+в приложении, где есть корень, зависящий от `All<KoraJobWorker>`. С package-private `handle` всё
+собирается — именно поэтому дефект не виден в текущих тестах процессора.
+
+### Корневая причина
+
+`KoraAppProcessor.processComponents` пропускает `@Component`-класс, если `hasAopAnnotations` вернул
+`true`, рассчитывая, что компонентом станет сгенерированный AOP-прокси. Но `AopAnnotationProcessor`
+обрабатывает только те аннотации, которые заявили зарегистрированные `KoraAspectFactory`, а для
+`@JobWorker` / `@JobVariable` / `@JobVariables` аспекта нет ни одного. Прокси не появляется, класс
+исчезает. `hasAopAnnotations` при этом смотрит только `public`/`protected` методы, поэтому дефект
+зависит от модификатора метода-обработчика.
+
+### Реализованный фикс
+
+Снята мета-аннотация `@AopAnnotation` с трёх zeebe-аннотаций. Все прочие кодогенерирующие аннотации
+Kora (`@ScheduleAtFixedRate`, `@KafkaListener`) её тоже не несут. Аспекты вроде `@Log` или `@Timeout`
+на методах воркера продолжают работать — они включают прокси сами.
+
+### Покрытие тестами
+
+`ZeebeWorkerTests#workerWithPublicMethodIsResolvedInGraph` — прогоняет `KoraAppProcessor`,
+`AopAnnotationProcessor` и `ZeebeWorkerAnnotationProcessor` вместе. Проверено, что без фикса тест
+падает с `Handler [MISSING]`, с фиксом проходит.
+
+### Влияние на совместимость
+
+Обратно совместимо: то, что собиралось, продолжает собираться; то, что ломалось, начинает работать.
+
+### Связанные модули kora-examples
+
+`examples/java/kora-java-camunda-zeebe-worker`.
+
+### Замечание для ревью
+
+Дефект шире zeebe: любая `@AopAnnotation` без зарегистрированного аспекта молча убирает
+`@Component`-класс из графа. Этот PR закрывает конкретный случай; отдельно стоит обсудить,
+не должен ли `KoraAppProcessor` сверяться с реестром аспектов или явно ругаться на
+AOP-аннотацию без аспекта.
+
+---
+
+## PR 5 — `fix(camunda-zeebe-worker): raise a BPMN error for JobWorkerException again`
+
+- Ветка: `fix/zeebe-worker-exception-throws-bpmn-error`
+- База: `master` @ `66800169f`
+- Коммит: `b26022694`
+- Затронутый модуль: `experimental/camunda-zeebe-worker-annotation-processor`
+
+### Проблема
+
+`JobWorkerException`, брошенный из воркера, должен поднимать BPMN-ошибку с указанным кодом,
+чтобы процесс ушёл по boundary error event. Сейчас исключение просто пробрасывается: задача
+падает, ретраится до исчерпания бюджета, ветка обработки ошибки не выполняется.
+
+### Воспроизведение
+
+Процесс с boundary error event `errorCode="DOESNT_WORK"` и воркер:
+
+```java
+@JobWorker("fail")
+public void handle(@JobVariable int someNumber) {
+    throw new JobWorkerException("DOESNT_WORK");
+}
+```
+
+Экземпляр процесса не завершается.
+
+### Корневая причина
+
+Коммит `63ad1886c` («Simplify zeebe client telemetry», #527) убрал из `WrappedJobHandler`
+метод `createErrorCommand(...)`, который строил
+`client.newThrowErrorCommand(job.getKey()).errorCode(...).errorMessage(...)`,
+и не поставил ничего взамен: `git log -S newThrowErrorCommand` показывает только этот коммит
+и исходный «Camunda 8». Генератор при этом до сих пор пишет `catch (JobWorkerException e) { throw e; }`.
+
+Окружающая телеметрия эту команду по-прежнему ждёт — обе ветки сейчас мертвы:
+
+- `DefaultZeebeWorkerObservation#observeFinalCommandStep` помечает `ThrowErrorCommandStep2` как `failedByUser`;
+- `DefaultZeebeWorkerLoggerFactory#logJobEnd` отдельно обрабатывает `error == null && failedByUser`.
+
+### Реализованный фикс
+
+Команда строится там, где известен исход, — в сгенерированном воркере; `WrappedJobHandler`
+не меняется, он уже отправляет возвращённую команду и наблюдает её. В BPMN-ошибку превращается
+только `JobWorkerException`; остальное по-прежнему заворачивается в
+`JobWorkerException("UNEXPECTED", e)` и бросается.
+
+### Покрытие тестами
+
+`ZeebeWorkerTests#workerJobWorkerExceptionIsTurnedIntoBpmnError` — поведенческий тест на
+возвращаемую команду. Проверено, что без фикса он падает с вылетающим из `handle` исключением.
+
+### Влияние на совместимость
+
+Восстанавливает поведение 1.x.
+
+### Связанные модули kora-examples
+
+`examples/java/kora-java-camunda-zeebe-worker` — тест `ZeebeMockedTests#processDemoSuccess`.
+
+### Порядок применения
+
+PR 4 и PR 5 независимы, но затрагивают один тестовый файл `ZeebeWorkerTests.java` — при
+последовательном применении будет тривиальный конфликт по импортам и хвосту файла.
+
+---
+
 ## Обнаружено, но не исправлено
 
 `Cassandra-репозиторий с CompletableFuture<T> генерирует некомпилируемый код` — подробности, репродукция и предлагаемый фикс в `KORA_2_FRAMEWORK_ISSUES.md`. Фикс требует изменения генерации внутри обёртки `observe(...).call(...)` и отдельного теста в `CassandraResultsTest`; в рамках текущего прохода не делался, модуль помечен `BLOCKED_BY_FRAMEWORK_BUG`.

@@ -42,8 +42,19 @@ export JAVA_HOME=<JDK 25>
 | `examples/java/kora-java-database-cassandra` | `BLOCKED_BY_FRAMEWORK_BUG` | дефект генератора для `CompletableFuture<T>` |
 | `examples/java/kora-java-openapi-generator-http-server` | `MIGRATED` | компиляция + тесты |
 | `examples/java/kora-java-openapi-generator-http-client` | `PARTIALLY_MIGRATED` | компилируется, PetV2-тесты проходят (2/4); PetV3 падают — см. ниже |
-| `examples/java/kora-java-s3-client-aws`, `-minio` | `REQUIRES_REDESIGN` | смена артефакта на `io.koraframework.experimental:s3-client-kora` и пакетов |
-| `examples/*/kora-*-camunda-*` | `REQUIRES_INVESTIGATION` | та же причина: модули живут в `experimental/`, группа `io.koraframework.experimental` |
+| `examples/java/kora-java-s3-client-aws` | `MIGRATED` | переписан на AWS SDK-обёртку; компиляция + 5/5 тестов (Minio-контейнер) |
+| `examples/java/kora-java-s3-client-minio` | `MIGRATED` | переведён на `s3-client-kora`; компиляция + 6/6 тестов (Minio-контейнер) |
+| `examples/java/kora-java-camunda-engine` | `MIGRATED` | компиляция + 3/3 тестов; правок не потребовалось |
+| `examples/java/kora-java-camunda-zeebe-worker` | `MIGRATED` | компиляция + 1/1 тест; потребовал двух фиксов фреймворка |
+
+### Замечание по именованию S3-модулей
+
+`kora-java-s3-client-minio` и `kora-kotlin-s3-client-minio` в 2.0 демонстрируют уже не SDK Minio
+(реализации `s3-client-minio` в 2.0 нет), а декларативный клиент `s3-client-kora`, который гоняется
+против Minio как S3-совместимого хранилища. Каталоги специально **не переименованы**: это решение
+о структуре репозитория, а не часть миграции, и оно задело бы четыре модуля примеров плюс ссылки
+в README. Расхождение объяснено в README самих модулей. Если решение будет принято, естественные
+имена — `kora-java-s3-client-kora` / `kora-kotlin-s3-client-kora`.
 
 ### Открытый вопрос по `openapi-generator-http-client`
 
