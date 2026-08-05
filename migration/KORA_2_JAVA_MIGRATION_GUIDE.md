@@ -345,9 +345,43 @@ Caused by: java.net.BindException: Address already in use
 
 Компиляция при этом проходит успешно — лишние ключи HOCON просто игнорируются. Ошибка всплывает только в рантайме, а в blackbox-тестах выглядит как `HTTP/1.1 header parser received no bytes` и таймауты, что уводит от причины.
 
-**Автоматизация:** `python migration/scripts/migrate_http_server_config.py --apply` (идемпотентен, есть dry-run).
+**Автоматизация:** `python migration/scripts/migrate_config_keys.py --apply` (идемпотентен, есть dry-run).
 
-### 5.2 Остальное
+### 5.2 Секция JDBC: `db` → `jdbc`
+
+**Было:**
+
+```hocon
+db {
+  jdbcUrl = ${POSTGRES_JDBC_URL}
+  username = ${POSTGRES_USER}
+  password = ${POSTGRES_PASS}
+}
+```
+
+**Стало:**
+
+```hocon
+jdbc {
+  jdbcUrl = ${POSTGRES_JDBC_URL}
+  username = ${POSTGRES_USER}
+  password = ${POSTGRES_PASS}
+}
+```
+
+**Причина:** `JdbcDatabaseModule` в 2.0 создаёт `new JdbcDatabaseFactoryModule("jdbc")` — путь секции жёстко `jdbc`.
+
+**Симптом:** компиляция зелёная, но приложение (и тесты) падают на старте:
+
+```
+ConfigValueException: Config expected value, but got null at path: 'ROOT.jdbc.username'
+```
+
+Ошибка вводит в заблуждение: говорится про `jdbc.username`, а в конфиге такого блока вообще нет — потому что секция всё ещё называется `db`.
+
+**Автоматизация:** тот же `migrate_config_keys.py` (переименовывает только верхнеуровневой `db`-блок и только в файлах с `jdbcUrl`).
+
+### 5.3 Остальное
 
 | Было | Стало |
 |---|---|

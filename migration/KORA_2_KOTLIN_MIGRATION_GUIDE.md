@@ -243,9 +243,25 @@ httpServer {                 httpServer {
 
 **Почему критично.** `SystemHttpServerConfig extends HttpServerConfig`, то есть системный сервер наследует `port()` = `8080`. Пока старый ключ не распознан, **оба** сервера берут 8080 и приложение падает на старте (`Address already in use`). Компиляция при этом зелёная: лишние ключи просто игнорируются.
 
-**Автоматизация:** `python migration/scripts/migrate_http_server_config.py --apply`.
+**Автоматизация:** `python migration/scripts/migrate_config_keys.py --apply`.
 
-### 5.2 Остальное
+### 5.2 Секция JDBC: `db` → `jdbc`
+
+```hocon
+# Было        # Стало
+db {          jdbc {
+  jdbcUrl =     jdbcUrl =
+  username =    username =
+}             }
+```
+
+**Причина:** `JdbcDatabaseModule` в 2.0 создаёт `new JdbcDatabaseFactoryModule("jdbc")`.
+
+**Симптом:** компиляция зелёная, падение на старте: `ConfigValueException: … got null at path: 'ROOT.jdbc.username'`.
+
+**Автоматизация:** `migrate_config_keys.py`.
+
+### 5.3 Остальное
 
 | Было | Стало |
 |---|---|

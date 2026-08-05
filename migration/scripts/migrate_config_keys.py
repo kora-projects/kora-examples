@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-"""Kora 1.x -> 2.0: migrate HTTP server configuration keys.
+"""Kora 1.x -> 2.0: migrate configuration keys and section names.
 
+HTTP server
+-----------
 In Kora 1.x the public and the private (system) HTTP servers were configured by flat keys
 inside the `httpServer` section. In Kora 2.0 the system server has its own nested section
 `httpServer.system`, and the public server uses plain `port`.
@@ -17,10 +19,21 @@ servers bind to 8080 and the application dies on startup with
 
     HTTP server 'kora-undertow-system' (Undertow) failed to start on port '8080': port is already in use
 
+JDBC section
+------------
+The JDBC datasource section was renamed: `db` -> `jdbc`. In 2.0 `JdbcDatabaseModule` wires
+`new JdbcDatabaseFactoryModule("jdbc")`, so a config still using `db` leaves every value unset and
+the application fails on startup (or in tests) with
+
+    ConfigValueException: Config expected value, but got null at path: 'ROOT.jdbc.username'
+
+Only a top-level `db` block is renamed, and only in files that actually contain `jdbcUrl`, so
+unrelated `db` sections of other integrations are left alone.
+
 Dry-run by default; pass --apply to write. Idempotent: running it twice changes nothing.
 
 Usage:
-    python migration/scripts/migrate_http_server_config.py [--apply] [PATH ...]
+    python migration/scripts/migrate_config_keys.py [--apply] [PATH ...]
 
 PATH defaults to the `examples` and `guides` directories of this repository.
 
@@ -30,6 +43,8 @@ Limitations:
       reformat or reorder the section, it only renames keys in place.
     - `dataApiHttpPort` and other non-Kora keys are left untouched and reported, because their
       intent is application-specific.
+    - The `db` -> `jdbc` rule keys off a top-level `db {` / `db:` line; a JDBC section nested
+      somewhere else has to be migrated by hand.
 """
 
 from __future__ import annotations
@@ -73,6 +88,13 @@ def migrate_text(text: str) -> tuple[str, list[str]]:
         text, count = pattern.subn(rf"\g<1>{new}\g<2>", text)
         if count:
             changes.append(f"{old} -> {new} ({count})")
+
+    # `db` section is JDBC only when it configures a datasource
+    if "jdbcUrl" in text:
+        text, count = re.subn(r"^db(\s*[{:])", r"jdbc\g<1>", text, flags=re.M)
+        if count:
+            changes.append(f"db -> jdbc section ({count})")
+
     return text, changes
 
 
