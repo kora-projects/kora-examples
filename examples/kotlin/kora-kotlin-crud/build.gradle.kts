@@ -23,7 +23,7 @@ plugins {
 
 val koraBom: Configuration by configurations.creating
 configurations {
-    ksp.get().extendsFrom(koraBom); compileOnly.get().extendsFrom(koraBom)
+    ksp.get().extendsFrom(koraBom); kspTest.get().extendsFrom(koraBom); compileOnly.get().extendsFrom(koraBom)
     api.get().extendsFrom(koraBom); implementation.get().extendsFrom(koraBom)
 }
 

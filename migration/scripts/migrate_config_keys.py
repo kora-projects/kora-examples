@@ -111,6 +111,20 @@ def migrate_text(text: str) -> tuple[str, list[str]]:
     if count:
         changes.append(f"slidingWindowSize -> type + countBased.windowSize ({count})")
 
+    # OpenApiManagementConfig#files is a required list in 2.0; the 1.x key was `file` and could be
+    # a single string. HOCON accepts a scalar where a list is expected, so only the name changes.
+    text, count = re.subn(r"^(\s*)file(\s*[:=])", r"\g<1>files\g<2>", text, flags=re.M) \
+        if "openapi" in text and "management" in text else (text, 0)
+    if count:
+        changes.append(f"openapi.management.file -> files ({count})")
+
+    # RapiDoc is gone in 2.0; the second viewer is Scalar. The key is silently ignored otherwise,
+    # which hides the fact that the endpoint no longer exists.
+    if "rapidoc" in text:
+        text, count = re.subn(r"^(\s*)rapidoc(\s*[.{:])", r"\g<1>scalar\g<2>", text, flags=re.M)
+        if count:
+            changes.append(f"rapidoc -> scalar ({count})")
+
     # `db` section is JDBC only when it configures a datasource
     if "jdbcUrl" in text:
         # leading whitespace is allowed because the same config appears indented inside test text blocks

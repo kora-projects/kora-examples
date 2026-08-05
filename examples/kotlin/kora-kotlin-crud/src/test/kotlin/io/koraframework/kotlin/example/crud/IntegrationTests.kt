@@ -92,7 +92,7 @@ class IntegrationTests(@ConnectionPostgreSQL val connection: JdbcConnection) : K
         // when
         val updated = petService.update(
             added.id,
-            PetUpdateTO("cat", PetUpdateTO.StatusEnum.PENDING, CategoryCreateTO("cat"))
+            PetUpdateTO(status = PetUpdateTO.StatusEnum.PENDING, name = "cat", category = CategoryCreateTO("cat"))
         )
         assertNotNull(updated)
         assertEquals(1, updated!!.id)
@@ -113,7 +113,7 @@ class IntegrationTests(@ConnectionPostgreSQL val connection: JdbcConnection) : K
         // when
         val updated = petService.update(
             added.id,
-            PetUpdateTO("cat", PetUpdateTO.StatusEnum.PENDING, CategoryCreateTO("dog"))
+            PetUpdateTO(status = PetUpdateTO.StatusEnum.PENDING, name = "cat", category = CategoryCreateTO("dog"))
         )
         assertNotNull(updated)
         assertEquals(1, updated!!.id)
