@@ -40,6 +40,14 @@ export JAVA_HOME=<JDK 25>
 | `examples/java/kora-java-database-jdbc` | `MIGRATION_IN_PROGRESS` | компиляция main + test; прогон тестов не завершён |
 | `examples/java/kora-java-kafka` | `MIGRATION_IN_PROGRESS` | компиляция main + test; требовал фикса фреймворка |
 | `examples/java/kora-java-database-cassandra` | `BLOCKED_BY_FRAMEWORK_BUG` | дефект генератора для `CompletableFuture<T>` |
+| `examples/java/kora-java-openapi-generator-http-server` | `MIGRATED` | компиляция + тесты |
+| `examples/java/kora-java-openapi-generator-http-client` | `PARTIALLY_MIGRATED` | компилируется, PetV2-тесты проходят (2/4); PetV3 падают — см. ниже |
+| `examples/java/kora-java-s3-client-aws`, `-minio` | `REQUIRES_REDESIGN` | смена артефакта на `io.koraframework.experimental:s3-client-kora` и пакетов |
+| `examples/*/kora-*-camunda-*` | `REQUIRES_INVESTIGATION` | та же причина: модули живут в `experimental/`, группа `io.koraframework.experimental` |
+
+### Открытый вопрос по `openapi-generator-http-client`
+
+`HttpClientPetV3Tests` ожидает запрос с заголовком `X-API-KEY`, но сгенерированный интерцептор 2.0 перебирает схемы по порядку (bearer → apiKey → basic → oauth) и останавливается на первой доступной — то есть шлёт `Authorization` от bearer-провайдера. Нужно решить, что демонстрирует пример: либо убрать bearer/oauth-провайдеры и оставить apiKey (тогда тесты сойдутся), либо обновить ожидания тестов под bearer. Подгонять одно под другое без решения о смысле примера не стали.
 
 Два дефекта фреймворка, блокировавшие `http-client` и `kafka`, исправлены локально в `../kora` с регрессионными тестами — см. `KORA_2_PULL_REQUESTS.md`.
 
