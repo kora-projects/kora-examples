@@ -7,6 +7,56 @@
 
 ---
 
+## Issue: JSON-фабрика `httpClientResponseJsonEntityResponseMapper` не помечена `@Json`
+
+- Status: **Fixed** (локально, готово к PR)
+- Severity: Major
+- Type: Framework bug
+- Language: Java, Kotlin (общий runtime-модуль)
+- Runtime: JVM
+- Component: `http-client-common`, разрешение зависимостей `@KoraApp`
+- Affected framework module: `http/http-client-common`
+- Affected example modules: `examples/java/kora-java-http-client` (и любой клиент с `HttpResponseEntity<T>` в приложении с JSON)
+- Framework commit: база `66800169f`, фикс `3ef4560af`
+- Related fix branch: `fix/http-client-json-response-entity-mapper-tag` (локальная, **не отправлена**)
+- Related PR: не создавался
+
+### Description
+
+Любой метод HTTP-клиента, возвращающий `HttpResponseEntity<T>`, не собирается в приложении, где в графе есть `JsonReader<T>`.
+
+### Actual behavior
+
+```
+error: Multiple components match dependency:
+    HttpClientResponseMapper<HttpResponseEntity<String>> (no tags)
+  Candidates:
+    - factory HttpClientResponseMapperModule#httpClientResponseEntityResponseMapper(...)
+    - factory HttpClientResponseMapperModule#httpClientResponseJsonEntityResponseMapper(...)
+```
+
+### Suspected cause → подтверждённая причина
+
+В `HttpClientResponseMapperModule` все JSON-варианты помечены `@Json` (`httpClientJsonEitherResponseMapper`, `httpClientJsonEitherResponseEntityResponseMapper`), кроме `httpClientResponseJsonEntityResponseMapper(JsonReader<T>)`. Без тега две `@DefaultComponent`-шаблонные фабрики дают один и тот же тип без тегов, и граф не может выбрать.
+
+### Implemented fix
+
+Добавлена аннотация `@Json` на `httpClientResponseJsonEntityResponseMapper`.
+
+### Test coverage
+
+`HttpClientExtensionTest#testExtensionResponseEntityWhenJsonReaderIsPresent` — проверено, что тест **падает без фикса** (`Multiple components match dependency`) и проходит с ним. Существовавший `testExtensionWithoutTag` дефект не ловил: в его графе нет `JsonReader`.
+
+### Compatibility impact
+
+Код, который полагался на неявный JSON-маппинг `HttpResponseEntity<T>` без `@Json`, теперь должен указывать `@Json` явно. Раньше такой код в любом случае не собирался.
+
+### Validation
+
+`:http:http-client-common:test`, `:http:http-client-annotation-processor:test`, `:http:http-client-symbol-processor:test` — зелёные; `examples/java/kora-java-http-client` — компилируется, все 9 тестов проходят.
+
+---
+
 ## Issue: KSP-процессоры Kora 2.0 падают с внутренним исключением вместо диагностики
 
 - Status: Investigating
