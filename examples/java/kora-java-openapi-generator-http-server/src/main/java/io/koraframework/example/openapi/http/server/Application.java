@@ -32,23 +32,25 @@ public interface Application extends
         return (request, exception) -> HttpServerResponseException.of(400, exception.getMessage());
     }
 
-    @Tag(ApiSecurity.BearerAuth.class)
-    default HttpServerPrincipalExtractor<Principal> bearerHttpServerPrincipalExtractor() {
-        return (request, value) -> CompletableFuture.completedFuture(new UserPrincipal("name"));
+    // В Kora 2.0 генератор именует теги по порядку security requirement в спецификации,
+    // а не по имени схемы: Tag0 = bearerAuth, Tag1 = apiKeyAuth, Tag2 = basicAuth, Tag3 = oAuth
+    @Tag(ApiSecurity.SecurityRequirementTag0.class)
+    default HttpServerPrincipalExtractor<String, Principal> bearerHttpServerPrincipalExtractor() {
+        return (request, value) -> new UserPrincipal("name");
     }
 
-    @Tag(ApiSecurity.BasicAuth.class)
-    default HttpServerPrincipalExtractor<Principal> basicHttpServerPrincipalExtractor() {
-        return (request, value) -> CompletableFuture.completedFuture(new UserPrincipal("name"));
+    @Tag(ApiSecurity.SecurityRequirementTag2.class)
+    default HttpServerPrincipalExtractor<String, Principal> basicHttpServerPrincipalExtractor() {
+        return (request, value) -> new UserPrincipal("name");
     }
 
-    @Tag(ApiSecurity.ApiKeyAuth.class)
-    default HttpServerPrincipalExtractor<Principal> apiKeyHttpServerPrincipalExtractor() {
-        return (request, value) -> CompletableFuture.completedFuture(new UserPrincipal("name"));
+    @Tag(ApiSecurity.SecurityRequirementTag1.class)
+    default HttpServerPrincipalExtractor<String, Principal> apiKeyHttpServerPrincipalExtractor() {
+        return (request, value) -> new UserPrincipal("name");
     }
 
-    @Tag(ApiSecurity.OAuth.class)
-    default HttpServerPrincipalExtractor<PrincipalWithScopes> oauthHttpServerPrincipalExtractor() {
-        return (request, value) -> CompletableFuture.completedFuture(new UserPrincipal("name"));
+    @Tag(ApiSecurity.SecurityRequirementTag3.class)
+    default HttpServerPrincipalExtractor<String, PrincipalWithScopes> oauthHttpServerPrincipalExtractor() {
+        return (request, value) -> new UserPrincipal("name");
     }
 }
