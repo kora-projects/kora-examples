@@ -52,7 +52,8 @@ export JAVA_HOME=<JDK 25>
 | `examples/graalvm/kora-java-graalvm-crud-{jdbc,r2dbc,vertx}` | `MIGRATION_IN_PROGRESS` | JVM-компиляция проходит; native отложен по решению |
 | `examples/graalvm/kora-java-graalvm-kafka` | `MIGRATION_IN_PROGRESS` | компилируется; `UndertowModule` → `UndertowSystemHttpServerModule` |
 | `examples/graalvm/kora-java-graalvm-crud-cassandra` | `BLOCKED_BY_FRAMEWORK_BUG` | тот же дефект генератора для `CompletableFuture<T>` |
-| `guides/java/*` | `MIGRATION_IN_PROGRESS` | компилируются все, кроме `openapi-http-server-advanced` и `s3-app` |
+| `guides/java/*` | `MIGRATED` | компилируются все, кроме `openapi-http-server-advanced`; `s3-app` — 2/2 теста |
+| `guides/java/kora-java-guide-openapi-http-server-advanced-app` | `BLOCKED_BY_FRAMEWORK_BUG` | контракты мигрированы; выбор шаблонного маппера для `HttpResponseEntity<T>` |
 | `examples/kotlin/*`, `guides/kotlin/*` | `READY_FOR_MIGRATION` | не начинались в этом проходе |
 
 ### Динамика сплошной сборки
@@ -66,6 +67,11 @@ export JAVA_HOME=<JDK 25>
 | после конфигурации в текстовых блоках тестов | 52 |
 | после `ConfigValueMapper` | 47 |
 | после интерцепторов guides и `executor()` | 42 |
+| после S3-гайда и остатков `guides/java` | 40 |
+
+Из 40 оставшихся 37 — Kotlin, к которому не приступали. По Java осталось три модуля:
+два cassandra (дефект генератора для `CompletableFuture<T>`) и
+`kora-java-guide-openapi-http-server-advanced-app` (выбор шаблонного маппера).
 
 Все оставшиеся падения — либо Kotlin (не начинали), либо перечисленные выше Java-модули.
 
