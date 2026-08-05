@@ -1,7 +1,7 @@
 package io.koraframework.guide.s3.controller;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import io.koraframework.common.annotation.Component;
@@ -17,8 +17,7 @@ import io.koraframework.http.server.common.response.HttpServerResponse;
 import io.koraframework.http.server.common.response.HttpServerResponseException;
 import io.koraframework.http.server.common.annotation.HttpController;
 import io.koraframework.json.common.annotation.Json;
-import io.koraframework.s3.client.S3NotFoundException;
-import io.koraframework.s3.client.model.S3Body;
+import io.koraframework.s3.client.kora.exception.S3ClientNoSuchKeyException;
 
 @Component
 @HttpController
@@ -39,10 +38,17 @@ public final class DataController {
                 .orElseThrow(() -> new IllegalArgumentException("No file part named 'file' provided"));
 
         if (filePart instanceof FormMultipart.FormPart.MultipartFile mf) {
-            return this.uploadStream(mf.fileName(), mf.contentType(), new ByteArrayInputStream(mf.content()));
+            return this.upload(mf.contentType(), mf.content());
         }
+        // a streamed part carries an HttpBodyOutput, which knows how to write itself out
         if (filePart instanceof FormMultipart.FormPart.MultipartFileStream mfs) {
-            return this.uploadStream(mfs.fileName(), mfs.contentType(), new ByteBufferPublisherInputStream(mfs.content()));
+            var buffer = new ByteArrayOutputStream();
+            try {
+                mfs.content().write(buffer);
+            } catch (IOException e) {
+                throw HttpServerResponseException.of(400, "Failed to read uploaded file");
+            }
+            return this.upload(mfs.content().contentType(), buffer.toByteArray());
         }
 
         throw new IllegalArgumentException("Part 'file' must be a multipart file");
@@ -51,23 +57,24 @@ public final class DataController {
     @HttpRoute(method = HttpMethod.GET, path = "/files")
     @Json
     public List<FileMetadata> listFiles() {
-        return this.s3FileClient.listFiles().objects().stream()
-                .map(object -> this.toMetadata(object.key(), object.size(), object.body().type()))
+        return this.s3FileClient.listFiles().items().stream()
+                .map(item -> this.toMetadata(item.key(), item.size(), null))
                 .toList();
     }
 
     @HttpRoute(method = HttpMethod.GET, path = "/files/{fileId}")
     public HttpServerResponse downloadFile(String fileId) {
-        try {
-            var object = this.s3FileClient.downloadFile(fileId);
-            var bytes = object.body().asBytes();
-            var contentType = object.body().type() == null ? "application/octet-stream" : object.body().type();
+        try (var object = this.s3FileClient.downloadFile(fileId); var body = object.body().asInputStream()) {
+            var bytes = body.readAllBytes();
+            var contentType = object.headers().getFirst("Content-Type");
             return HttpServerResponse.of(
                     200,
                     HttpHeaders.of("Content-Disposition", "attachment; filename=\"" + fileId + "\""),
-                    HttpBody.of(contentType, bytes));
-        } catch (S3NotFoundException e) {
+                    HttpBody.of(contentType == null ? "application/octet-stream" : contentType, bytes));
+        } catch (S3ClientNoSuchKeyException e) {
             throw HttpServerResponseException.of(404, "File not found");
+        } catch (IOException e) {
+            throw HttpServerResponseException.of(500, "Failed to read file");
         }
     }
 
@@ -78,12 +85,11 @@ public final class DataController {
         return new DeleteFileResponse("File deleted successfully");
     }
 
-    private FileMetadata uploadStream(String fileName, String contentType, InputStream inputStream) {
+    private FileMetadata upload(String contentType, byte[] body) {
         String actualContentType = (contentType == null || contentType.isBlank()) ? "application/octet-stream" : contentType;
         String fileId = UUID.randomUUID().toString();
-        S3Body body = S3Body.ofInputStreamReadAll(inputStream, actualContentType);
         this.s3FileClient.uploadFile(fileId, body);
-        return new FileMetadata(fileId, body.size(), actualContentType);
+        return new FileMetadata(fileId, (long) body.length, actualContentType);
     }
 
     private FileMetadata toMetadata(String key, Long size, String contentType) {

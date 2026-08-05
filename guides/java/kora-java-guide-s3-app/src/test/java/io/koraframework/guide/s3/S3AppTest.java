@@ -16,8 +16,7 @@ import io.koraframework.guide.s3.controller.DataController;
 import io.koraframework.guide.s3.s3.S3FileClient;
 import io.koraframework.guide.s3.s3.FileMetadata;
 import io.koraframework.http.common.form.FormMultipart;
-import io.koraframework.s3.client.S3NotFoundException;
-import io.koraframework.s3.client.model.S3Body;
+import io.koraframework.s3.client.kora.exception.S3ClientNoSuchKeyException;
 import io.koraframework.test.extension.junit5.KoraAppTest;
 import io.koraframework.test.extension.junit5.KoraAppTestConfigModifier;
 import io.koraframework.test.extension.junit5.KoraConfigModification;
@@ -53,17 +52,19 @@ class S3AppTest implements KoraAppTestConfigModifier {
     }
 
     @Test
-    void declarativeClientCrudWorks() {
+    void declarativeClientCrudWorks() throws Exception {
         var content = "guide-client-body".getBytes(StandardCharsets.UTF_8);
         var fileId = "file-1";
 
-        this.s3FileClient.uploadFile(fileId, S3Body.ofInputStream(new ByteArrayInputStream(content), content.length, "text/plain"));
+        this.s3FileClient.uploadFile(fileId, content);
 
-        var downloaded = this.s3FileClient.downloadFile(fileId);
-        assertArrayEquals(content, downloaded.body().asBytes());
+        try (var downloaded = this.s3FileClient.downloadFile(fileId);
+             var body = downloaded.body().asInputStream()) {
+            assertArrayEquals(content, body.readAllBytes());
+        }
 
         this.s3FileClient.deleteFile(fileId);
-        assertThrows(S3NotFoundException.class, () -> this.s3FileClient.downloadFile(fileId));
+        assertThrows(S3ClientNoSuchKeyException.class, () -> this.s3FileClient.downloadFile(fileId));
     }
 
     @Test
