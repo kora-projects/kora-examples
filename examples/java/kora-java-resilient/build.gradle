@@ -6,7 +6,7 @@ plugins {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
         vendor = JvmVendorSpec.ADOPTIUM
     }
 }
@@ -31,7 +31,7 @@ dependencies {
 
 application {
     applicationName = "application"
-    mainClass = "ru.tinkoff.kora.example.resilient.Application"
+    mainClass = "io.koraframework.example.resilient.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 

@@ -28,7 +28,7 @@ dependencies {
     testImplementation(project(":guides:kotlin:kora-kotlin-guide-http-server-app"))
     testImplementation("io.koraframework:config-hocon")
     testImplementation("io.koraframework:http-server-undertow")
-    testImplementation("io.koraframework:json-module")
+    testImplementation("io.koraframework:json-common")
     testImplementation("io.koraframework:logging-logback")
     testImplementation("io.koraframework:test-junit5")
     testImplementation("org.mockito:mockito-core:5.12.0")
@@ -36,7 +36,7 @@ dependencies {
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
     sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
@@ -45,7 +45,7 @@ kotlin {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }

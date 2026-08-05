@@ -1,0 +1,17 @@
+plugins {
+    id "org.openrewrite.rewrite" version "7.19.0"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    rewrite "org.openrewrite.recipe:rewrite-migrate-java:3.23.0"
+    rewrite "org.openrewrite.recipe:rewrite-gradle:4.27.0"
+}
+
+rewrite {
+    activeRecipe("io.koraframework.migration.Kora1To2")
+    configFile = file("rewrite.yml")
+}

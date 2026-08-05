@@ -3,8 +3,8 @@
 plugins {
     id("application")
     id("jacoco")
-    kotlin("jvm") version ("1.9.25")
-    id("com.google.devtools.ksp") version ("1.9.25-1.0.20")
+    kotlin("jvm") version ("2.4.10")
+    id("com.google.devtools.ksp") version ("2.3.11")
 }
 
 val koraBom: Configuration by configurations.creating
@@ -20,7 +20,7 @@ dependencies {
     kspTest("io.koraframework:symbol-processors")
 
     implementation("io.koraframework:kafka")
-    implementation("io.koraframework:json-module")
+    implementation("io.koraframework:json-common")
     implementation("io.koraframework:logging-logback")
     implementation("io.koraframework:config-hocon")
 
@@ -30,14 +30,14 @@ dependencies {
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
 
 application {
     applicationName = "application"
-    mainClass.set("ru.tinkoff.kora.kotlin.example.kafka.ApplicationKt")
+    mainClass.set("io.koraframework.kotlin.example.kafka.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 

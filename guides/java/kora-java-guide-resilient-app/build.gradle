@@ -4,7 +4,7 @@ plugins {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
         vendor = JvmVendorSpec.ADOPTIUM
     }
 }
@@ -26,7 +26,7 @@ dependencies {
 
     implementation "io.koraframework:config-hocon"
     implementation "io.koraframework:http-server-undertow"
-    implementation "io.koraframework:json-module"
+    implementation "io.koraframework:json-common"
     implementation "io.koraframework:logging-logback"
     implementation "io.koraframework:resilient-kora"
 
@@ -39,7 +39,7 @@ dependencies {
 
 application {
     applicationName = "application"
-    mainClass = "ru.tinkoff.kora.guide.resilient.Application"
+    mainClass = "io.koraframework.guide.resilient.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 

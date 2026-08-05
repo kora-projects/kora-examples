@@ -5,7 +5,7 @@ plugins {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
         vendor = JvmVendorSpec.ADOPTIUM
     }
 }
@@ -63,7 +63,7 @@ sourceSets {
 
 application {
     applicationName = "application"
-    mainClass = "ru.tinkoff.kora.guide.grpcserver.advanced.Application"
+    mainClass = "io.koraframework.guide.grpcserver.advanced.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 

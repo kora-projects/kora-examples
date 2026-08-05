@@ -20,7 +20,7 @@ dependencies {
 
 application {
     applicationName = "application"
-    mainClass = "ru.tinkoff.kora.guide.dependencyinjection.Application"
+    mainClass = "io.koraframework.guide.dependencyinjection.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 

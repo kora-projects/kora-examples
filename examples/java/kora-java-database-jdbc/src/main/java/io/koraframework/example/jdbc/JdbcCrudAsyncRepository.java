@@ -1,0 +1,59 @@
+package io.koraframework.example.jdbc;
+
+import org.jspecify.annotations.Nullable;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import io.koraframework.database.common.UpdateCount;
+import io.koraframework.database.common.annotation.*;
+import io.koraframework.database.jdbc.annotation.EntityJdbc;
+import io.koraframework.database.jdbc.JdbcRepository;
+
+@Repository
+public interface JdbcCrudAsyncRepository extends JdbcRepository {
+
+    @EntityJdbc
+    @Table("entities")
+    record Entity(@Id String id,
+                  @Column("value1") int field1,
+                  String value2,
+                  @Nullable String value3) {}
+
+    @Query("SELECT * FROM entities WHERE id = :id")
+    CompletionStage<Entity> findById(String id);
+
+    @Query("SELECT * FROM entities")
+    CompletionStage<List<Entity>> findAll();
+
+    @Query("""
+            INSERT INTO entities(id, value1, value2, value3)
+            VALUES (:entity.id, :entity.field1, :entity.value2, :entity.value3)
+            """)
+    CompletionStage<Void> insert(Entity entity);
+
+    @Query("""
+            INSERT INTO entities(id, value1, value2, value3)
+            VALUES (:entity.id, :entity.field1, :entity.value2, :entity.value3)
+            """)
+    CompletionStage<UpdateCount> insertBatch(@Batch List<Entity> entity);
+
+    @Query("""
+            UPDATE entities
+            SET value1 = :entity.field1, value2 = :entity.value2, value3 = :entity.value3
+            WHERE id = :entity.id
+            """)
+    CompletionStage<Void> update(Entity entity);
+
+    @Query("""
+            UPDATE entities
+            SET value1 = :entity.field1, value2 = :entity.value2, value3 = :entity.value3
+            WHERE id = :entity.id
+            """)
+    CompletionStage<UpdateCount> updateBatch(@Batch List<Entity> entity);
+
+    @Query("DELETE FROM entities WHERE id = :id")
+    CompletableFuture<Void> deleteById(String id);
+
+    @Query("DELETE FROM entities")
+    CompletableFuture<UpdateCount> deleteAll();
+}

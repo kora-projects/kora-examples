@@ -1,4 +1,3 @@
-import com.google.devtools.ksp.gradle.KspTask
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.jvm.toolchain.JvmVendorSpec
@@ -17,7 +16,7 @@ plugins {
     id("org.jetbrains.kotlin.jvm")
     id("com.google.devtools.ksp")
     id("application")
-    id("org.openapi.generator") version "7.23.0"
+    id("org.openapi.generator") version "7.24.0"
 }
 
 val koraBom: Configuration by configurations.creating
@@ -38,7 +37,7 @@ dependencies {
     ksp("io.koraframework:symbol-processors")
     implementation("io.koraframework:config-hocon")
     implementation("io.koraframework:http-server-undertow")
-    implementation("io.koraframework:json-module")
+    implementation("io.koraframework:json-common")
     implementation("io.koraframework:logging-logback")
     implementation("io.koraframework:openapi-management")
     implementation("io.koraframework:validation-module")
@@ -50,7 +49,7 @@ dependencies {
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
     sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
@@ -59,7 +58,7 @@ kotlin {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
@@ -69,7 +68,7 @@ val openApiGenerateUsersHttpServer = tasks.register<GenerateTask>("openApiGenera
     group = "openapi tools"
     inputSpec.set(layout.projectDirectory.file("src/main/resources/openapi/user-http-server.yaml"))
     outputDir.set(layout.buildDirectory.dir("generated/user-http-server"))
-    val corePackage = "ru.tinkoff.kora.guide.openapi.httpserver.user"
+    val corePackage = "io.koraframework.guide.openapi.httpserver.user"
     apiPackage = "${corePackage}.api"
     modelPackage = "${corePackage}.model"
     invokerPackage = "${corePackage}.invoker"
@@ -80,14 +79,14 @@ val openApiGenerateUsersHttpServer = tasks.register<GenerateTask>("openApiGenera
 }
 
 kotlin.sourceSets.main { kotlin.srcDir(openApiGenerateUsersHttpServer.get().outputDir) }
-tasks.withType<KspTask>().configureEach {
+tasks.matching { it.name.startsWith("ksp") }.configureEach {
     dependsOn(openApiGenerateUsersHttpServer)
 }
 
 
 application {
     applicationName = "application"
-    mainClass.set("ru.tinkoff.kora.guide.openapi.httpserver.ApplicationKt")
+    mainClass.set("io.koraframework.guide.openapi.httpserver.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 

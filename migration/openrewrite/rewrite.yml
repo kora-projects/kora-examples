@@ -1,0 +1,61 @@
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.Kora1To2
+displayName: Migrate Kora 1.x to 2.0
+description: Migrates stable package, type, and Gradle coordinate changes. Semantic API changes are intentionally left to module-specific migration.
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: ru.tinkoff.kora
+      newPackageName: io.koraframework
+      recursive: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.KoraApp
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.KoraApp
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.Component
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.Component
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.DefaultComponent
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.DefaultComponent
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.KoraSubmodule
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.KoraSubmodule
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.Mapping
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.Mapping
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.Module
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.Module
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.Tag
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.Tag
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.http.server.undertow.UndertowHttpServerModule
+      newFullyQualifiedTypeName: io.koraframework.http.server.undertow.UndertowPublicHttpServerModule
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.json.module.JsonModule
+      newFullyQualifiedTypeName: io.koraframework.json.common.JsonModule
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: jakarta.annotation.Nullable
+      newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.config.common.annotation.ConfigValueExtractor
+      newFullyQualifiedTypeName: io.koraframework.config.common.annotation.ConfigMapper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.cache.redis.RedisCacheModule
+      newFullyQualifiedTypeName: io.koraframework.cache.redis.lettuce.LettuceRedisCacheModule
+  - org.openrewrite.java.dependencies.ChangeDependencyGroupId:
+      oldGroupId: ru.tinkoff.kora
+      newGroupId: io.koraframework
+      overrideManagedVersion: false
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: io.koraframework
+      oldArtifactId: json-module
+      newGroupId: io.koraframework
+      newArtifactId: json-common
+      overrideManagedVersion: false
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: io.koraframework
+      oldArtifactId: cache-redis
+      newGroupId: io.koraframework
+      newArtifactId: cache-redis-lettuce
+      overrideManagedVersion: false

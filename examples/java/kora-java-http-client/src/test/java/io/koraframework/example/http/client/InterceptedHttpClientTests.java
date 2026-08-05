@@ -1,0 +1,47 @@
+package io.koraframework.example.http.client;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import io.goodforgod.testcontainers.extensions.ContainerMode;
+import io.goodforgod.testcontainers.extensions.mockserver.ConnectionMockServer;
+import io.goodforgod.testcontainers.extensions.mockserver.MockServerConnection;
+import io.goodforgod.testcontainers.extensions.mockserver.TestcontainersMockServer;
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Test;
+import io.koraframework.test.extension.junit5.KoraAppTest;
+import io.koraframework.test.extension.junit5.KoraAppTestConfigModifier;
+import io.koraframework.test.extension.junit5.KoraConfigModification;
+import io.koraframework.test.extension.junit5.TestComponent;
+
+@TestcontainersMockServer(mode = ContainerMode.PER_RUN)
+@KoraAppTest(Application.class)
+class InterceptedHttpClientTests implements KoraAppTestConfigModifier {
+
+    @ConnectionMockServer
+    private MockServerConnection mockserverConnection;
+
+    @NotNull
+    @Override
+    public KoraConfigModification config() {
+        return KoraConfigModification.ofSystemProperty("HTTP_CLIENT_URL", mockserverConnection.params().uri().toString());
+    }
+
+    @TestComponent
+    private InterceptedHttpClient httpClient;
+
+    @Test
+    void interceptedHttpClient() {
+        // given
+        mockserverConnection.client().when(
+                org.mockserver.model.HttpRequest.request()
+                        .withMethod("GET")
+                        .withPath("/intercepted"))
+                .respond(
+                        org.mockserver.model.HttpResponse.response()
+                                .withBody("OK"));
+
+        // then
+        var response = httpClient.get();
+        assertEquals(200, response.code());
+    }
+}

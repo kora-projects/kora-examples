@@ -20,7 +20,7 @@ plugins {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
         vendor = JvmVendorSpec.ADOPTIUM
     }
 }
@@ -37,7 +37,7 @@ dependencies {
 
     implementation "io.koraframework:validation-module"
     implementation "io.koraframework:http-client-jdk"
-    implementation "io.koraframework:json-module"
+    implementation "io.koraframework:json-common"
     implementation "io.projectreactor:reactor-core:3.6.18" // For reactive examples (optional)
 
     implementation "io.koraframework:logging-logback"
@@ -51,7 +51,7 @@ dependencies {
 
 application {
     applicationName = "application"
-    mainClass = "ru.tinkoff.kora.example.openapi.http.client.Application"
+    mainClass = "io.koraframework.example.openapi.http.client.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 
@@ -69,7 +69,7 @@ def openApiGeneratePetV2 = tasks.register("openApiGeneratePetV2", GenerateTask) 
     group = "openapi tools"
     inputSpec = layout.projectDirectory.file("src/main/resources/openapi/petstoreV2.yaml")
     outputDir = layout.buildDirectory.dir("generated/openapi")
-    def corePackage = "ru.tinkoff.kora.example.openapi.petV2"
+    def corePackage = "io.koraframework.example.openapi.petV2"
     apiPackage = "${corePackage}.api"
     modelPackage = "${corePackage}.model"
     invokerPackage = "${corePackage}.invoker"
@@ -87,12 +87,12 @@ def openApiGeneratePetV3 = tasks.register("openApiGeneratePetV3", GenerateTask) 
     group = "openapi tools"
     inputSpec = layout.projectDirectory.file("src/main/resources/openapi/petstoreV3.yaml")
     outputDir = layout.buildDirectory.dir("generated/openapi")
-    def corePackage = "ru.tinkoff.kora.example.openapi.petV3"
+    def corePackage = "io.koraframework.example.openapi.petV3"
     apiPackage = "${corePackage}.api"
     modelPackage = "${corePackage}.model"
     invokerPackage = "${corePackage}.invoker"
     configOptions = [
-            mode                : "java-reactive-client",
+            mode                : "java-client",
             clientConfigPrefix  : "httpClient.petV3",
             securityConfigPrefix: "openapiAuth",
             primaryAuth         : "apiKeyAuth",

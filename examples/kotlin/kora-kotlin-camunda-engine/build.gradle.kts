@@ -3,8 +3,8 @@
 plugins {
     id("application")
     id("jacoco")
-    kotlin("jvm") version ("1.9.25")
-    id("com.google.devtools.ksp") version ("1.9.25-1.0.20")
+    kotlin("jvm") version ("2.4.10")
+    id("com.google.devtools.ksp") version ("2.3.11")
 }
 
 val koraBom: Configuration by configurations.creating
@@ -20,9 +20,9 @@ dependencies {
     kspTest("io.koraframework:symbol-processors")
 
     implementation("io.koraframework:http-server-undertow")
-    implementation("ru.tinkoff.kora.experimental:camunda-engine-bpmn")
-    implementation("ru.tinkoff.kora.experimental:camunda-rest-undertow")
-    implementation("io.koraframework:json-module")
+    implementation("io.koraframework.experimental:camunda-engine-bpmn")
+    implementation("io.koraframework.experimental:camunda-rest-undertow")
+    implementation("io.koraframework:json-common")
     implementation("org.postgresql:postgresql:42.7.7")
     implementation("io.koraframework:database-jdbc")
     implementation("io.koraframework:logging-logback")
@@ -38,14 +38,14 @@ dependencies {
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
 
 application {
     applicationName = "application"
-    mainClass.set("ru.tinkoff.kora.kotlin.example.camunda.engine.ApplicationKt")
+    mainClass.set("io.koraframework.kotlin.example.camunda.engine.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 

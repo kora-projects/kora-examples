@@ -3,8 +3,8 @@
 plugins {
     id("application")
     id("jacoco")
-    kotlin("jvm") version ("1.9.25")
-    id("com.google.devtools.ksp") version ("1.9.25-1.0.20")
+    kotlin("jvm") version ("2.4.10")
+    id("com.google.devtools.ksp") version ("2.3.11")
 }
 
 val koraBom: Configuration by configurations.creating
@@ -18,7 +18,7 @@ dependencies {
     koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
     ksp("io.koraframework:symbol-processors")
     kspTest("io.koraframework:symbol-processors")
-    implementation("io.koraframework:cache-redis")
+    implementation("io.koraframework:cache-redis-lettuce")
     implementation("io.koraframework:config-hocon")
     implementation("io.koraframework:logging-logback")
     testImplementation("io.koraframework:test-junit5")
@@ -28,14 +28,14 @@ dependencies {
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
 
 application {
     applicationName = "application"
-    mainClass.set("ru.tinkoff.kora.kotlin.example.cache.redis.ApplicationKt")
+    mainClass.set("io.koraframework.kotlin.example.cache.redis.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 

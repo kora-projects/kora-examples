@@ -8,7 +8,7 @@ plugins {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
         vendor = JvmVendorSpec.ADOPTIUM
     }
 }
@@ -23,7 +23,7 @@ dependencies {
     koraBom platform("io.koraframework:kora-parent:$koraVersion")
     annotationProcessor "io.koraframework:annotation-processors"
 
-    implementation "io.koraframework:json-module"
+    implementation "io.koraframework:json-common"
     implementation "io.koraframework:http-client-jdk"
     implementation("io.koraframework:soap-client") {
         exclude group: "jakarta.xml"
@@ -43,7 +43,7 @@ dependencies {
 
 application {
     applicationName = "application"
-    mainClass = "ru.tinkoff.kora.example.soap.client.Application"
+    mainClass = "io.koraframework.example.soap.client.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 
@@ -95,7 +95,7 @@ wsdl2java {
     useJakarta = true
     markGenerated = true
     verbose = false
-    packageName = "ru.tinkoff.kora.example.generated.soap"
+    packageName = "io.koraframework.example.generated.soap"
     generatedSourceDir.set(layout.buildDirectory.dir("generated/sources/wsdl2java/java"))
     includesWithOptions = [
             "**/simple-service.wsdl": ["-wsdlLocation", "https://kora.tinkoff.ru/simple/service?wsdl"],

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package ru.tinkoff.kora.generated.grpc;
+package io.koraframework.generated.grpc;
 
 import "google/protobuf/timestamp.proto";
 
