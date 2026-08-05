@@ -23,15 +23,17 @@ public interface Application extends
         KoraApplication.run(ApplicationGraph::graph);
     }
 
-    // Сгенерированный ApiSecurity требует HttpClientTokenProvider под тегом каждой схемы;
-    // basicAuth он собирает сам из конфига, остальные предоставляет приложение
+    // Сгенерированный ApiSecurity требует HttpClientTokenProvider под тегом каждой схемы, даже если
+    // приложение её не использует. Перехватчик перебирает схемы по порядку и берёт первую, чей
+    // провайдер вернул токен, поэтому неиспользуемая схема обязана вернуть null: иначе она перебьёт
+    // apiKeyAuth, и запрос уйдёт с чужим заголовком.
     @Tag(ApiSecurity.bearerAuth.class)
     default HttpClientTokenProvider bearerAuthTokenProvider() {
-        return request -> "bearer-token";
+        return request -> null;
     }
 
     @Tag(ApiSecurity.oAuth.class)
     default HttpClientTokenProvider oAuthTokenProvider() {
-        return request -> "oauth-token";
+        return request -> null;
     }
 }

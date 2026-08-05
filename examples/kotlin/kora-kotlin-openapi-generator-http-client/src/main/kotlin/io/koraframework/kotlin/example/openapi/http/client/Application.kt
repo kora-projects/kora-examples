@@ -16,13 +16,15 @@ import io.koraframework.validation.common.constraint.ValidatorModule
 // client-only application; ValidatorModule is the part this example actually needs
 interface Application : HoconConfigModule, LogbackModule, ValidatorModule, JsonModule, JdkHttpClientModule {
 
-    // Сгенерированный ApiSecurity требует HttpClientTokenProvider под тегом каждой схемы;
-    // basicAuth он собирает сам из конфига, остальные предоставляет приложение
+    // Сгенерированный ApiSecurity требует HttpClientTokenProvider под тегом каждой схемы, даже если
+    // приложение её не использует. Перехватчик перебирает схемы по порядку и берёт первую, чей
+    // провайдер вернул токен, поэтому неиспользуемая схема обязана вернуть null: иначе она перебьёт
+    // apiKeyAuth, и запрос уйдёт с чужим заголовком.
     @Tag(ApiSecurity.bearerAuth::class)
-    fun bearerAuthTokenProvider(): HttpClientTokenProvider = HttpClientTokenProvider { "bearer-token" }
+    fun bearerAuthTokenProvider(): HttpClientTokenProvider = HttpClientTokenProvider { null }
 
     @Tag(ApiSecurity.oAuth::class)
-    fun oAuthTokenProvider(): HttpClientTokenProvider = HttpClientTokenProvider { "oauth-token" }
+    fun oAuthTokenProvider(): HttpClientTokenProvider = HttpClientTokenProvider { null }
 }
 
 fun main() {

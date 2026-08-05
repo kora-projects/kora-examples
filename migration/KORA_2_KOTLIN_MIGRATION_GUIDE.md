@@ -219,6 +219,28 @@ class UserContextRequestMapper : HttpServerRequestMapper<UserContext> { … }
 
 Симптом при отсутствии `@Component`: `No component found for dependency: … (no tags)`.
 
+### Сигнатура `HttpServerResponseMapper` в Kotlin
+
+Интерфейс во фреймворке помечен JSpecify (`@NullMarked` + `@Nullable` на втором параметре).
+Kotlin проверяет нуллабельность переопределений строго, поэтому второй параметр обязан быть `T?`:
+
+```kotlin
+@Component
+class PetResponseMapper : HttpServerResponseMapper<Pet> {
+    override fun apply(request: HttpServerRequest, result: Pet?): HttpServerResponse { … }
+}
+```
+
+С `result: Pet` компилятор выдаёт `'apply' overrides nothing` — сообщение об ошибке
+не упоминает нуллабельность, поэтому его легко принять за неверный дженерик.
+
+То же касается `@Mapping`-мапперов параметров и любых других переопределений контрактов Kora:
+в 2.0 API размечено JSpecify, и Kotlin это видит, тогда как Java — нет. **Это асимметрия:
+Java-модуль соберётся, Kotlin-двойник того же кода — нет.**
+
+Метод, ничего не возвращающий, требует `VoidResponseMapper` — отдельного типа для `Unit`
+в 2.0 нет, а `HttpServerResponseMapper<Unit>` не разрешается.
+
 ---
 
 ## 5. Конфигурация
@@ -308,6 +330,39 @@ interface PetTimeouter : Timeouter
 
 Конфигурация: `slidingWindowSize` → `countBased.windowSize`, для окна фиксированного размера обязателен `type = FIXED_WINDOW`.
 
+**Спецификации по умолчанию тоже типизированы.** Если раньше аннотация без имени брала секцию
+`default`, теперь нужен явный тип из `io.koraframework.resilient.*`:
+
+```kotlin
+@Timeout(DefaultTimeouter::class)
+@Retryable(DefaultRetry::class)
+@CircuitBreakable(DefaultCircuitBreaker::class)
+fun call(): String
+```
+
+**Именованная секция больше не наследует `default`.** В 1.x `resilient.circuitbreaker.my_cb`
+дополняла `resilient.circuitbreaker.default`; в 2.0 секции независимы, и незаполненные поля
+берутся из значений по умолчанию **самого типа**, а не из соседней секции. Практический эффект:
+конфигурация, где в `my_cb` указан только один параметр, в 2.0 ведёт себя иначе — секцию нужно
+заполнить целиком. Секция `default`, на которую больше никто не ссылается, становится мёртвой.
+
+**Предикат отказа сменил интерфейс:**
+
+| Было | Стало |
+|---|---|
+| `CircuitBreakerFailurePredicate` | `CircuitBreakerPredicate` |
+| `test(throwable)` | `isCircuitBreakerFailure(throwable)` |
+
+Свой предикат подключается тегом спецификации, к которой он относится:
+
+```kotlin
+@Component
+@Tag(DefaultCircuitBreaker::class)
+class MyPredicate : CircuitBreakerPredicate {
+    override fun isCircuitBreakerFailure(throwable: Throwable): Boolean = throwable !is IllegalArgumentException
+}
+```
+
 **Важно для Kotlin:** пока строковая форма остаётся в коде, KSP-процессор resilient падает с
 `java.lang.ClassCastException: java.lang.String cannot be cast to com.google.devtools.ksp.symbol.KSType`
 вместо внятной диагностики. Это подтверждённая связка «немигрированный код → краш процессора» (см. `KORA_2_FRAMEWORK_ISSUES.md`).
@@ -357,6 +412,30 @@ interface PetRepository : JdbcRepository {
 
 Сохранять `suspend` «ради стиля» поверх синхронного контракта не следует. Там, где корутины остаются в собственном коде приложения (вне контрактов Kora), мост возможен, но должен быть осознанным решением.
 
+### Ручные транзакции
+
+`executor().inTx { … }` с лямбдой Kotlin больше не выводится: перегрузок стало несколько,
+и компилятор не выбирает между ними. Нужен явный SAM-конструктор:
+
+```kotlin
+// значение возвращается
+val pet = repository.executor().inTx(JdbcExecutor.SqlSupplier {
+    repository.insert(name)
+})
+
+// ничего не возвращается
+repository.executor().inTx(JdbcExecutor.SqlRunnable {
+    repository.deleteAll()
+})
+```
+
+Без явного `SqlSupplier`/`SqlRunnable` ошибка выглядит как `Cannot infer type for type parameter T`
+или `Overload resolution ambiguity` и на транзакции не указывает.
+
+**Мапперы результатов и колонок принимают nullable.** `@Mapping`-классы для строк и колонок
+переопределяют JSpecify-размеченные контракты, поэтому параметры объявляются как `T?`
+— та же ловушка, что с `HttpServerResponseMapper` (§4).
+
 **Удалённые интеграции:** R2DBC и Vert.x (см. §12).
 
 ---
@@ -380,6 +459,94 @@ interface PetRepository : JdbcRepository {
 
 Смена режима необходима, но недостаточна — сгенерированный код синхронный, и вызывающий код (делегаты, сервисы, тесты) нужно приводить к синхронным сигнатурам. Типичные ошибки после смены режима: `Cannot infer type for type parameter`, `'X' overrides nothing`, `Annotation argument must be a compile-time constant`.
 
+### 10.1 Путь конфигурации клиента: первая буква строчная
+
+Генератор 2.0 выводит путь конфигурации из имени API, приводя первую букву к строчной:
+`PetApi` → `petApi`. Итоговый ключ — `<префикс>.<клиент>.<api>`:
+
+```hocon
+# Было
+httpClient.petV2.PetApi { url = … }
+
+# Стало
+httpClient.petV2.petApi { url = … }
+```
+
+**Молчаливый отказ.** Секция со старым именем просто не читается: клиент поднимается без `url`,
+и тесты не падают с внятной ошибкой — они висят на попытках запроса до таймаута. Ключ стоит
+сверять со сгенерированным `@HttpClient`, а не подбирать.
+
+### 10.2 Конструкторы моделей упорядочены по обязательности
+
+Генератор 2.0 ставит required-поля первыми, а необязательные — после. Порядок аргументов
+у сгенерированных TO меняется по сравнению с 1.x, причём **совместимо по типам**, поэтому
+позиционный вызов может собраться и молча перепутать значения.
+
+Единственный безопасный вариант — именованные аргументы:
+
+```kotlin
+return PetTO(status = status, id = pet.id, name = pet.name, category = asDTO(pet.category))
+```
+
+### 10.3 Enum ищется по wire-значению, а не по имени константы
+
+У сгенерированных enum есть поле с исходным значением из спецификации, и оно может не совпадать
+с именем константы (`available` против `AVAILABLE`, значения через дефис и т. п.).
+`Enum.valueOf(...)` / `enumValueOf(...)` для разбора приходящего значения — ошибка:
+
+```kotlin
+// неверно: падает на любом значении, не совпадающем с именем константы
+val status = PetTO.StatusEnum.valueOf(raw)
+
+// верно
+val status = PetTO.StatusEnum.entries.first { it.value == raw }
+```
+
+Проявляется только на данных, компиляция чистая.
+
+### 10.4 Теги требований безопасности нумеруются по порядку в спецификации
+
+Экстракторы принципала подключаются по тегу `ApiSecurity.SecurityRequirementTagN`, где `N` —
+**индекс требования в списке `security` спецификации**, а не имя схемы. Переименование схемы тег
+не меняет; перестановка требований — меняет.
+
+```kotlin
+@Tag(ApiSecurity.SecurityRequirementTag0::class)
+fun apiKeyExtractor(config: DataApiAuthConfig): HttpServerPrincipalExtractor<String, Principal> =
+    HttpServerPrincipalExtractor { _, value -> … }
+```
+
+Тип второго параметра — то, что схема извлекает из запроса (`String` для apiKey/bearer),
+первого результата — `Principal`.
+
+### 10.5 Управление OpenAPI-эндпоинтом
+
+| Было | Стало |
+|---|---|
+| `openapi.management.file` | `openapi.management.files` (список) |
+| `openapi.management.rapidoc` | `openapi.management.scalar` |
+
+Ключ `file` в 2.0 не читается — эндпоинт молча отдаёт пустую спецификацию.
+
+### 10.6 `suspend` на сгенерированных клиентах не поддерживается
+
+Режим `kotlin-client` порождает синхронные методы, и пометить их `suspend` нельзя.
+Если вызывающий код обязан остаться корутинным, мост делается на своей стороне:
+
+```kotlin
+suspend fun findPet(id: Long): PetTO = withContext(Dispatchers.IO) { petApi.getPetById(id) }
+```
+
+Это осознанное решение, а не механическая замена: под виртуальными потоками
+`Dispatchers.IO` обычно не нужен (§13).
+
+### 10.7 `ValidationModule` тянет http-server-common
+
+Подключение `ValidationModule` в клиентском приложении добавляет в граф зависимость
+на `http-server-common` (через `ViolationExceptionHttpServerResponseMapper`). Для приложения
+без HTTP-сервера это лишний артефакт в classpath; обходится добавлением зависимости,
+поскольку разделить модуль на стороне приложения нельзя.
+
 ---
 
 ## 11. Тестирование
@@ -389,6 +556,64 @@ interface PetRepository : JdbcRepository {
 Пакет расширения: `io.koraframework.test.extension.junit5.*` — `@KoraAppTest`, `@TestComponent`, `KoraAppTestConfigModifier`, `KoraConfigModification`.
 
 Тесты, написанные на `runTest` вокруг `suspend`-репозиториев, после перехода на синхронные контракты упрощаются до обычных тестов. MockK-моки `coEvery` заменяются на `every`.
+
+**BOM нужно распространить и на `kspTest`.** Конфигурация тестового процессора не наследует
+платформу автоматически, и версии артефактов Kora расходятся между `ksp` и `kspTest`:
+
+```kotlin
+val koraBom = configurations.create("koraBom")
+dependencies { koraBom(platform("io.koraframework:kora-parent:$koraVersion")) }
+
+configurations.ksp.get().extendsFrom(koraBom)
+configurations.kspTest.get().extendsFrom(koraBom)
+```
+
+Симптом при пропуске: тестовый исходник обрабатывается процессором другой версии, и ошибки
+выглядят как несуществующие методы сгенерированного кода.
+
+---
+
+## 11a. Отдельные интеграции
+
+### Kafka
+
+Ридер `JsonReader<T>.read(data)` в 2.0 объявлен возвращающим nullable, поэтому в Kotlin
+результат не присваивается non-null типу напрямую:
+
+```kotlin
+val event = requireNotNull(reader.read(data))
+```
+
+Слушатели телеметрии (`KafkaConsumerLoggerFactory` и подобные пользовательские фабрики) в 2.0
+не подключаются как раньше; в примерах они удалены, а телеметрия настраивается конфигурацией.
+
+### Camunda Zeebe
+
+| Было | Стало |
+|---|---|
+| `ZeebeClient` | `CamundaClient` |
+| `…camunda.zeebe.worker.JobWorkerException` | `…camunda.zeebe.worker.exception.JobWorkerException` |
+| `zeebe.client.broker.gatewayAddress` | `zeebe.client.rest.url` |
+
+Клиент в тестах инжектится напрямую, без `@TestComponent` на поле: с аннотацией он подменяется
+моком и воркеры не срабатывают.
+
+### S3
+
+Артефакт 1.x `experimental:s3-client-*` разделён на два, и нужны **оба**:
+`io.koraframework:s3-client-aws` (или `-minio`) даёт транспорт, а
+`io.koraframework.experimental:s3-client-kora` — декларативный `@S3` и его KSP-процессор.
+Подключение только первого компилируется, но `@S3`-интерфейсы не обрабатываются.
+
+Инициализатор бакета должен быть корнем графа (`@Root`), иначе он выпадает из графа
+как никем не используемый и бакет не создаётся — тесты падают на первой операции.
+
+### Конфигурация в библиотечном модуле
+
+`@ConfigMapper` (бывш. `@ConfigValueExtractor`) обрабатывается KSP, поэтому модуль-библиотека,
+объявляющая конфиг-интерфейсы, обязан сам подключать KSP-плагин и `ksp("io.koraframework:symbol-processors")`.
+В 1.x такие модули часто обходились без процессора, и после миграции ошибка выглядит как
+отсутствие сгенерированного `*Module` у потребителя, а не у библиотеки.
 
 ---
 

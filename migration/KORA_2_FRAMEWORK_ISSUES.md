@@ -366,13 +366,13 @@ upstream-генератор или форк Kora, и управляется ли
 
 ## Issue: для `HttpResponseEntity<T>` в sealed-ответе выбирается не тот шаблонный маппер
 
-- Status: Investigating
-- Severity: Major (блокирует модуль)
-- Type: Framework bug (разрешение шаблонных компонентов) либо генератор OpenAPI
-- Language: Java
+- Status: Closed — не дефект (опровергнуто экспериментом)
+- Severity: —
+- Type: ложный след; настоящая причина — [неиспользуемый конвертер multipart-файла](#issue-генератор-openapi-требует-конвертер-для-multipart-файла-который-сам-не-использует)
+- Language: Java, Kotlin
 - Runtime: JVM
-- Component: `kora-app-annotation-processor` (разрешение шаблонов) / `openapi-generator`, режим `java-server`
-- Affected example modules: `guides/java/kora-java-guide-openapi-http-server-advanced-app`
+- Component: `kora-app-annotation-processor` (диагностика разрешения шаблонов)
+- Affected example modules: `guides/java/kora-java-guide-openapi-http-server-advanced-app`, `guides/kotlin/kora-kotlin-guide-openapi-http-server-advanced-app`
 - Framework commit: `66800169f`
 
 ### Actual behavior
@@ -401,21 +401,145 @@ default <T> HttpServerResponseMapper<HttpResponseEntity<T>> jsonHttpResponseEnti
 default <T> HttpServerResponseMapper<T> jsonHttpServerResponseMapper(JsonWriter<T> writer)
 ```
 
-Для `HttpServerResponseMapper<HttpResponseEntity<PayloadTO>>` подходят оба, но выбран более общий,
-из-за чего требуется несуществующий `JsonWriter<HttpResponseEntity<PayloadTO>>` вместо
-`JsonWriter<PayloadTO>`. Клиентский аналог этой пары в своё время оказался дефектом отсутствующего
-тега (`fix/http-client-json-response-entity-mapper-tag`), но здесь **оба** метода помечены `@Json` —
-значит причина другая: либо приоритет более специфичного шаблона, либо генератор запрашивает не тот тип.
+Для `HttpServerResponseMapper<HttpResponseEntity<PayloadTO>>` подходят оба, и по тексту ошибки
+казалось, что выбран более общий, из-за чего требуется несуществующий
+`JsonWriter<HttpResponseEntity<PayloadTO>>` вместо `JsonWriter<PayloadTO>`.
 
-Не доведено до конца: чтобы отличить одно от другого, нужно посмотреть сгенерированный
-`DataApiServerResponseMappers.MappingByCodeApiResponseMapper` и понять, какой тип он объявляет
-в конструкторе. Соседний рабочий модуль `examples/java/kora-java-openapi-generator-http-server`
-собирается на том же генераторе, поэтому различие стоит искать в спецификации: здесь операция
-`mappingByCode` описывает несколько кодов ответа, из-за чего появляется `HttpResponseEntity`.
+**Опровергнуто контролируемым экспериментом.** В том же модуле была третья ошибка — недостающий
+`HttpServerParameterReader<byte[]>` для multipart-загрузки. В `Application` временно добавлен
+компонент-заглушка:
+
+```java
+default HttpServerParameterReader<byte[]> tempProbeReader() {
+    return String::getBytes;
+}
+```
+
+После этого модуль собрался целиком: **обе** ошибки про `JsonWriter<HttpResponseEntity<…>>` исчезли,
+хотя ни генератор, ни `HttpServerResponseMapperModule` не менялись. Значит специализированный шаблон
+`jsonHttpResponseEntityHttpServerResponseMapper` выбирается корректно, а сообщения были побочным
+эффектом другой, несвязанной неразрешённости — ровно тот механизм форков `GraphBuilder`, что описан
+в отдельной записи про диагностику.
 
 ### Resolution
 
-Не закрыт. Модуль помечен `BLOCKED_BY_FRAMEWORK_BUG`.
+Закрыт как не-дефект. Настоящая причина — неиспользуемый конвертер multipart-файла в генераторе
+OpenAPI (запись ниже), исправлена в ветке `fix/openapi-server-multipart-file-unused-converter`.
+Пометка `BLOCKED_BY_FRAMEWORK_BUG` с модуля снята.
+
+---
+
+## Issue: генератор OpenAPI требует конвертер для multipart-файла, который сам не использует
+
+- Status: Fixed
+- Severity: Major (блокирует сборку модуля целиком)
+- Type: Framework bug (генератор кода)
+- Language: Java, Kotlin
+- Runtime: JVM
+- Component: `openapi-generator`, режимы `java-server` и `kotlin-server`
+- Affected framework module: `openapi/openapi-generator`
+- Affected example modules: `guides/java/kora-java-guide-openapi-http-server-advanced-app`, `guides/kotlin/kora-kotlin-guide-openapi-http-server-advanced-app`
+- Framework commit: `66800169f`
+- Related fix branch: `fix/openapi-server-multipart-file-unused-converter`
+
+### Description
+
+Для операции с телом `multipart/form-data`, где есть поле `type: string, format: binary`,
+генератор добавляет в конструктор request-маппера параметр
+`HttpServerParameterReader<byte[]>` (в Kotlin — `HttpServerParameterReader<ByteArray>`),
+но в теле `apply` его **не использует**: бинарная часть отдаётся как `FormMultipart.FormPart`
+напрямую. Компонента `HttpServerParameterReader<byte[]>` во фреймворке нет и быть не должно —
+конвертер читает `String`, а не бинарные данные. В результате граф не собирается.
+
+### Minimal reproduction
+
+```yaml
+/data/upload:
+  post:
+    operationId: processUpload
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required: [file]
+            properties:
+              file:
+                type: string
+                format: binary
+```
+
+Тот же случай уже был в фикстурах генератора: `petstoreV3_form.yaml`, операции
+`/form-multipart-form-data-with-object` и `/form-multipart-form-data-with-array`.
+Тесты этого не ловили, потому что они только компилируют сгенерированный код — а он
+компилируется, ломается лишь построение графа `@KoraApp`.
+
+### Actual behavior
+
+```java
+class ProcessUploadFormParamRequestMapper implements HttpServerRequestMapper<...> {
+    private final HttpServerParameterReader<byte[]> fileConverter;   // <- поле мёртвое
+
+    public ProcessUploadFormParamRequestMapper(HttpServerParameterReader<byte[]> fileConverter) {
+        this.fileConverter = fileConverter;
+    }
+
+    @Override
+    public DataApiController.ProcessUploadFormParam apply(HttpServerRequest rq) throws IOException {
+        var file = (FormMultipart.FormPart) null;
+        ...
+        case "file" -> { file = _part; }   // <- конвертер не вызывается
+    }
+}
+```
+
+```
+No component found for dependency:
+  io.koraframework.http.server.common.request.HttpServerParameterReader<byte[]> (no tags)
+```
+
+### Investigation notes
+
+В `ServerRequestMapperGenerator` (Java) и `ServerRequestMappersGenerator.kt` (Kotlin) цикл,
+объявляющий поля-конвертеры, пропускал только `String` и `List<String>`. Тело `mapMultipart`
+при этом отдельно проверяет `formParam.isFile` и в этом случае присваивает `_part` как есть.
+То есть условия пропуска в конструкторе и в теле разошлись.
+
+Тонкость: пропускать `isFile` безусловно нельзя. Если операция объявляет и `multipart/form-data`,
+и `application/x-www-form-urlencoded`, тело идёт по ветке `mapUrlEncoded`, а она конвертер вызывает.
+Поэтому пропуск привязан к тому же решению, что и выбор ветки: `multipartForm && !urlEncodedForm`.
+
+### Implemented fix
+
+В обоих генераторах в цикл объявления конвертеров добавлено:
+
+```java
+// url-encoded wins when an operation declares both, same as the apply() body below
+var multipartBody = multipartForm && !urlEncodedForm;
+...
+if (multipartBody && formParam.isFile) {
+    // mapMultipart passes a binary part through as FormPart, so it never calls a converter
+    continue;
+}
+```
+
+### Test coverage
+
+`HttpServerJavaOpenapiTest#multipartFileFormParamDoesNotAskForAConverterItNeverUses` и
+одноимённый тест в `HttpServerKotlinOpenapiTest`. Проверяют на существующей фикстуре
+`petstoreV3_form.yaml`, что оба multipart-маппера не объявляют `HttpServerParameterReader`,
+но по-прежнему присваивают `_part`, а url-encoded маппер конвертеры сохранил.
+Без фикса оба теста падают на `assertFalse(... contains("HttpServerParameterReader"))`.
+
+### Compatibility impact
+
+Ломающее изменение сигнатуры сгенерированного конструктора — но только для случая, который
+до сих пор вообще не собирался. Работающий код затронуть не может.
+
+### Validation
+
+`:openapi:openapi-generator:test`; затем сборка и тесты обоих advanced-гайдов.
 
 ---
 
@@ -490,7 +614,7 @@ export JAVA_HOME=<JDK 25>
 
 ## Issue: неразрешимая зависимость в одном месте графа даёт сообщение про совсем другой компонент
 
-- Status: Investigating (первоначальный вывод об ошибке выбора фабрики **опровергнут** экспериментом, см. Investigation notes)
+- Status: Confirmed (механизм подтверждён контролируемым экспериментом, не исправляется — нужен дизайн вывода)
 - Severity: Minor — стоимость в потерянном времени на отладку, не в поведении
 - Type: Framework bug (диагностика)
 - Language: Java (Kotlin не проверялся)
@@ -557,7 +681,9 @@ default <T> HttpServerResponseMapper<T>                     jsonHttpServerRespon
 
 **Этот вывод опровергнут.** В том же модуле был второй дефект — `ReactorController`, возвращавший `Mono<HttpServerResponse>`, для которого в 2.0 нет маппера. После удаления этого контроллера ошибка про `JsonWriter<HttpResponseEntity<…>>` исчезла сама, хотя `@Json`-метод с `HttpResponseEntity` остался нетронутым и модуль собирается. Значит специализированный маппер выбирается корректно, а сообщение было побочным эффектом другой, несвязанной неразрешённости.
 
-Механизм (по коду `GraphBuilder`, строки 244–275): когда под запрос подходят несколько шаблонных кандидатов, строитель форкает граф на каждый и оставляет тот, что собрался. Если не собрался ни один — бросается исключение одного из форков, остальные уходят в `addSuppressed`. Пользователь видит первое из них и получает указание на компонент, который с проблемой не связан. Это объясняет наблюдаемое, но как гипотеза — точная причина требует изолированного теста в `kora-app-annotation-processor`.
+Механизм (по коду `GraphBuilder`, строки 244–275): когда под запрос подходят несколько шаблонных кандидатов, строитель форкает граф на каждый и оставляет тот, что собрался. Ключевая деталь — `fork.build()` достраивает **весь оставшийся граф**, а не только поддерево спорной зависимости. Поэтому любая неразрешимость где угодно ниже по графу роняет все форки сразу. Если не собрался ни один — бросается исключение одного из форков, остальные уходят в `addSuppressed`. Пользователь видит первое из них и получает указание на компонент, который с проблемой не связан.
+
+**Подтверждено вторым, контролируемым экспериментом** на `guides/java/kora-java-guide-openapi-http-server-advanced-app`. Там из трёх ошибок компиляции две были про `JsonWriter<HttpResponseEntity<PayloadTO>>` и `JsonWriter<HttpResponseEntity<ErrorResponseTO>>`, а третья — про недостающий `HttpServerParameterReader<byte[]>` в совершенно другой операции (multipart-загрузка). Добавление одного компонента-заглушки, закрывающего только третью ошибку, убрало все три. Это ровно предсказание механизма: настоящая неразрешённость была одна, две остальные — обломки перебора форков.
 
 Урок для миграции: **сначала убирать все заведомо неразрешимые компоненты** (опирающиеся на удалённую функциональность), и только потом анализировать оставшиеся ошибки графа.
 

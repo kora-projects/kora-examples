@@ -6,10 +6,27 @@
 Для локальной работы обе ветки сведены в `integration/migration-fixes` — именно с неё публикуется
 Maven Local, чтобы фиксы не затирали друг друга. Для отправки использовать исходные ветки, а не интеграционную.
 
-| Ветка | Коммит | Модуль | Статус |
-|---|---|---|---|
-| `fix/http-client-json-response-entity-mapper-tag` | `3ef4560af` | `http/http-client-common` | готово к PR |
-| `fix/kafka-listener-exception-param-type-use` | `0c8092194` | `kafka/kafka-annotation-processor` | готово к PR |
+| PR | Ветка | Коммит | Модуль | Статус |
+|---|---|---|---|---|
+| 1 | `fix/http-client-json-response-entity-mapper-tag` | `3ef4560af` | `http/http-client-common` | готово к PR |
+| 2 | `fix/kafka-listener-exception-param-type-use` | `0c8092194` | `kafka/kafka-annotation-processor` | готово к PR |
+| 3 | `fix/openapi-client-api-interface-public` | `1371e7fb5` | `openapi/openapi-generator` | готово к PR |
+| 4 | `fix/zeebe-worker-annotations-not-aop` | `9873eeb69` | `experimental/camunda-zeebe-worker-annotation-processor` | готово к PR |
+| 5 | `fix/zeebe-worker-exception-throws-bpmn-error` | `b26022694` | `experimental/camunda-zeebe-worker-annotation-processor` | готово к PR |
+| 6 | `fix/ksp-unresolved-dependency-message-generic-factory` | `12b5ef5a4` | `core/kora-app-symbol-processor` | готово к PR |
+| 7 | `fix/ksp-platform-type-drops-generic-arguments` | `2002a57c9` | `core/symbol-processor-common` | готово к PR |
+| 8 | `fix/zeebe-worker-ksp-exception-throws-bpmn-error` | `8c792983b` | `experimental/camunda-zeebe-worker-symbol-processor` | готово к PR |
+| 9 | `fix/ksp-submodule-processor-stale-symbols` | `e698d0a23` | `core/kora-app-symbol-processor` | готово к PR |
+| 10 | `fix/kafka-listener-parameter-unresolved-type` | `272ecc9c0` | `kafka/kafka-symbol-processor` | готово к PR |
+| 11 | `fix/kafka-publisher-observation-unbound-mdc` | `6599d21bc` | `kafka/kafka` | готово к PR |
+| 12 | `fix/ksp-template-match-star-projection` | `b773f39e4` | `core/kora-app-symbol-processor` | готово к PR |
+| 13 | `fix/openapi-kotlin-security-config-data-class` | `b2238931d` | `openapi/openapi-generator` | готово к PR |
+| 14 | `fix/test-junit5-graph-init-lock-leak` | `aa82d0c3a` | `test/test-junit5` | готово к PR |
+| 15 | `fix/openapi-server-multipart-file-unused-converter` | `dc32c616e` | `openapi/openapi-generator` | готово к PR |
+
+> Ветки 8 и 5 трогают один и тот же файл в двух разных процессорах; при отправке порядок значения
+> не имеет, но при локальном слиянии в `integration/migration-fixes` они дают конфликт, который
+> разрешается в пользу обоих (Java и KSP-варианты независимы).
 
 ---
 
@@ -423,3 +440,205 @@ Kotlin-генератор воркера содержит тот же дефек
 ### Затронутые модули `kora-examples`
 
 `examples/kotlin/kora-kotlin-camunda-zeebe-worker` — после фикса тест проходит.
+
+---
+
+## PR 9 — `fix(kora-app-symbol-processor): resolve submodule symbols again instead of holding them`
+
+- **Ветка:** `fix/ksp-submodule-processor-stale-symbols` (локальная, не отправлена)
+- **Коммит:** `e698d0a23`
+- **Модуль фреймворка:** `core/kora-app-symbol-processor`
+
+### Постановка задачи
+
+`KoraSubmoduleProcessor` накапливал `KSClassDeclaration` между раундами KSP и использовал их в `finish()`. В KSP2 символ, полученный в раунде N, после закрытия раунда недействителен: его резолвер уничтожен. Сборка модуля с `@KoraSubmodule` падала или молча выдавала пустой субмодуль в зависимости от того, в каком раунде объявление попало в обработку.
+
+### Что сделано
+
+Между раундами хранятся только **квалифицированные имена** (`MutableSet<String>` / `MutableList<String>`), плюс ссылка на последний живой `Resolver`. В `finish()` каждое имя резолвится заново через `resolver.classDeclaration(name)`. Добавлены `collectSubmodule(...)` и `generateSubmodule(resolver, submodule)`, чтобы сбор и генерация не смешивались.
+
+### Покрытие тестами
+
+Регрессия воспроизводится на реальном многомодульном примере: `examples/kotlin/kora-kotlin-crud-submodule`. Изолированного unit-теста нет — процессор нужно прогнать через несколько раундов, а тестовая инфраструктура `AbstractSymbolProcessorTest` этого не моделирует. Это ограничение указано честно: фикс проверен интеграционно, не юнит-тестом.
+
+### Влияние на совместимость
+
+Поведение не меняется, только момент резолва. Java-процессор этой проблемы не имел.
+
+### Затронутые модули `kora-examples`
+
+`examples/kotlin/kora-kotlin-crud-submodule` (4 подмодуля) — после фикса собирается, 7/7 тестов проходят.
+
+---
+
+## PR 10 — `fix(kafka-symbol-processor): report an unresolvable listener parameter instead of dying`
+
+- **Ветка:** `fix/kafka-listener-parameter-unresolved-type` (локальная, не отправлена)
+- **Коммит:** `272ecc9c0`
+- **Модуль фреймворка:** `kafka/kafka-symbol-processor`
+
+### Постановка задачи
+
+Kotlin-аналог PR 2. `KafkaUtils` определял тип параметра слушателя сравнением **печатного представления** типа. Когда тип не резолвится (опечатка в импорте, ещё не сгенерированный класс, ошибка в другом файле), печатное представление — `<ERROR TYPE>`, ни с чем не совпадает, и процессор падал с внутренним исключением вместо диагностики. Пользователь видел стектрейс KSP, а не «не могу разрешить тип параметра».
+
+### Что сделано
+
+- Добавлен `private fun KSType.isClass(className: ClassName)`, сравнивающий квалифицированные имена, а не строки.
+- `parseParameters` бросает `ProcessingErrorException` при `type.isError`, указывая на конкретный параметр.
+
+### Покрытие тестами
+
+Регрессионный тест в `kafka-symbol-processor`: слушатель с неразрешимым типом параметра. Без фикса — внутреннее исключение, с фиксом — сообщение с указанием параметра.
+
+### Влияние на совместимость
+
+Только диагностика. Корректный код собирается как прежде.
+
+---
+
+## PR 11 — `fix(kafka): publish a record when no MDC scope is bound`
+
+- **Ветка:** `fix/kafka-publisher-observation-unbound-mdc` (локальная, не отправлена)
+- **Коммит:** `6599d21bc`
+- **Модуль фреймворка:** `kafka/kafka`
+
+### Постановка задачи
+
+`DefaultKafkaPublisherRecordObservation` безусловно вызывал `MDC.get().fork()`. В синхронной модели Kora 2.0 `MDC.VALUE` — скоуп-переменная, и вне HTTP-запроса или другого установленного скоупа она не привязана: публикация из `main`, из планировщика или из теста падала.
+
+### Что сделано
+
+```java
+this.mdc = MDC.VALUE.isBound() ? MDC.get().fork() : new MDC();
+```
+
+Ровно то же, что делает остальной код при отсутствии скоупа: пустой контекст вместо исключения.
+
+### Покрытие тестами
+
+Тест публикации без установленного скоупа MDC. Без фикса падает на `MDC.get()`.
+
+### Влияние на совместимость
+
+Расширение области применимости: то, что раньше падало, теперь работает.
+
+### Затронутые модули `kora-examples`
+
+`examples/java/kora-java-kafka`, `examples/kotlin/kora-kotlin-kafka` — 48/48 тестов на два языка.
+
+---
+
+## PR 12 — `fix(kora-app-symbol-processor): treat a star projection as a concrete type, not a template`
+
+- **Ветка:** `fix/ksp-template-match-star-projection` (локальная, не отправлена)
+- **Коммит:** `b773f39e4`
+- **Модуль фреймворка:** `core/kora-app-symbol-processor`
+
+### Постановка задачи
+
+KSP видит Java-подстановку `<?>` как star projection, у которой `KSTypeArgument.type == null`. Обе реализации `hasGenericVariable()` трактовали `null` как «переменная типа есть», из-за чего конкретный тип вроде `ForwardingServerBuilder<?>` уезжал в множество шаблонов. Java-процессор в аналогичной ситуации возвращает `false` (`TypeParameterUtils#visitWildcard`) — то есть Kotlin и Java расходились в поведении графа.
+
+Дополнительно `ComponentTemplateHelper.initMap`/`fillMap` и `ComponentDependencyHelper.parseClaim` разыменовывали `KSTypeArgument.type` без проверки на `null` и падали с NPE на том же входе.
+
+### Что сделано
+
+- Обе `hasGenericVariable()` при `type == null` возвращают `false` — как Java-процессор.
+- `initMap`/`fillMap` пропускают неразрешимый аргумент вместо NPE.
+- `parseClaim` при отсутствии первого аргумента типа падает обратно на claim по целому типу (новый хелпер `claimOfWholeType`).
+
+### Покрытие тестами
+
+Синтетические тесты для star projection и raw-супертипа **не добавлены сознательно**: написанные варианты проходили и с фиксом, и без него — воспроизвести путь через `AbstractSymbolProcessorTest` не удалось, потому что для этого нужен именно Java-класс в classpath, а не Kotlin-исходник. Тест, который зелёный в обоих случаях, даёт ложную уверенность, поэтому он удалён, и это оговорено в сообщении коммита. Фикс проверен интеграционно на трёх gRPC-модулях.
+
+### Затронутые модули `kora-examples`
+
+`examples/kotlin/kora-kotlin-grpc-server`, `kora-kotlin-grpc-client`, `guides/kotlin/kora-kotlin-guide-grpc-server-app` — после фикса компилируются.
+
+---
+
+## PR 13 — `fix(openapi-generator): generate the Kotlin basic auth config as a data class`
+
+- **Ветка:** `fix/openapi-kotlin-security-config-data-class` (локальная, не отправлена)
+- **Коммит:** `b2238931d`
+- **Модуль фреймворка:** `openapi/openapi-generator`
+
+### Постановка задачи
+
+`ClientSecuritySchemaGenerator.basicAuthConfig` генерировал обычный `class`, а `@ConfigSource` в Kotlin требует `data class` — конфигурационному процессору нужны `componentN`. Kotlin-клиент с basic-авторизацией не собирался, Java-аналог собирался (в Java `record` генерировался корректно).
+
+### Что сделано
+
+`.addModifiers(KModifier.DATA)` в `basicAuthConfig`.
+
+### Покрытие тестами
+
+Тест генератора на спецификации с `basicAuth`: сгенерированный конфиг объявлен как `data class`. Без фикса падает.
+
+### Затронутые модули `kora-examples`
+
+`examples/kotlin/kora-kotlin-openapi-generator-http-client`.
+
+---
+
+## PR 14 — `fix(test-junit5): return the init lock permits when graph initialization fails`
+
+- **Ветка:** `fix/test-junit5-graph-init-lock-leak` (локальная, не отправлена)
+- **Коммит:** `aa82d0c3a`
+- **Модуль фреймворка:** `test/test-junit5`
+
+### Постановка задачи
+
+`TestGraph.initialize()` захватывал разрешения общего семафора, вызывал `initGraph()` и освобождал их **следующей строкой**, без `finally`. Любая упавшая инициализация графа удерживала их навсегда, и каждый последующий `@KoraAppTest` в той же JVM вставал в `acquireUninterruptibly()`. Прогон не завершался и не падал — он висел до таймаута CI, показывая только самую первую ошибку.
+
+Найдено при миграции `kora-examples`: один неправильно сконфигурированный модуль превращал 30-секундный прогон в 22-минутный, и настоящие причины остальных падений были не видны.
+
+### Что сделано
+
+Обе точки захвата освобождают разрешения в `finally`.
+
+### Покрытие тестами
+
+`TestGraphLockLeakTest` дёргает `TestGraph` напрямую с `Config`, у которого `setup()` бросает `IOException`, и проверяет, что число доступных разрешений не изменилось. Без фикса — 63 из 64 для ветки без системных свойств и 0 из 64 для ветки с ними.
+
+Попытка инициализации выполняется в daemon-потоке с `join(30_000)`: тестируемый режим отказа — это **блокировка**, а не исключение, поэтому прямой вызов повесил бы сборку вместо того, чтобы её уронить. В `finally` утёкшие разрешения возвращаются, иначе первый тест отравил бы второй.
+
+### Влияние на совместимость
+
+Чистое исправление. Ранее работавшие прогоны не затрагиваются.
+
+---
+
+## PR 15 — `fix(openapi-generator): stop requesting a converter for a multipart file part`
+
+- **Ветка:** `fix/openapi-server-multipart-file-unused-converter` (локальная, не отправлена)
+- **Коммит:** `dc32c616e`
+- **Модуль фреймворка:** `openapi/openapi-generator` (режимы `java-server` и `kotlin-server`)
+
+### Постановка задачи
+
+Для операции с `multipart/form-data` и полем `type: string, format: binary` генератор добавлял в конструктор request-маппера `HttpServerParameterReader<byte[]>` (Kotlin — `<ByteArray>`), но в теле `apply` его не использовал: бинарная часть отдаётся как `FormMultipart.FormPart` напрямую. Такого компонента во фреймворке нет и быть не должно — конвертер читает `String`. Приложение не собиралось.
+
+Дефект существовал в фикстурах генератора (`petstoreV3_form.yaml`), но тесты его не ловили: они только компилируют сгенерированный код, а он компилируется — ломается лишь построение графа `@KoraApp`.
+
+### Что сделано
+
+В обоих генераторах цикл объявления конвертеров пропускает `formParam.isFile`, но только когда тело действительно пойдёт по multipart-ветке:
+
+```java
+// url-encoded wins when an operation declares both, same as the apply() body below
+var multipartBody = multipartForm && !urlEncodedForm;
+```
+
+Привязка к тому же решению, что и выбор ветки в `apply`, а не к одному лишь `multipartForm`: если операция объявляет оба content-type, тело идёт по `mapUrlEncoded`, а она конвертер вызывает.
+
+### Покрытие тестами
+
+`HttpServerJavaOpenapiTest#multipartFileFormParamDoesNotAskForAConverterItNeverUses` и одноимённый в `HttpServerKotlinOpenapiTest`. На существующей фикстуре проверяют, что оба multipart-маппера не объявляют `HttpServerParameterReader`, по-прежнему присваивают `_part`, а url-encoded маппер конвертеры сохранил. Без фикса оба падают.
+
+### Влияние на совместимость
+
+Меняется сигнатура сгенерированного конструктора — но только для случая, который до сих пор не собирался вовсе.
+
+### Затронутые модули `kora-examples`
+
+`guides/java/kora-java-guide-openapi-http-server-advanced-app`, `guides/kotlin/kora-kotlin-guide-openapi-http-server-advanced-app`.

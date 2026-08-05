@@ -41,7 +41,7 @@ export JAVA_HOME=<JDK 25>
 | `examples/java/kora-java-kafka` | `MIGRATION_IN_PROGRESS` | компиляция main + test; требовал фикса фреймворка |
 | `examples/java/kora-java-database-cassandra` | `BLOCKED_BY_FRAMEWORK_BUG` | дефект генератора для `CompletableFuture<T>` |
 | `examples/java/kora-java-openapi-generator-http-server` | `MIGRATED` | компиляция + тесты |
-| `examples/java/kora-java-openapi-generator-http-client` | `PARTIALLY_MIGRATED` | компилируется, PetV2-тесты проходят (2/4); PetV3 падают — см. ниже |
+| `examples/java/kora-java-openapi-generator-http-client` | `MIGRATED` | 4/4 |
 | `examples/java/kora-java-s3-client-aws` | `MIGRATED` | переписан на AWS SDK-обёртку; компиляция + 5/5 тестов (Minio-контейнер) |
 | `examples/java/kora-java-s3-client-minio` | `MIGRATED` | переведён на `s3-client-kora`; компиляция + 6/6 тестов (Minio-контейнер) |
 | `examples/java/kora-java-camunda-engine` | `MIGRATED` | компиляция + 3/3 тестов; правок не потребовалось |
@@ -102,9 +102,24 @@ export JAVA_HOME=<JDK 25>
 в README. Расхождение объяснено в README самих модулей. Если решение будет принято, естественные
 имена — `kora-java-s3-client-kora` / `kora-kotlin-s3-client-kora`.
 
-### Открытый вопрос по `openapi-generator-http-client`
+### Закрыто: порядок схем авторизации в `openapi-generator-http-client`
 
-`HttpClientPetV3Tests` ожидает запрос с заголовком `X-API-KEY`, но сгенерированный интерцептор 2.0 перебирает схемы по порядку (bearer → apiKey → basic → oauth) и останавливается на первой доступной — то есть шлёт `Authorization` от bearer-провайдера. Нужно решить, что демонстрирует пример: либо убрать bearer/oauth-провайдеры и оставить apiKey (тогда тесты сойдутся), либо обновить ожидания тестов под bearer. Подгонять одно под другое без решения о смысле примера не стали.
+`HttpClientPetV3Tests` ожидал `X-API-KEY`, а запрос уходил с `Authorization`. Записывалось как
+открытый вопрос к дизайну фреймворка — **оказалось ошибкой в самом примере**.
+
+Сгенерированный интерцептор перебирает схемы по порядку (bearer → apiKey → basic → oAuth) и берёт
+первую, чей `HttpClientTokenProvider` вернул токен. `null` означает «у этой схемы нет учётных
+данных, пробуй следующую». В примере провайдеры bearer и oAuth были заглушками, возвращавшими
+константы `"bearer-token"` / `"oauth-token"`, и bearer всегда перебивал apiKey. Провайдеры
+исправлены на `null`.
+
+Заодно вскрылось, что в Kotlin-модуле секция безопасности лежала под `openapiAuth`, тогда как
+генератор читает её по `clientConfigPrefix` (`httpClient.petV3.apiKeyAuth`), а опция
+`securityConfigPrefix` попадает только в неиспользуемую аннотацию `@ConfigSource` на вложенной
+записи. Конфигурация приведена к тому, что генератор действительно читает.
+
+Итог: 4/4 в Java и 4/4 в Kotlin. Прогон занимает ~12 секунд против прежних 22 минут — до фикса
+`fix/test-junit5-graph-init-lock-leak` первая упавшая инициализация графа блокировала весь модуль.
 
 Два дефекта фреймворка, блокировавшие `http-client` и `kafka`, исправлены локально в `../kora` с регрессионными тестами — см. `KORA_2_PULL_REQUESTS.md`.
 
