@@ -5,7 +5,7 @@ import io.koraframework.database.common.annotation.Embedded;
 
 public record PetWithCategory(@Column("id") long id,
                               @Column("name") String name,
-                              @Column("status") Pet.Status status,
+                              Pet.@Column("status") Status status,
                               @Embedded("category_") PetCategory category) {
 
     public PetWithCategory(Pet pet, PetCategory category) {

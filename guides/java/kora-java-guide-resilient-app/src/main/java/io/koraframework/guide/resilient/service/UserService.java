@@ -9,9 +9,9 @@ import io.koraframework.guide.resilient.dto.UserRequest;
 import io.koraframework.guide.resilient.dto.UserResponse;
 import io.koraframework.guide.resilient.repository.UserRepository;
 import io.koraframework.http.server.common.response.HttpServerResponseException;
-import io.koraframework.resilient.circuitbreaker.annotation.CircuitBreaker;
+import io.koraframework.resilient.circuitbreaker.annotation.CircuitBreakable;
 import io.koraframework.resilient.fallback.annotation.Fallback;
-import io.koraframework.resilient.retry.annotation.Retry;
+import io.koraframework.resilient.retry.annotation.Retryable;
 import io.koraframework.resilient.timeout.annotation.Timeout;
 
 @Component
@@ -29,14 +29,14 @@ public class UserService {
         return new UserResponse(generatedId, request.name(), request.email(), LocalDateTime.now());
     }
 
-    @Retry("default")
+    @Retryable(DefaultRetry.class)
     public Optional<UserResponse> getUser(String id) {
         return userRepository.findById(id);
     }
 
-    @CircuitBreaker("default")
-    @Retry("default")
-    @Timeout("default")
+    @CircuitBreakable(DefaultCircuitBreaker.class)
+    @Retryable(DefaultRetry.class)
+    @Timeout(DefaultTimeouter.class)
     public List<UserResponse> getUsers(int page, int size, String sort) {
         return userRepository.findAll().stream()
                 .sorted(getComparator(sort))
@@ -45,7 +45,7 @@ public class UserService {
                 .toList();
     }
 
-    @CircuitBreaker("default")
+    @CircuitBreakable(DefaultCircuitBreaker.class)
     public UserResponse updateUser(String id, UserRequest request) {
         boolean updated = userRepository.update(id, request.name(), request.email());
         if (!updated) {
@@ -54,7 +54,7 @@ public class UserService {
         return new UserResponse(id, request.name(), request.email(), LocalDateTime.now());
     }
 
-    @Timeout("default")
+    @Timeout(DefaultTimeouter.class)
     public void deleteUser(String id) {
         boolean deleted = userRepository.deleteById(id);
         if (!deleted) {
