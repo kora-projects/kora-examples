@@ -821,3 +821,99 @@ e: [ksp] java.util.NoSuchElementException: No TypeParameter found for index E
 ### Resolution
 
 Исправлено симметрично Java-версии. Регрессионный тест `ZeebeWorkerTests#workerJobWorkerExceptionIsTurnedIntoBpmnError`; без фикса исключение выходит из `handle()`. После фикса тест примера проходит.
+
+---
+
+## Issue: KSP-процессоры падают при параллельном прогоне Gradle (`JacksonIOException: Stream closed`)
+
+- Status: Confirmed (не исправлен)
+- Severity: Major
+- Type: Framework bug
+- Language: Kotlin
+- Runtime: JVM
+- Component: KSP symbol processors
+- Affected example modules: непостоянный набор, до 19 задач за прогон
+- Framework commit: `66800169f`
+- Related fix branch / PR: нет
+
+### Description
+
+При `./gradlew ... --continue` с параллельным выполнением часть задач `kspKotlin`/`kspTestKotlin` падает с `tools.jackson.core.exc.JacksonIOException: Stream closed`. Набор упавших модулей меняется от прогона к прогону, а каждый из них по отдельности собирается успешно.
+
+### Steps to reproduce
+
+```shell
+./gradlew <все kotlin testClasses> --continue --no-build-cache          # 19 падений
+./gradlew <те же задачи> --continue --no-build-cache --max-workers=1    # 0 падений
+```
+
+### Investigation notes
+
+Прямое измерение: тот же набор задач в один поток дал **0** таких ошибок и 24 реальных падения вместо 37. То есть это гонка, а не дефект модулей. Показательный случай — `guides/kotlin/kora-kotlin-guide-http-server-advanced-app`: в параллельном прогоне падает, отдельной сборкой проходит и его тесты зелёные.
+
+### Suspected cause
+
+Разделяемое между воркерами KSP состояние Jackson (генератор/парсер), закрываемое одним воркером, пока другой ещё пишет. Точное место не локализовано.
+
+### Workaround
+
+Мерить и чинить миграцию прогоном с `--max-workers=1`. Все цифры в `KORA_2_MIGRATION_STATUS.md` получены именно так.
+
+---
+
+## Issue: `ForwardingServerBuilder<*>` не разрешается в KSP-графе gRPC-сервера
+
+- Status: Investigating
+- Severity: Blocker
+- Type: Framework bug
+- Language: Kotlin
+- Runtime: JVM
+- Component: `kora-app-symbol-processor`, `grpc-server`
+- Affected example modules: `examples/kotlin/kora-kotlin-grpc-server`, `guides/kotlin/kora-kotlin-guide-grpc-server-app`, `guides/kotlin/kora-kotlin-guide-grpc-server-advanced-app`
+- Framework commit: `66800169f`
+- Related fix branch: частично разблокировано `fix/ksp-template-match-star-projection`
+
+### Description
+
+После исправления NPE на star-проекции сборка доходит до внятной диагностики:
+
+```
+No component found for dependency:
+  io.grpc.ForwardingServerBuilder<*> (no tags)
+
+Required at:
+  GrpcServerFactoryModule#grpcServer(ValueOf<ForwardingServerBuilder<*>>, ValueOf<GrpcServerConfig>)
+```
+
+При этом тот же `GrpcServerFactoryModule` объявляет поставщика `@DefaultComponent @Tag(Tag.Factory.class) ForwardingServerBuilder<?> grpcServerBuilder(...)`. Java-аналог `examples/java/kora-java-grpc-server` этот же модуль разрешает и компилируется.
+
+### Investigation notes
+
+- Claim в диагностике помечен `(no tags)`, тогда как и метод-потребитель, и метод-поставщик объявлены с `@Tag(Tag.Factory.class)`. Совпадает ли это с ожидаемым разрешением `Tag.Factory` внутри фабричного модуля — не проверено.
+- Java-путь работает, то есть расхождение именно в KSP.
+- Не проверено, влияет ли на это изменение `fillMap` из `fix/ksp-template-match-star-projection` (до него это место падало с NPE, поэтому «раньше работало» сказать нельзя).
+
+### Next step
+
+Сравнить сгенерированные `ApplicationGraph` Java- и Kotlin-примеров и разрешение `Tag.Factory` в `TagUtils` обоих процессоров.
+
+---
+
+## Issue: тест gRPC-сервера не может подключиться (Java, `UNAVAILABLE`)
+
+- Status: Open
+- Severity: Major
+- Type: Migration blocker
+- Language: Java
+- Runtime: JVM
+- Component: `grpc-server`
+- Affected example modules: `examples/java/kora-java-grpc-server`
+- Framework commit: `66800169f`
+
+### Description
+
+`examples/java/kora-java-grpc-server` компилируется, но `GrpcServerTests#createUser` падает с `StatusRuntimeException: UNAVAILABLE / Connection refused` — сервер не слушает порт. Обнаружено при прогоне тестов Java-модулей, которые ранее только компилировались.
+
+### Next step
+
+Проверить конфигурацию `grpcServer.port` относительно 2.0 и порядок старта компонента `GrpcServer` в графе теста.
