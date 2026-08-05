@@ -13,8 +13,8 @@ import io.koraframework.example.graalvm.crud.jdbc.repository.CategoryRepository;
 import io.koraframework.example.graalvm.crud.jdbc.repository.PetRepository;
 import io.koraframework.example.graalvm.crud.openapi.server.model.PetCreateTO;
 import io.koraframework.example.graalvm.crud.openapi.server.model.PetUpdateTO;
-import io.koraframework.resilient.circuitbreaker.annotation.CircuitBreaker;
-import io.koraframework.resilient.retry.annotation.Retry;
+import io.koraframework.resilient.circuitbreaker.annotation.CircuitBreakable;
+import io.koraframework.resilient.retry.annotation.Retryable;
 import io.koraframework.resilient.timeout.annotation.Timeout;
 
 @Component
@@ -29,15 +29,15 @@ public class PetService {
     }
 
     @Cacheable(PetCache.class)
-    @CircuitBreaker("pet")
-    @Retry("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker.class)
+    @Retryable(PetRetry.class)
+    @Timeout(PetTimeouter.class)
     public Optional<PetWithCategory> findByID(long petId) {
         return petRepository.findById(petId);
     }
 
-    @CircuitBreaker("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker.class)
+    @Timeout(PetTimeouter.class)
     public PetWithCategory add(PetCreateTO createTO) {
         final long petCategoryId = categoryRepository.findByName(createTO.category().name())
                 .map(PetCategory::id)
@@ -51,8 +51,8 @@ public class PetService {
                 new PetCategory(petCategoryId, createTO.category().name()));
     }
 
-    @CircuitBreaker("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker.class)
+    @Timeout(PetTimeouter.class)
     @CachePut(value = PetCache.class, args = "id")
     public Optional<PetWithCategory> update(long id, PetUpdateTO updateTO) {
         final Optional<PetWithCategory> existing = petRepository.findById(id);
@@ -77,8 +77,8 @@ public class PetService {
         return Optional.of(result);
     }
 
-    @CircuitBreaker("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker.class)
+    @Timeout(PetTimeouter.class)
     @CacheInvalidate(PetCache.class)
     public boolean delete(long petId) {
         return petRepository.deleteById(petId).value() == 1;

@@ -12,8 +12,8 @@ import io.koraframework.example.graalvm.crud.vertx.model.dao.PetCategory;
 import io.koraframework.example.graalvm.crud.vertx.model.dao.PetWithCategory;
 import io.koraframework.example.graalvm.crud.vertx.repository.CategoryRepository;
 import io.koraframework.example.graalvm.crud.vertx.repository.PetRepository;
-import io.koraframework.resilient.circuitbreaker.annotation.CircuitBreaker;
-import io.koraframework.resilient.retry.annotation.Retry;
+import io.koraframework.resilient.circuitbreaker.annotation.CircuitBreakable;
+import io.koraframework.resilient.retry.annotation.Retryable;
 import io.koraframework.resilient.timeout.annotation.Timeout;
 
 @Component
@@ -28,15 +28,15 @@ public class PetService {
     }
 
     @Cacheable(PetCache.class)
-    @CircuitBreaker("pet")
-    @Retry("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker.class)
+    @Retryable(PetRetry.class)
+    @Timeout(PetTimeouter.class)
     public Mono<PetWithCategory> findByID(long petId) {
         return petRepository.findById(petId);
     }
 
-    @CircuitBreaker("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker.class)
+    @Timeout(PetTimeouter.class)
     public Mono<PetWithCategory> add(PetCreateTO createTO) {
         return categoryRepository.findByName(createTO.category().name())
                 .map(PetCategory::id)
@@ -49,8 +49,8 @@ public class PetService {
                 });
     }
 
-    @CircuitBreaker("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker.class)
+    @Timeout(PetTimeouter.class)
     @CachePut(value = PetCache.class, args = "id")
     public Mono<PetWithCategory> update(long id, PetUpdateTO updateTO) {
         return petRepository.findById(id)
@@ -74,8 +74,8 @@ public class PetService {
                 });
     }
 
-    @CircuitBreaker("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker.class)
+    @Timeout(PetTimeouter.class)
     @CacheInvalidate(PetCache.class)
     public Mono<Boolean> delete(long petId) {
         return petRepository.deleteById(petId).map(counter -> counter.value() == 1);

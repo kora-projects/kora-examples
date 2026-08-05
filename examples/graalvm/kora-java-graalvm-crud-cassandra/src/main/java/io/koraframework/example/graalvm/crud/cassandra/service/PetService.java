@@ -10,8 +10,8 @@ import io.koraframework.example.graalvm.crud.cassandra.model.dao.Pet;
 import io.koraframework.example.graalvm.crud.cassandra.repository.PetRepository;
 import io.koraframework.example.graalvm.crud.openapi.server.model.PetCreateTO;
 import io.koraframework.example.graalvm.crud.openapi.server.model.PetUpdateTO;
-import io.koraframework.resilient.circuitbreaker.annotation.CircuitBreaker;
-import io.koraframework.resilient.retry.annotation.Retry;
+import io.koraframework.resilient.circuitbreaker.annotation.CircuitBreakable;
+import io.koraframework.resilient.retry.annotation.Retryable;
 import io.koraframework.resilient.timeout.annotation.Timeout;
 
 @Component
@@ -24,23 +24,23 @@ public class PetService {
     }
 
     @Cacheable(PetCache.class)
-    @CircuitBreaker("pet")
-    @Retry("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker.class)
+    @Retryable(PetRetry.class)
+    @Timeout(PetTimeouter.class)
     public Mono<Pet> findByID(long petId) {
         return petRepository.findById(petId);
     }
 
-    @CircuitBreaker("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker.class)
+    @Timeout(PetTimeouter.class)
     public Mono<Pet> add(PetCreateTO createTO) {
         final long petId = ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE);
         final Pet pet = new Pet(petId, createTO.name(), Pet.Status.AVAILABLE, createTO.category().name());
         return petRepository.insert(pet).then(Mono.just(pet));
     }
 
-    @CircuitBreaker("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker.class)
+    @Timeout(PetTimeouter.class)
     @CachePut(value = PetCache.class, args = "id")
     public Mono<Pet> update(long id, PetUpdateTO updateTO) {
         return petRepository.findById(id)
@@ -58,8 +58,8 @@ public class PetService {
                 });
     }
 
-    @CircuitBreaker("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker.class)
+    @Timeout(PetTimeouter.class)
     @CacheInvalidate(PetCache.class)
     public Mono<Boolean> delete(long petId) {
         return petRepository.deleteById(petId).thenReturn(true);
