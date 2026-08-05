@@ -60,7 +60,12 @@ data class JdbcEntity(
 
 @Component
 class ListOfStringJdbcParameterMapper : JdbcParameterColumnMapper<List<String>> {
-    override fun set(stmt: PreparedStatement, index: Int, value: List<String>) {
+    // the 2.0 contract declares the value as @Nullable, which Kotlin enforces on the override
+    override fun set(stmt: PreparedStatement, index: Int, value: List<String>?) {
+        if (value == null) {
+            stmt.setNull(index, Types.ARRAY)
+            return
+        }
         stmt.setArray(index, stmt.connection.createArrayOf("VARCHAR", value.toTypedArray()))
     }
 }
