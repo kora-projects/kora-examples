@@ -24,7 +24,7 @@ import io.koraframework.json.common.annotation.Json
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.CompletionStage
 
-@HttpClient(configPath = "httpClient.default")
+@HttpClient("httpClient.default")
 interface JsonHttpClient {
     @Json
     data class JsonRequest(val id: String)

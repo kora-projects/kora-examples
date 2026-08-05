@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.CompletionStage
 
 @InterceptWith(ApiKeyAuthInterceptor::class)
-@HttpClient(configPath = "httpClient.dataApi")
+@HttpClient("httpClient.dataApi")
 interface DataApiClient {
 
     @HttpRoute(method = HttpMethod.POST, path = "/data/form")

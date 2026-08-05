@@ -25,7 +25,7 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.CompletionStage
 
 @InterceptWith(InterceptedHttpClient.ClientInterceptor::class)
-@HttpClient(configPath = "httpClient.default")
+@HttpClient("httpClient.default")
 interface InterceptedHttpClient {
     class ClientInterceptor : HttpClientInterceptor {
         private val logger = LoggerFactory.getLogger(ClientInterceptor::class.java)

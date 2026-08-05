@@ -9,7 +9,7 @@ import io.koraframework.http.common.annotation.HttpRoute;
 import io.koraframework.http.common.annotation.Path;
 import io.koraframework.http.common.annotation.Query;
 
-@HttpClient(configPath = "httpClient.default")
+@HttpClient("httpClient.default")
 public interface ReactorHttpClient {
 
     @HttpRoute(method = HttpMethod.GET, path = "/reactor/{path}")

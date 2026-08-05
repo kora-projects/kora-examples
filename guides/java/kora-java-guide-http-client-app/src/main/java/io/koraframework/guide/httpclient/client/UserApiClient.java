@@ -14,7 +14,7 @@ import io.koraframework.http.common.annotation.Path;
 import io.koraframework.http.common.annotation.Query;
 import io.koraframework.json.common.annotation.Json;
 
-@HttpClient(configPath = "httpClient.userApi")
+@HttpClient("httpClient.userApi")
 public interface UserApiClient {
 
     @HttpRoute(method = HttpMethod.POST, path = "/users")

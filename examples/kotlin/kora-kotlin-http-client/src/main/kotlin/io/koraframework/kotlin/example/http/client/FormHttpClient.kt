@@ -24,7 +24,7 @@ import io.koraframework.json.common.annotation.Json
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.CompletionStage
 
-@HttpClient(configPath = "httpClient.default")
+@HttpClient("httpClient.default")
 interface FormHttpClient {
     @HttpRoute(method = HttpMethod.POST, path = "/form/encoded")
     fun formEncoded(body: FormUrlEncoded): HttpResponseEntity<String>

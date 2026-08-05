@@ -24,7 +24,6 @@ dependencies {
     implementation "io.koraframework:http-server-undertow"
     implementation "io.koraframework:json-common"
     implementation "io.koraframework:validation-module"
-    implementation "io.projectreactor:reactor-core:3.6.18" // For reactive examples (optional)
 
     implementation "io.koraframework:logging-logback"
     implementation "io.koraframework:config-hocon"

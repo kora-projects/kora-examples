@@ -1,6 +1,5 @@
 package io.koraframework.example.http.server;
 
-import java.io.IOException;
 import io.koraframework.common.annotation.Component;
 import io.koraframework.http.common.HttpMethod;
 import io.koraframework.http.common.annotation.HttpRoute;
@@ -54,11 +53,7 @@ public final class ErrorHandlerController {
                     code = 500;
                 }
 
-                try {
-                    return HttpServerResponse.of(code, HttpBody.json(errorJsonWriter.toByteArray(error)));
-                } catch (IOException ex) {
-                    return HttpServerResponse.of(500, HttpBody.plaintext(ex.getMessage()));
-                }
+                return HttpServerResponse.of(code, HttpBody.json(errorJsonWriter.toByteArray(error)));
             }
         }
     }

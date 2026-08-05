@@ -14,7 +14,7 @@ import io.koraframework.http.common.annotation.HttpRoute;
 import io.koraframework.http.common.annotation.InterceptWith;
 
 @InterceptWith(InterceptedHttpClient.ClientInterceptor.class)
-@HttpClient(configPath = "httpClient.default")
+@HttpClient("httpClient.default")
 public interface InterceptedHttpClient {
 
     final class ClientInterceptor implements HttpClientInterceptor {

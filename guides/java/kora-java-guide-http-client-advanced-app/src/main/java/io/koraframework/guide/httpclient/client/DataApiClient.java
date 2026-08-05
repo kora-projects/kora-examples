@@ -32,7 +32,7 @@ import io.koraframework.json.common.annotation.Json;
 import static io.koraframework.guide.httpclient.client.DataApiClient.MappedResponse.*;
 
 @InterceptWith(ApiKeyAuthInterceptor.class)
-@HttpClient(configPath = "httpClient.dataApi")
+@HttpClient("httpClient.dataApi")
 public interface DataApiClient {
 
     @HttpRoute(method = HttpMethod.POST, path = "/data/form")

@@ -10,7 +10,7 @@ import io.koraframework.http.common.annotation.HttpRoute;
 import io.koraframework.http.common.body.HttpBody;
 import io.koraframework.http.common.body.HttpBodyOutput;
 
-@HttpClient(configPath = "httpClient.default")
+@HttpClient("httpClient.default")
 public interface MapperRequestHttpClient {
 
     record UserBody(String id) {}

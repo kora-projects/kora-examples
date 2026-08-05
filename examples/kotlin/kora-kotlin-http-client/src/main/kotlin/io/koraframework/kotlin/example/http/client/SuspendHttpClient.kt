@@ -24,7 +24,7 @@ import io.koraframework.json.common.annotation.Json
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.CompletionStage
 
-@HttpClient(configPath = "httpClient.default")
+@HttpClient("httpClient.default")
 interface SuspendHttpClient {
     @HttpRoute(method = HttpMethod.GET, path = "/suspend/{path}")
     suspend fun get(
