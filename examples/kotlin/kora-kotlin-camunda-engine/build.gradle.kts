@@ -28,6 +28,8 @@ dependencies {
     implementation("io.koraframework:logging-logback")
     implementation("io.koraframework:config-hocon")
 
+    // mockito-kotlin 5.4.0 pins an older mockito-core whose Byte Buddy rejects Java 25 class files
+    testImplementation("org.mockito:mockito-core:5.18.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     testImplementation("io.koraframework:test-junit5")
     testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")

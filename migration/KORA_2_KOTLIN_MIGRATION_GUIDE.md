@@ -91,6 +91,54 @@ tasks.matching { it.name.startsWith("ksp") }.configureEach { … }
 
 **Проверка (выполнена на Java-эталоне):** обычная сборка после `clean` → 100 ошибок; с `--no-build-cache` → успех.
 
+### 1.5 Выравнивание сторонних версий — отдельный класс отказов
+
+Kora 2.0 подняла версии транзитивных библиотек, и модули, закрепившие свои, ломаются **в рантайме**,
+а не при компиляции. Все четыре случая ниже проявились в этом репозитории; ошибки не указывают
+на причину.
+
+| Библиотека | Версия в Kora 2.0 | Симптом при расхождении |
+|---|---|---|
+| gRPC | `1.83.1` | `AbstractMethodError: ... does not define or inherit an implementation of the resolved method 'buildClientTransportServers(List, MetricRecorder)'` |
+| Flyway | `13.1.0` | `FlywayException: Unsupported Database: PostgreSQL 16.x` |
+| Byte Buddy (через Mockito) | нужен ≥ поддерживающий Java 25 | `IllegalArgumentException: Java 25 (69) is not supported by the current version of Byte Buddy` |
+
+**gRPC.** Достаточно, чтобы `grpc-inprocess` / `grpc-netty` в тестах были той же версии, что и
+`grpc-core`, который приходит с `io.koraframework:grpc-server`. Закреплённая старая версия даёт
+`AbstractMethodError` при построении сервера.
+
+**Flyway.** С 10-й версии поддержка конкретных СУБД вынесена в отдельные артефакты, а
+`io.koraframework:database-flyway` отдаёт только `flyway-core`. Приложение обязано добавить диалект
+само, иначе падает на старте:
+
+```groovy
+implementation "io.koraframework:database-flyway"
+implementation "org.flywaydb:flyway-database-postgresql:13.1.0"
+```
+
+**Mockito.** Нужен `mockito-core`, чей Byte Buddy понимает class file version 69. В Kotlin-модулях
+это отдельная ловушка: `org.mockito.kotlin:mockito-kotlin` тянет свою, более старую `mockito-core`,
+поэтому её версию задают явно рядом.
+
+**Проверять после миграции**, а не полагаться на компиляцию: все три отказа рантаймовые, а
+Byte Buddy к тому же прячется внутри `Application graph failed to initialize with N errors`
+без видимых suppressed-исключений (Gradle их не печатает — временно включите `junitXml.required`).
+
+### 1.6 Процессорам нужна полная перекомпиляция
+
+При инкрементальной сборке процессор базы данных может прочитать интерфейс репозитория из
+class-файла, где имена параметров синтетические, и сообщить:
+
+```
+error: SQL query placeholder has no matching method parameter:
+    :id
+  Available parameters:
+    - :arg0
+```
+
+Исходный код при этом корректен — `--rerun-tasks` или `clean` на модуле убирает ошибку.
+Сообщение на причину не указывает, поэтому при странных отказах процессоров начинайте с чистой сборки.
+
 ---
 
 ## 2. Пакеты и аннотации
@@ -289,6 +337,25 @@ db {          jdbc {
 |---|---|
 | `@ConfigValueExtractor` | `@ConfigMapper` |
 | пакет `config.common.extractor` | удалён |
+
+### 5.4 Телеметрия: метрики выключены по умолчанию
+
+`TelemetryConfig.MetricsConfig.enabled()` в 2.0 возвращает `false`. Приложение стартует, эндпоинт
+метрик отвечает `200`, но `http_server_*`, `http_client_*`, `db_*` и прочие метрики компонентов
+в выводе отсутствуют — видны только JVM-метрики, которые регистрирует сам реестр.
+
+```hocon
+httpServer {
+  telemetry.logging.enabled = true
+  telemetry.metrics.enabled = true   # в 2.0 обязательно явно
+}
+```
+
+Тот же ключ есть у каждого компонента с телеметрией (`httpClient.<name>.telemetry.metrics.enabled`,
+`db.telemetry.metrics.enabled` и т. д.). Логирование (`logging.enabled`) тоже `false` по умолчанию,
+трассировка (`tracing.enabled`) — `true`.
+
+**Молчаливый отказ:** ничего не падает и ничего не пишется в лог, метрики просто не собираются.
 
 ---
 
@@ -662,5 +729,11 @@ Kora 2.0 исполняет синхронные контракты на вир�
 | Снятие `suspend` по цепочке вызовов | — | — | ✅ |
 | `@Component` на мапперы/интерцепторы | — | частично (хардкод) | ✅ |
 | S3-клиент | — | — | ✅ |
+| Ключи конфигурации (`openapi.management.files`, `rapidoc`→`scalar`) | — | ✅ | — |
+| Путь конфигурации openapi-клиента (`PetApi`→`petApi`) | — | — | ✅ |
+| Нуллабельность в переопределениях (`result: T?`) | — | — | ✅ |
+| `JdbcExecutor.SqlSupplier`/`SqlRunnable` в `inTx` | — | — | ✅ |
+| `kspTest` в модулях с `@KoraApp` в тестах | — | — | ✅ |
+| Именованные аргументы для сгенерированных TO | — | — | ✅ |
 
 OpenRewrite в текущем виде **не трансформирует Kotlin** — для Kotlin-модулей рабочей автоматикой остаётся скрипт, а всё семантическое делается вручную или нейро-агентом по `KORA_MIGRATION_NEURO.md`.

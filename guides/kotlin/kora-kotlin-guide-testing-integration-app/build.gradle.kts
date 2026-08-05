@@ -29,6 +29,9 @@ dependencies {
     testImplementation(project(":guides:kotlin:kora-kotlin-guide-database-jdbc-app"))
     testImplementation("io.koraframework:config-hocon")
     testImplementation("io.koraframework:database-flyway")
+    // flyway-core 13 не содержит поддержки конкретных СУБД, иначе Flyway падает
+    // с "Unsupported Database: PostgreSQL"
+    testImplementation("org.flywaydb:flyway-database-postgresql:13.1.0")
     testImplementation("io.koraframework:database-jdbc")
     testImplementation("io.koraframework:http-client-common")
     testImplementation("io.koraframework:http-server-undertow")

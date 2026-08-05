@@ -23,6 +23,14 @@ Maven Local, чтобы фиксы не затирали друг друга. Д
 | 13 | `fix/openapi-kotlin-security-config-data-class` | `b2238931d` | `openapi/openapi-generator` | готово к PR |
 | 14 | `fix/test-junit5-graph-init-lock-leak` | `aa82d0c3a` | `test/test-junit5` | готово к PR |
 | 15 | `fix/openapi-server-multipart-file-unused-converter` | `dc32c616e` | `openapi/openapi-generator` | готово к PR |
+| 16 | `fix/cassandra-completable-future-return` | `389ad86fb` | `database/database-annotation-processor` | готово к PR |
+| 17 | `fix/grpc-server-keeps-process-alive` | `62be6855b` | `grpc/grpc-server` | готово к PR |
+| 18 | `fix/openapi-java-range-upper-bound` | `a1bfe41cb` | `openapi/openapi-generator` | готово к PR |
+| 19 | `fix/otel-context-with-loses-kora-wrapper` | `3f3403fbd` | `core/common` | готово к PR |
+| 20 | `fix/metrics-scraper-not-bound` | `013b66db5` | `telemetry/micrometer-module` | готово к PR |
+
+> Ветки 15 и 18 обе добавляют тест в `HttpServerJavaOpenapiTest`; при слиянии — тривиальный конфликт,
+> разрешается сохранением обоих тестов.
 
 > Ветки 8 и 5 трогают один и тот же файл в двух разных процессорах; при отправке порядок значения
 > не имеет, но при локальном слиянии в `integration/migration-fixes` они дают конфликт, который
@@ -142,7 +150,7 @@ public void process(@Nullable ConsumerRecord<String, String> record,
 
 - Ветка: `fix/openapi-client-api-interface-public`
 - База: `master` @ `66800169f`
-- Коммит: `a5e7694e6`
+- Коммит: `1371e7fb5`
 - Затронутый модуль: `openapi/openapi-generator`
 
 ### Проблема
@@ -642,3 +650,171 @@ var multipartBody = multipartForm && !urlEncodedForm;
 ### Затронутые модули `kora-examples`
 
 `guides/java/kora-java-guide-openapi-http-server-advanced-app`, `guides/kotlin/kora-kotlin-guide-openapi-http-server-advanced-app`.
+
+---
+
+## PR 16 — `fix(database-annotation-processor): support CompletableFuture from a Cassandra repository`
+
+- **Ветка:** `fix/cassandra-completable-future-return` (локальная, не отправлена)
+- **Коммит:** `389ad86fb`
+- **Модуль фреймворка:** `database/database-annotation-processor`
+
+### Постановка задачи
+
+Метод Cassandra-репозитория, возвращающий `CompletableFuture<T>`, порождал код, который не компилируется:
+
+```
+error: incompatible types: inference variable R has incompatible bounds
+  upper bounds: CompletableFuture<Entity>,Object
+```
+
+`CompletableFuture` поддерживается явно — генератор дописывал `.toCompletableFuture()`, — но делал это **внутри** внутренней лямбды `observe(...)`. Внешняя обёртка `observe(...).call(...)` при этом всё равно возвращала результат `prepareAsync(...).thenCompose(...)`, то есть `CompletionStage`, и параметр `R` не сводился с объявленным типом возврата.
+
+### Что сделано
+
+Преобразование перенесено наружу внешней обёртки — туда, где значение действительно пересекает границу объявленного типа возврата. Ветка `CompletionStage` не изменилась.
+
+### Покрытие тестами
+
+`CassandraResultsTest#testReturnCompletableFutureObject` и `#testReturnCompletableFutureVoid`. В тестах были только `CompletionStage<Integer>` и `CompletionStage<Void>` — ни одного случая с `CompletableFuture`, поэтому дефект не ловился. Оба новых теста падают без фикса с приведённой выше ошибкой.
+
+### Влияние на совместимость
+
+Чистое исправление: раньше такой код не компилировался вовсе.
+
+### Затронутые модули `kora-examples`
+
+`examples/java/kora-java-database-cassandra`, `examples/graalvm/kora-java-graalvm-crud-cassandra` — с обоих снята пометка `BLOCKED_BY_FRAMEWORK_BUG`.
+
+---
+
+## PR 17 — `fix(grpc-server): keep the process alive while the server is running`
+
+- **Ветка:** `fix/grpc-server-keeps-process-alive` (локальная, не отправлена)
+- **Коммит:** `62be6855b`
+- **Модуль фреймворка:** `grpc/grpc-server`
+
+### Постановка задачи
+
+Приложение, у которого единственный сервер — gRPC, стартовало и немедленно завершалось: контейнер останавливался с кодом `0` (штатный выход JVM, а не ошибка старта — при ошибке `KoraApplication.run` делает `System.exit(-1)`), и все тесты падали с `UNAVAILABLE / Connection refused`. Затронуты четыре модуля примеров на обоих языках.
+
+`KoraApplication.run` не блокирует: инициализирует граф, вешает shutdown hook и возвращает управление. Процесс живёт ровно столько, сколько какой-нибудь компонент удерживает non-daemon поток. В 2.0 транспорт gRPC — `OkHttpServerBuilder` с `directExecutor()` и `VirtualThreadExecutorTransportFilter`, а виртуальные потоки всегда daemon, поэтому удерживать JVM стало нечему: `GrpcServer.init()` вызывал `server.start()` и выходил, а `awaitTermination()` достигался только из `release()`.
+
+### Почему это не вопрос дизайна
+
+Первоначально было записано как «нужен выбор на стороне фреймворка». Это неверно: `XnioLifecycle` в `http-server-undertow` уже заводит выделенный non-daemon поток ровно для этого и прямо это комментирует. То есть контракт «серверный компонент удерживает процесс собственным non-daemon потоком» в фреймворке уже установлен — gRPC-сервер просто перестал его выполнять при смене транспорта.
+
+### Что сделано
+
+`GrpcServer.init()` заводит non-daemon поток, ожидающий `server.awaitTermination()`. `release()` прерывает его после завершения shutdown-последовательности, чтобы поток не пережил `shutdownNow()` и не подвесил JVM.
+
+### Покрытие тестами
+
+`GrpcServerProcessLifetimeTest#runningServerHoldsANonDaemonThread` поднимает настоящий сервер на порту 0 и проверяет, что живой non-daemon поток есть во время работы и исчезает после `release()`. Без фикса падает на первой проверке.
+
+### Влияние на совместимость
+
+Чистое исправление: раньше gRPC-приложение просто не жило. Приложения с HTTP-сервером не затронуты — их удерживает XNIO-воркер.
+
+### Остаётся открытым
+
+Должно ли время жизни приложения быть явным контрактом `KoraApplication.run`, а не следствием того, какой транспорт использует конкретный компонент. Этот фикс такому решению не мешает.
+
+### Затронутые модули `kora-examples`
+
+`examples/java/kora-java-grpc-server`, `examples/kotlin/kora-kotlin-grpc-server`, `guides/kotlin/kora-kotlin-guide-grpc-server-app`, `guides/kotlin/kora-kotlin-guide-grpc-server-advanced-app`, плюс guides с gRPC-клиентами, которые поднимают сервер.
+
+---
+
+## PR 18 — `fix(openapi-generator): use the schema maximum as the Range upper bound`
+
+- **Ветка:** `fix/openapi-java-range-upper-bound` (локальная, не отправлена)
+- **Коммит:** `a1bfe41cb`
+- **Модуль фреймворка:** `openapi/openapi-generator` (java-генератор)
+
+### Постановка задачи
+
+`AbstractJavaGenerator.getValidation` при построении верхней границы `@Range` читал `variable.getMinimum()`, поэтому у **каждого** числового ограничения, которое выпускал java-генератор, `to` совпадало с `from`:
+
+```
+minimum: 1,   maximum: 100  ->  @Range(from = 1.0,   to = 1.0)
+minimum: 200, maximum: 599  ->  @Range(from = 200.0, to = 200.0)
+```
+
+Любое значение больше минимума сгенерированная валидация отвергала с 400. Случай «только minimum» тоже ломался: вместо ветки с максимумом типа брался минимум, и `minimum: 1` на int64-параметре пути тоже давал `to = 1.0`.
+
+Kotlin-генератор считает это правильно, то есть два языка расходились на одинаковых спецификациях — так дефект и всплыл: java-клиент отправил `size=100` java-серверу, собранному по спецификации `1..100`, и получил `Should be in range from '1' to '1', but was greater: 100`, тогда как Kotlin-двойник прошёл.
+
+### Что сделано
+
+Ветка максимума читает `getMaximum()`.
+
+### Покрытие тестами
+
+`HttpServerJavaOpenapiTest#numericRangeUsesTheSchemaMaximumAsUpperBound` на существующей фикстуре `petstoreV3_validation.yaml`, где уже были обе формы (`minimum`+`maximum` и только `minimum`) — не хватало лишь проверки выпущенной границы. Без фикса падает.
+
+### Затронутые модули `kora-examples`
+
+`examples/java/kora-java-crud`, `examples/java/kora-java-crud-submodule`, `examples/java/kora-java-openapi-generator-http-server`, оба openapi-гайда. Их тесты проходили только потому, что ни один не отправлял значение выше минимума.
+
+---
+
+## PR 19 — `fix(common): keep the Kora wrapper when deriving an OpenTelemetry context`
+
+- **Ветка:** `fix/otel-context-with-loses-kora-wrapper` (локальная, не отправлена)
+- **Коммит:** `3f3403fbd`
+- **Модуль фреймворка:** `core/common`
+
+### Постановка задачи
+
+Ни один спан не экспортировался ни одним приложением Kora 2.0 с OTLP-экспортёром. Коллектор получал метрики и больше ничего, а в логе приложения на каждую попытку экспорта:
+
+```
+BatchSpanProcessor$Worker exportCurrentBatch
+WARNING: Exporter threw an Exception
+java.lang.IllegalStateException
+  at OpentelemetryContextStorage.attach(OpentelemetryContextStorage.java:12)
+  at io.opentelemetry.context.Context.makeCurrent(Context.java:232)
+  at io.opentelemetry.context.Context.lambda$wrap$1(Context.java:241)
+  at InstrumentationUtil.suppressInstrumentation(InstrumentationUtil.java:34)
+```
+
+Kora хранит контекст OpenTelemetry в `ScopedValue`, поэтому императивная пара `attach()`/`makeCurrent()` не реализуема и намеренно бросает исключение. Всё держится на `wrap(...)`, который реализован только в `OpentelemetryContext` — через `ScopedValue.where(...)`.
+
+Но `with(key, value)` возвращал `delegate.with(key, value)`, то есть обычный `ArrayBasedContext`. Обёртка терялась при первом же порождении контекста, и порождённый уходил в дефолтный `Context.wrap(...)`, который вызывает `makeCurrent()`. OTLP-экспортёр порождает ровно такой контекст на своём рабочем потоке, чтобы подавить инструментирование, — и каждый экспорт упирался в throw.
+
+### Что сделано
+
+`with(...)` заворачивает результат обратно, как это уже делал `root()`.
+
+### Покрытие тестами
+
+`OpentelemetryContextTest` — порождённый контекст и воспроизведённый путь подавления инструментирования (`InstrumentationUtil` внутренний, поэтому вызов выписан явно). Оба падают с `IllegalStateException` без фикса.
+
+### Затронутые модули `kora-examples`
+
+`examples/java/kora-java-telemetry`, `examples/kotlin/kora-kotlin-telemetry` — оба проверяют, что коллектор залогировал экспортированный спан, и оба ждали его до таймаута.
+
+---
+
+## PR 20 — `fix(micrometer-module): bind the Prometheus registry as a MetricsScraper`
+
+- **Ветка:** `fix/metrics-scraper-not-bound` (локальная, не отправлена)
+- **Коммит:** `013b66db5`
+- **Модуль фреймворка:** `telemetry/micrometer-module`
+
+### Постановка задачи
+
+Эндпоинт метрик в **любом** приложении Kora 2.0 отвечал `# Metric Scraper disabled`. `MetricsHandler` берёт из графа `ValueOf<Optional<MetricsScraper>>`, а компонента такого типа не предоставлял никто: `PrometheusMeterRegistryWrapper` интерфейс реализует, но фабрика объявлена как `Wrapped<MeterRegistry>`, поэтому граф знает её только как `MeterRegistry`. Скрейпинг Prometheus был невозможен «из коробки» при любой конфигурации.
+
+### Что сделано
+
+`MetricsModule` дополнительно отдаёт `MetricsScraper` поверх реестра. Это `@DefaultComponent`, поэтому приложение, заменившее реестр, может связать свой; не-Prometheus реестр в этом формате не скрейпится и даёт пустое тело, а не ошибку — ровно то, что эндпоинт делал и раньше.
+
+### Покрытие тестами
+
+`MetricsScraperBindingTest` — поведение скрейпера для обоих видов реестра. Тест **не может** упасть на старом коде обычным способом: проверяемый метод и есть то, чего не хватало. Это оговорено честно; сквозное доказательство — гайд observability, который проверяет наличие `http_server_*` и JVM-метрик и падал на обоих языках, плюс контейнер, собранный до фикса, отдаёт `# Metric Scraper disabled` на `GET /metrics` при подключённом модуле.
+
+### Смежное изменение в примерах (не дефект)
+
+После фикса `/metrics` отдаёт JVM-метрики, но не `http_server_*`: в 2.0 `TelemetryConfig.MetricsConfig.enabled()` по умолчанию `false`. Гайдам добавлено `httpServer.telemetry.metrics.enabled = true` — это изменение поведения 2.0, а не баг.

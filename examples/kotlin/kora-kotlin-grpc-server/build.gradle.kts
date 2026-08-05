@@ -22,14 +22,14 @@ dependencies {
     kspTest("io.koraframework:symbol-processors")
 
     implementation("io.koraframework:grpc-server")
-    implementation("io.grpc:grpc-protobuf:1.74.0")
+    implementation("io.grpc:grpc-protobuf:1.83.1")
     implementation("javax.annotation:javax.annotation-api:1.3.2")
     implementation("io.koraframework:logging-logback")
     implementation("io.koraframework:config-hocon")
 
     testImplementation("io.koraframework:test-junit5")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
-    testImplementation("io.grpc:grpc-testing:1.74.0")
+    testImplementation("io.grpc:grpc-testing:1.83.1")
 }
 
 kotlin {
@@ -42,7 +42,7 @@ kotlin {
 protobuf {
     protoc { artifact = "com.google.protobuf:protoc:3.25.3" }
     plugins {
-        id("grpc") { artifact = "io.grpc:protoc-gen-grpc-java:1.74.0" }
+        id("grpc") { artifact = "io.grpc:protoc-gen-grpc-java:1.83.1" }
     }
     generateProtoTasks {
         all().forEach { task -> task.plugins { id("grpc") } }

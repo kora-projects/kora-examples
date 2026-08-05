@@ -9,15 +9,16 @@
 
 ## Issue: Cassandra-репозиторий с `CompletableFuture<T>` генерирует некомпилируемый код
 
-- Status: Confirmed (не исправлен)
+- Status: Fixed
 - Severity: Major
 - Type: Framework bug
 - Language: Java
 - Runtime: JVM
 - Component: `database-annotation-processor`, генератор Cassandra-репозиториев
 - Affected framework module: `database/database-annotation-processor`
-- Affected example modules: `examples/java/kora-java-database-cassandra`
+- Affected example modules: `examples/java/kora-java-database-cassandra`, `examples/graalvm/kora-java-graalvm-crud-cassandra`
 - Framework commit: `66800169f`
+- Related fix branch: `fix/cassandra-completable-future-return` (`389ad86fb`)
 
 ### Description
 
@@ -61,15 +62,47 @@ if (((DeclaredType) returnType).asElement().toString().equals(CompletableFuture.
 
 ### Workaround
 
-Заменить тип возврата на `CompletionStage<T>`.
+Заменить тип возврата на `CompletionStage<T>` (больше не требуется).
 
-### Proposed fix
+### Implemented fix
 
-Привести тип выражения внутри `observe(...).call(...)` к `CompletionStage`, а `.toCompletableFuture()` применять снаружи обёртки; добавить тест с `CompletableFuture<T>` в `CassandraResultsTest`.
+`.toCompletableFuture()` перенесён из внутренней лямбды наружу внешней обёртки `observe(...)`:
+
+```java
+CommonUtils.observe(mb, "_observation", "call", b -> { … });
+// the observe(...) wrapper yields whatever the lambda returns, and the chain inside it is a
+// CompletionStage; converting inside the lambda would make R unresolvable against the
+// declared CompletableFuture return type
+if (((DeclaredType) returnType).asElement().toString().equals(CompletableFuture.class.getCanonicalName())) {
+    mb.addCode(".toCompletableFuture()");
+}
+```
+
+Внешний `observe(...).call(...)` возвращает то, что вернула лямбда, а внутри неё цепочка
+`prepareAsync(...).thenCompose(...)` даёт `CompletionStage`. Пока преобразование стояло внутри,
+параметр `R` внешней обёртки не сводился с объявленным `CompletableFuture`. Теперь преобразование
+происходит там, где значение действительно пересекает границу объявленного типа возврата.
+Ветка `CompletionStage` не изменилась.
+
+### Test coverage
+
+`CassandraResultsTest#testReturnCompletableFutureObject` и `#testReturnCompletableFutureVoid`.
+Оба падают без фикса ровно с `incompatible types: inference variable R has incompatible bounds`.
+До этого в тестах были только `CompletionStage<Integer>` и `CompletionStage<Void>` — ни одного
+случая с `CompletableFuture`, поэтому регрессия не ловилась.
+
+### Compatibility impact
+
+Чистое исправление: раньше такой код не компилировался вовсе.
+
+### Validation
+
+`:database:database-annotation-processor:test` целиком зелёный; затем сборка
+`examples/java/kora-java-database-cassandra`.
 
 ### Resolution
 
-Не закрыт. Модуль `kora-java-database-cassandra` остаётся `BLOCKED_BY_FRAMEWORK_BUG`: код примера корректен и демонстрирует заявленную функциональность — подгонять его под баг не стали.
+Закрыт. Пометка `BLOCKED_BY_FRAMEWORK_BUG` с модулей снята.
 
 ---
 
@@ -540,6 +573,157 @@ if (multipartBody && formParam.isFile) {
 ### Validation
 
 `:openapi:openapi-generator:test`; затем сборка и тесты обоих advanced-гайдов.
+
+---
+
+## Issue: java-генератор OpenAPI берёт минимум схемы как верхнюю границу `@Range`
+
+- Status: Fixed
+- Severity: Major (сгенерированная валидация отвергает корректные запросы)
+- Type: Framework bug (генератор кода)
+- Language: Java
+- Runtime: JVM
+- Component: `openapi-generator`, `AbstractJavaGenerator`
+- Affected framework module: `openapi/openapi-generator`
+- Affected example modules: `examples/java/kora-java-crud`, `examples/java/kora-java-crud-submodule`, `examples/java/kora-java-openapi-generator-http-server`, оба openapi-гайда
+- Framework commit: `66800169f`
+- Related fix branch: `fix/openapi-java-range-upper-bound` (`a1bfe41cb`)
+
+### Description
+
+`AbstractJavaGenerator.getValidation` при построении верхней границы `@Range` читал `variable.getMinimum()`.
+У каждого числового ограничения, выпущенного java-генератором, `to` совпадало с `from`.
+
+### Actual behavior
+
+```
+minimum: 1,   maximum: 100  ->  @Range(from = 1.0,   to = 1.0)
+minimum: 200, maximum: 599  ->  @Range(from = 200.0, to = 200.0)
+```
+
+Случай «только minimum» ломался так же: вместо ветки с максимумом типа брался минимум.
+
+Kotlin-генератор на тех же спецификациях выдаёт `to = 100.0` и `to = 599.0`. Так дефект и обнаружился:
+java-клиент отправил `size=100` java-серверу, собранному по спецификации `1..100`, и получил
+`Should be in range from '1' to '1', but was greater: 100`, тогда как Kotlin-двойник прошёл.
+
+### Investigation notes
+
+Тесты этого не ловили: в фикстуре `petstoreV3_validation.yaml` обе формы уже были, но выпущенную
+границу никто не проверял. Тесты примеров проходили потому, что ни один не отправлял значение
+выше минимума — то есть дефект жил в сгенерированном коде всех java-модулей незаметно.
+
+### Implemented fix
+
+Ветка максимума читает `getMaximum()`.
+
+### Test coverage
+
+`HttpServerJavaOpenapiTest#numericRangeUsesTheSchemaMaximumAsUpperBound` — обе формы схемы.
+Без фикса падает, показывая `@Range(from = 1.0, to = 1.0)`.
+
+---
+
+## Issue: ни один спан не экспортируется — производный контекст OpenTelemetry теряет обёртку Kora
+
+- Status: Fixed
+- Severity: Blocker (трассировка не работает вообще)
+- Type: Framework bug
+- Language: Java, Kotlin (общий runtime)
+- Runtime: JVM
+- Component: `core/common`, `OpentelemetryContext`
+- Affected framework module: `core/common`
+- Affected example modules: `examples/java/kora-java-telemetry`, `examples/kotlin/kora-kotlin-telemetry`
+- Framework commit: `66800169f`
+- Related fix branch: `fix/otel-context-with-loses-kora-wrapper` (`3f3403fbd`)
+
+### Description
+
+Приложение с OTLP-экспортёром не отправляет ни одного спана. Коллектор получает метрики и больше ничего.
+
+### Steps to reproduce
+
+Поднять `otel/opentelemetry-collector`, запустить приложение с `tracing.exporter.endpoint`,
+сделать любой HTTP-запрос. В логе коллектора появляется `MetricsExporter`, но не `TracesExporter`.
+
+### Actual behavior
+
+В логе приложения на каждую попытку экспорта:
+
+```
+BatchSpanProcessor$Worker exportCurrentBatch
+WARNING: Exporter threw an Exception
+java.lang.IllegalStateException
+  at OpentelemetryContextStorage.attach(OpentelemetryContextStorage.java:12)
+  at io.opentelemetry.context.Context.makeCurrent(Context.java:232)
+  at io.opentelemetry.context.Context.lambda$wrap$1(Context.java:241)
+  at InstrumentationUtil.suppressInstrumentation(InstrumentationUtil.java:34)
+```
+
+### Investigation notes
+
+Kora хранит контекст OpenTelemetry в `ScopedValue`, поэтому императивная пара
+`attach()`/`makeCurrent()` не реализуема и намеренно бросает исключение — всё держится на
+`wrap(...)`, реализованном только в `OpentelemetryContext` через `ScopedValue.where(...)`.
+
+`with(key, value)` возвращал `delegate.with(key, value)`, то есть обычный `ArrayBasedContext`:
+обёртка терялась при первом же порождении контекста, и производный уходил в дефолтный
+`Context.wrap(...)`, который вызывает `makeCurrent()`. OTLP-экспортёр порождает ровно такой
+контекст на рабочем потоке `BatchSpanProcessor`, чтобы подавить инструментирование.
+
+### Implemented fix
+
+`with(...)` заворачивает результат обратно, как это уже делал `root()`.
+
+### Test coverage
+
+`OpentelemetryContextTest` — производный контекст и воспроизведённый путь подавления
+инструментирования. Оба падают с `IllegalStateException` без фикса.
+
+---
+
+## Issue: эндпоинт метрик всегда отвечает «Metric Scraper disabled»
+
+- Status: Fixed
+- Severity: Blocker (Prometheus-скрейпинг невозможен)
+- Type: Framework bug (отсутствующая привязка компонента)
+- Language: Java, Kotlin (общий runtime)
+- Runtime: JVM
+- Component: `telemetry/micrometer-module`, `http-server-common` (`MetricsHandler`)
+- Affected example modules: `guides/java/kora-java-guide-observability-app`, `guides/kotlin/kora-kotlin-guide-observability-app`
+- Framework commit: `66800169f`
+- Related fix branch: `fix/metrics-scraper-not-bound` (`013b66db5`)
+
+### Description
+
+`GET /metrics` в любом приложении Kora 2.0 отдаёт `200` с телом `# Metric Scraper disabled`,
+даже когда `micrometer-module` подключён.
+
+### Investigation notes
+
+`MetricsHandler` берёт из графа `ValueOf<Optional<MetricsScraper>>`. Компонента такого типа
+не предоставляет никто: `PrometheusMeterRegistryWrapper` интерфейс реализует, но фабрика
+`MetricsModule#prometheusMeterRegistry` объявлена как `Wrapped<MeterRegistry>`, поэтому граф
+знает её только как `MeterRegistry`. Поиск по всему фреймворку даёт лишь три упоминания
+`MetricsScraper`: интерфейс, обёртка и обработчик — ни одной фабрики.
+
+### Implemented fix
+
+`MetricsModule` дополнительно отдаёт `MetricsScraper` поверх реестра (`@DefaultComponent`,
+чтобы приложение могло связать свой).
+
+### Test coverage
+
+`MetricsScraperBindingTest` — поведение скрейпера для Prometheus- и не-Prometheus-реестра.
+Тест не может упасть на старом коде обычным способом: проверяемый метод и есть то, чего
+не хватало. Сквозное доказательство — контейнер, собранный до фикса, отдаёт
+`# Metric Scraper disabled`, после фикса — настоящий Prometheus-вывод.
+
+### Смежное, но не дефект
+
+После фикса `/metrics` отдаёт JVM-метрики, но не `http_server_*`: в 2.0
+`TelemetryConfig.MetricsConfig.enabled()` по умолчанию `false`. Это изменение поведения,
+описанное в обоих руководствах по миграции.
 
 ---
 
@@ -1048,7 +1232,7 @@ Required at:
 
 ## Issue: gRPC-приложение завершается сразу после старта сервера
 
-- Status: Confirmed (не исправлен)
+- Status: Fixed
 - Severity: Blocker
 - Type: Regression
 - Language: Java, Kotlin (общий runtime-модуль)
@@ -1057,7 +1241,7 @@ Required at:
 - Affected framework module: `grpc/grpc-server`
 - Affected example modules: `examples/java/kora-java-grpc-server`, `examples/kotlin/kora-kotlin-grpc-server`, `guides/kotlin/kora-kotlin-guide-grpc-server-app`, `guides/kotlin/kora-kotlin-guide-grpc-server-advanced-app`
 - Framework commit: `66800169f`
-- Related fix branch / PR: нет — нужен выбор дизайна на стороне фреймворка
+- Related fix branch: `fix/grpc-server-keeps-process-alive` (`62be6855b`)
 
 ### Description
 
@@ -1095,14 +1279,36 @@ Exception in thread "config-reload" java.lang.IllegalStateException: Graph node 
 
 Смена транспорта gRPC на виртуальные потоки без явного удержания процесса.
 
-### Proposed fix
+### Implemented fix
 
-Требуется решение на стороне фреймворка, поэтому чинить не стали:
-- либо `GrpcServer` удерживает процесс, пока сервер в состоянии `RUN` (non-daemon поток или `awaitTermination` в отдельном потоке);
-- либо контракт «приложение живо, пока живы его серверы» объявляется явным и `KoraApplication.run` блокирует до сигнала завершения.
+Первоначальный вывод «нужен выбор дизайна на стороне фреймворка» **оказался неверным**.
+`http-server-undertow` уже решает ровно эту задачу и явно это документирует —
+`XnioLifecycle.init()` заводит выделенный non-daemon поток с комментарием:
 
-Второй вариант выглядит правильнее: сейчас время жизни приложения — побочный эффект деталей транспорта.
+```java
+// XnioWorker will be daemon despite flag .setDaemon(false) if the thread it is started from is daemon (virtual thread)
+```
+
+То есть «серверный компонент удерживает процесс собственным non-daemon потоком» — это уже
+установленный в фреймворке контракт, а не открытый вопрос. gRPC-сервер просто перестал его
+выполнять при смене транспорта на виртуальные потоки.
+
+`GrpcServer.init()` теперь заводит такой поток, ожидающий `server.awaitTermination()`, а
+`release()` прерывает его после завершения shutdown-последовательности — чтобы поток не пережил
+`shutdownNow()` и не подвесил JVM.
+
+### Test coverage
+
+`GrpcServerProcessLifetimeTest#runningServerHoldsANonDaemonThread` поднимает настоящий сервер
+на порту 0 и проверяет, что живой non-daemon поток есть во время работы и исчезает после
+`release()`. Без фикса падает на первой проверке.
+
+### Остаётся открытым
+
+Более широкий вопрос — должно ли время жизни приложения быть явным контрактом
+`KoraApplication.run`, а не следствием того, какой транспорт использует конкретный компонент.
+Этот фикс такому решению не мешает.
 
 ### Workaround
 
-Нет. Все четыре модуля компилируются, но их тесты не проходят.
+Не требуется.

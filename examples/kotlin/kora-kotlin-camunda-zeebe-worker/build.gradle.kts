@@ -25,6 +25,8 @@ dependencies {
     implementation("io.koraframework:config-hocon")
     implementation("io.koraframework:json-common")
 
+    // mockito-kotlin 5.4.0 pins an older mockito-core whose Byte Buddy rejects Java 25 class files
+    testImplementation("org.mockito:mockito-core:5.18.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     testImplementation("io.koraframework:test-junit5")
     testImplementation("io.camunda:zeebe-process-test-extension-testcontainer:8.8.24")

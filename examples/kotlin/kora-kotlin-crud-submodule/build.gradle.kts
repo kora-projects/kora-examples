@@ -32,10 +32,15 @@ subprojects {
     dependencies {
         koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
         add("ksp", "io.koraframework:symbol-processors")
+        // в pet-api и vet-api тестовые исходники объявляют свой @KoraApp, и без процессора в kspTest
+        // граф для них не генерируется; Java-двойники объявляют testAnnotationProcessor в каждом модуле
+        add("kspTest", "io.koraframework:symbol-processors")
 
         add("testImplementation", "org.json:json:20231013")
         add("testImplementation", "org.skyscreamer:jsonassert:1.5.1")
         add("testImplementation", "io.koraframework:test-junit5")
+        // mockito-kotlin 5.4.0 pins an older mockito-core whose Byte Buddy rejects Java 25 class files
+        add("testImplementation", "org.mockito:mockito-core:5.18.0")
         add("testImplementation", "org.mockito.kotlin:mockito-kotlin:5.4.0")
     }
 

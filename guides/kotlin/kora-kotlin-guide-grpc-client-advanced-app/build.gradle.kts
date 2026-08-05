@@ -31,11 +31,11 @@ dependencies {
     implementation("io.koraframework:http-server-undertow")
     implementation("io.koraframework:json-common")
     implementation("io.koraframework:logging-logback")
-    implementation("io.grpc:grpc-protobuf:1.74.0")
+    implementation("io.grpc:grpc-protobuf:1.83.1")
     testRuntimeOnly(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
-    testImplementation("io.grpc:grpc-inprocess:1.74.0")
+    testImplementation("io.grpc:grpc-inprocess:1.83.1")
     testImplementation("org.junit.jupiter:junit-jupiter")
 }
 
@@ -58,7 +58,7 @@ java {
 protobuf {
     protoc { artifact = "com.google.protobuf:protoc:3.25.3" }
     plugins {
-        id("grpc") { artifact = "io.grpc:protoc-gen-grpc-java:1.74.0" }
+        id("grpc") { artifact = "io.grpc:protoc-gen-grpc-java:1.83.1" }
     }
     generateProtoTasks {
         all().forEach { task ->

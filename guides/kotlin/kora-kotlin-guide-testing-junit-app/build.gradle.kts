@@ -31,7 +31,7 @@ dependencies {
     testImplementation("io.koraframework:json-common")
     testImplementation("io.koraframework:logging-logback")
     testImplementation("io.koraframework:test-junit5")
-    testImplementation("org.mockito:mockito-core:5.12.0")
+    testImplementation("org.mockito:mockito-core:5.23.0")
 }
 
 kotlin {

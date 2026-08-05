@@ -26,6 +26,9 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql:42.7.3")
     implementation("io.koraframework:config-hocon")
     implementation("io.koraframework:database-flyway")
+    // с Flyway 10 поддержка конкретных СУБД вынесена в отдельные артефакты;
+    // без этого приложение падает на старте: "Unsupported Database: PostgreSQL"
+    implementation("org.flywaydb:flyway-database-postgresql:13.1.0")
     implementation("io.koraframework:database-jdbc")
     implementation("io.koraframework:http-server-undertow")
     implementation("io.koraframework:json-common")
