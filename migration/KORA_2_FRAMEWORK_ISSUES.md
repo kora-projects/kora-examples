@@ -917,3 +917,66 @@ Required at:
 ### Next step
 
 Проверить конфигурацию `grpcServer.port` относительно 2.0 и порядок старта компонента `GrpcServer` в графе теста.
+
+---
+
+## Issue: gRPC-приложение завершается сразу после старта сервера
+
+- Status: Confirmed (не исправлен)
+- Severity: Blocker
+- Type: Regression
+- Language: Java, Kotlin (общий runtime-модуль)
+- Runtime: JVM
+- Component: `grpc-server`
+- Affected framework module: `grpc/grpc-server`
+- Affected example modules: `examples/java/kora-java-grpc-server`, `examples/kotlin/kora-kotlin-grpc-server`, `guides/kotlin/kora-kotlin-guide-grpc-server-app`, `guides/kotlin/kora-kotlin-guide-grpc-server-advanced-app`
+- Framework commit: `66800169f`
+- Related fix branch / PR: нет — нужен выбор дизайна на стороне фреймворка
+
+### Description
+
+Приложение, у которого единственный сервер — gRPC, стартует и немедленно завершает работу. Тесты во всех четырёх модулях падают с `StatusRuntimeException: UNAVAILABLE / Connection refused`, потому что контейнер к моменту запроса уже остановлен.
+
+### Steps to reproduce
+
+```shell
+./gradlew :examples:java:kora-java-grpc-server:distTar
+docker build -t kora-grpc-manual examples/java/kora-java-grpc-server
+docker run -d --name t -e GRPC_PORT=8090 -p 18090:8090 kora-grpc-manual
+docker inspect -f '{{.State.Status}} exit={{.State.ExitCode}}' t     # exited exit=0
+```
+
+### Relevant output
+
+В логе контейнера — только исключение фонового потока перезагрузки конфигурации; строк `Application initialized` и `gRPC Server started` нет (асинхронный аппендер не успевает сброситься):
+
+```
+Exception in thread "config-reload" java.lang.IllegalStateException: Graph node value was not initialized:
+  [#0] interface io.koraframework.config.common.origin.ConfigOrigin (@Tag(ApplicationConfig)) (0 dependencies)
+	at io.koraframework.config.common.ConfigWatcher.watchJob(ConfigWatcher.java:75)
+```
+
+### Investigation notes
+
+- **Доказано:** контейнер завершается с кодом `0`. При неудачном старте `KoraApplication.run` пишет ошибку и делает `System.exit(-1)`, то есть код был бы `255`. Ноль означает штатное завершение JVM — не осталось ни одного non-daemon потока.
+- `KoraApplication.run` не блокирует: инициализирует граф, вешает shutdown hook и возвращает управление. Процесс живёт ровно столько, сколько живут потоки компонентов.
+- `GrpcServer.init()` вызывает `server.start()` и выходит; `awaitTermination` вызывается только в `release()`.
+- В 2.0 транспорт сменился на `OkHttpServerBuilder` с `directExecutor()` и `VirtualThreadExecutorTransportFilter` (`GrpcServerFactoryModule.grpcServerBuilder`). Виртуальные потоки — daemon, поэтому удерживать JVM нечему.
+- HTTP-примеры выживают по другой причине: XNIO-воркер Undertow работает на платформенных non-daemon потоках. То есть время жизни процесса в 2.0 держится на транспорте, а не на явном контракте.
+- Отдельно замечено: `ConfigWatcher.watchJob` читает узел графа до его инициализации. На жизненный цикл не влияет, но исключение в фоновом потоке шумит в логе.
+
+### Suspected cause
+
+Смена транспорта gRPC на виртуальные потоки без явного удержания процесса.
+
+### Proposed fix
+
+Требуется решение на стороне фреймворка, поэтому чинить не стали:
+- либо `GrpcServer` удерживает процесс, пока сервер в состоянии `RUN` (non-daemon поток или `awaitTermination` в отдельном потоке);
+- либо контракт «приложение живо, пока живы его серверы» объявляется явным и `KoraApplication.run` блокирует до сигнала завершения.
+
+Второй вариант выглядит правильнее: сейчас время жизни приложения — побочный эффект деталей транспорта.
+
+### Workaround
+
+Нет. Все четыре модуля компилируются, но их тесты не проходят.
