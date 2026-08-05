@@ -6,7 +6,7 @@ plugins {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
         vendor = JvmVendorSpec.ADOPTIUM
     }
 }
@@ -27,7 +27,7 @@ dependencies {
     koraBom platform("io.koraframework:kora-parent:$koraVersion")
     annotationProcessor "io.koraframework:annotation-processors"
 
-    implementation "ru.tinkoff.kora.experimental:camunda-zeebe-worker"
+    implementation "io.koraframework.experimental:camunda-zeebe-worker"
     implementation "io.koraframework:scheduling-jdk"
     implementation "io.koraframework:logging-logback"
     implementation "io.koraframework:config-hocon"
@@ -40,7 +40,7 @@ dependencies {
 
 application {
     applicationName = "application"
-    mainClass = "ru.tinkoff.kora.example.camunda.zeebe.Application"
+    mainClass = "io.koraframework.example.camunda.zeebe.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 

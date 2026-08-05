@@ -17,7 +17,7 @@ plugins {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
         vendor = JvmVendorSpec.ADOPTIUM
     }
 }
@@ -39,7 +39,7 @@ dependencies {
 
     implementation "io.koraframework:config-hocon"
     implementation "io.koraframework:http-server-undertow"
-    implementation "io.koraframework:json-module"
+    implementation "io.koraframework:json-common"
     implementation "io.koraframework:logging-logback"
     implementation "io.koraframework:openapi-management"
     implementation "io.koraframework:validation-module"
@@ -56,7 +56,7 @@ def openApiGenerateDataHttpServer = tasks.register("openApiGenerateDataHttpServe
     group = "openapi tools"
     inputSpec = layout.projectDirectory.file("src/main/resources/openapi/data-http-server.yaml")
     outputDir = layout.buildDirectory.dir("generated/data-http-server")
-    def corePackage = "ru.tinkoff.kora.guide.openapi.httpserver.data"
+    def corePackage = "io.koraframework.guide.openapi.httpserver.data"
     apiPackage = "${corePackage}.api"
     modelPackage = "${corePackage}.model"
     invokerPackage = "${corePackage}.invoker"
@@ -67,7 +67,7 @@ def openApiGenerateDataHttpServer = tasks.register("openApiGenerateDataHttpServe
                     {
                       "*": [
                         {
-                          "type": "ru.tinkoff.kora.guide.openapi.httpserver.advanced.controller.DataApiExceptionHandler"
+                          "type": "io.koraframework.guide.openapi.httpserver.advanced.controller.DataApiExceptionHandler"
                         }
                       ]
                     }
@@ -83,7 +83,7 @@ compileJava.dependsOn openApiGenerateDataHttpServer
 
 application {
     applicationName = "application"
-    mainClass = "ru.tinkoff.kora.guide.openapi.httpserver.advanced.Application"
+    mainClass = "io.koraframework.guide.openapi.httpserver.advanced.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 

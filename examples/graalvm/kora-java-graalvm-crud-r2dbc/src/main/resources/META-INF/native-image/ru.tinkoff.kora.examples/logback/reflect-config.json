@@ -1,11 +1,11 @@
 [
   {
-    "name": "ru.tinkoff.kora.logging.logback.ConsoleTextRecordEncoder",
+    "name": "io.koraframework.logging.logback.ConsoleTextRecordEncoder",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },
   {
-    "name": "ru.tinkoff.kora.logging.logback.KoraAsyncAppender",
+    "name": "io.koraframework.logging.logback.KoraAsyncAppender",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },

@@ -22,8 +22,8 @@ def javaExamples = [
         "kora-java-openapi-generator-http-server",
         "kora-java-openapi-generator-http-client",
         "kora-java-database-jdbc",
-        "kora-java-database-r2dbc",
-        "kora-java-database-vertx",
+//        "kora-java-database-r2dbc", // Removed in Kora 2.0
+//        "kora-java-database-vertx", // Removed in Kora 2.0
         "kora-java-database-cassandra",
         "kora-java-telemetry",
         "kora-java-validation",
@@ -58,8 +58,8 @@ include "examples:java:kora-java-crud-submodule:kora-java-crud-submodule-vet-api
 
 def graalvmExamples = [
         "kora-java-graalvm-crud-jdbc",
-        "kora-java-graalvm-crud-r2dbc",
-        "kora-java-graalvm-crud-vertx",
+//        "kora-java-graalvm-crud-r2dbc", // Removed in Kora 2.0
+//        "kora-java-graalvm-crud-vertx", // Removed in Kora 2.0
         "kora-java-graalvm-crud-cassandra",
         "kora-java-graalvm-kafka",
 ]
@@ -95,8 +95,8 @@ def kotlinExamples = [
         "kora-kotlin-camunda-engine",
         "kora-kotlin-camunda-zeebe-worker",
         "kora-kotlin-database-jdbc",
-        "kora-kotlin-database-r2dbc",
-        "kora-kotlin-database-vertx",
+//        "kora-kotlin-database-r2dbc", // Removed in Kora 2.0
+//        "kora-kotlin-database-vertx", // Removed in Kora 2.0
         "kora-kotlin-database-cassandra",
 ]
 

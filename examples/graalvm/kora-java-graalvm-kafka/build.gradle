@@ -9,7 +9,7 @@ plugins {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
         vendor = JvmVendorSpec.ADOPTIUM
     }
 }
@@ -28,7 +28,7 @@ dependencies {
 
     implementation "io.koraframework:http-server-undertow"
     implementation "io.koraframework:kafka"
-    implementation "io.koraframework:json-module"
+    implementation "io.koraframework:json-common"
     implementation "io.koraframework:config-yaml"
     implementation "io.koraframework:micrometer-module"
     implementation "io.koraframework:logging-logback"
@@ -41,7 +41,7 @@ dependencies {
 }
 
 application {
-    mainClass = "ru.tinkoff.kora.example.graalvm.kafka.Application"
+    mainClass = "io.koraframework.example.graalvm.kafka.Application"
 }
 
 graalvmNative {
@@ -50,7 +50,7 @@ graalvmNative {
             imageName = "$project.name"
             mainClass = "$application.mainClass"
             javaLauncher = javaToolchains.launcherFor {
-                languageVersion = JavaLanguageVersion.of(21)
+                languageVersion = JavaLanguageVersion.of(25)
                 vendor = JvmVendorSpec.matching("GraalVM Community")
             }
         }

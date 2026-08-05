@@ -1,4 +1,3 @@
-import com.google.devtools.ksp.gradle.KspTask
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 buildscript {
@@ -13,7 +12,7 @@ buildscript {
 
 plugins {
     id("application")
-    id("org.openapi.generator") version ("7.23.0")
+    id("org.openapi.generator") version ("7.24.0")
     id("org.flywaydb.flyway") version ("8.4.2")
 }
 
@@ -23,7 +22,7 @@ dependencies {
     implementation("io.koraframework:http-server-undertow")
     implementation("io.koraframework:config-hocon")
     implementation("io.koraframework:logging-logback")
-    implementation("io.koraframework:json-module")
+    implementation("io.koraframework:json-common")
     implementation("io.koraframework:micrometer-module")
     implementation("io.koraframework:validation-module")
     implementation("io.koraframework:openapi-management")
@@ -38,7 +37,7 @@ dependencies {
 
 application {
     applicationName = "application"
-    mainClass.set("ru.tinkoff.kora.kotlin.example.submodule.app.ApplicationKt")
+    mainClass.set("io.koraframework.kotlin.example.submodule.app.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 
@@ -61,7 +60,7 @@ val openApiGenerateHttpServer = tasks.register<GenerateTask>("openApiGenerateHtt
     group = "openapi tools"
     inputSpec.set("$projectDir/src/main/resources/openapi/http-server.yaml")
     outputDir.set(layout.buildDirectory.dir("generated/openapi").get().asFile.absolutePath)
-    val corePackage = "ru.tinkoff.kora.kotlin.example.submodule.openapi.http.server"
+    val corePackage = "io.koraframework.kotlin.example.submodule.openapi.http.server"
     apiPackage.set("$corePackage.api")
     modelPackage.set("$corePackage.model")
     invokerPackage.set("$corePackage.invoker")
@@ -78,7 +77,7 @@ tasks.test {
 }
 
 kotlin.sourceSets.main { kotlin.srcDir(openApiGenerateHttpServer.get().outputDir) }
-tasks.withType<KspTask>().configureEach {
+tasks.matching { it.name.startsWith("ksp") }.configureEach {
     dependsOn(openApiGenerateHttpServer)
 }
 tasks.compileKotlin {

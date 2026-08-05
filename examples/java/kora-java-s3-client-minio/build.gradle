@@ -6,7 +6,7 @@ plugins {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
         vendor = JvmVendorSpec.ADOPTIUM
     }
 }
@@ -21,7 +21,7 @@ dependencies {
     koraBom platform("io.koraframework:kora-parent:$koraVersion")
     annotationProcessor "io.koraframework:annotation-processors"
 
-    implementation "ru.tinkoff.kora.experimental:s3-client-minio"
+    implementation "io.koraframework.experimental:s3-client-minio"
     implementation "io.koraframework:http-client-ok"
     implementation "io.projectreactor:reactor-core:3.6.18" // For reactive examples (optional)
 
@@ -36,7 +36,7 @@ dependencies {
 
 application {
     applicationName = "application"
-    mainClass = "ru.tinkoff.kora.example.s3.minio.Application"
+    mainClass = "io.koraframework.example.s3.minio.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 

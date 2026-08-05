@@ -28,7 +28,7 @@ dependencies {
     implementation("io.koraframework:database-flyway")
     implementation("io.koraframework:database-jdbc")
     implementation("io.koraframework:http-server-undertow")
-    implementation("io.koraframework:json-module")
+    implementation("io.koraframework:json-common")
     implementation("io.koraframework:logging-logback")
     kspTest("io.koraframework:symbol-processors")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
@@ -39,7 +39,7 @@ dependencies {
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
     sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
@@ -48,7 +48,7 @@ kotlin {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
@@ -60,7 +60,7 @@ ksp {
 
 application {
     applicationName = "application"
-    mainClass.set("ru.tinkoff.kora.guide.databasejdbc.advanced.ApplicationKt")
+    mainClass.set("io.koraframework.guide.databasejdbc.advanced.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 

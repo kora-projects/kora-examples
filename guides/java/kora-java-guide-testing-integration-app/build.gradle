@@ -4,7 +4,7 @@ plugins {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
         vendor = JvmVendorSpec.ADOPTIUM
     }
 }
@@ -36,7 +36,7 @@ dependencies {
     testImplementation "io.koraframework:database-jdbc"
     testImplementation "io.koraframework:http-client-common"
     testImplementation "io.koraframework:http-server-undertow"
-    testImplementation "io.koraframework:json-module"
+    testImplementation "io.koraframework:json-common"
     testImplementation "io.koraframework:logging-logback"
     testImplementation "io.koraframework:test-junit5"
     testImplementation "org.testcontainers:junit-jupiter:1.21.4"

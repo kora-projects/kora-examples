@@ -6,7 +6,7 @@ plugins {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
         vendor = JvmVendorSpec.ADOPTIUM
     }
 }
@@ -35,7 +35,7 @@ dependencies {
 application {
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
     applicationName = "application"
-    mainClass = "ru.tinkoff.kora.example.jdbc.Application"
+    mainClass = "io.koraframework.example.jdbc.Application"
 }
 
 //noinspection GroovyAssignabilityCheck

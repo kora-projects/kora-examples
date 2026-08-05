@@ -1,8 +1,8 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
-    kotlin("jvm") version "1.9.25" apply false
-    id("com.google.devtools.ksp") version "1.9.25-1.0.20" apply false
+    kotlin("jvm") version "2.4.10" apply false
+    id("com.google.devtools.ksp") version "2.3.11" apply false
     id("jacoco")
 }
 
@@ -14,7 +14,7 @@ subprojects {
     pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
         configure<org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension> {
             jvmToolchain {
-                languageVersion.set(JavaLanguageVersion.of(21))
+                languageVersion.set(JavaLanguageVersion.of(25))
                 vendor.set(JvmVendorSpec.ADOPTIUM)
             }
             sourceSets.named("main") { kotlin.srcDir("build/generated/ksp/main/kotlin") }

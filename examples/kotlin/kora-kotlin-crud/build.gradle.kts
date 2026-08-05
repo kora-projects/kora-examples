@@ -14,10 +14,10 @@ buildscript {
 plugins {
     id("application")
     id("jacoco")
-//    kotlin("kapt") version ("1.9.25") // KAPT & KSP broken since 1.9.11
-    kotlin("jvm") version ("1.9.25")
-    id("com.google.devtools.ksp") version ("1.9.25-1.0.20")
-    id("org.openapi.generator") version ("7.23.0")
+//    kotlin("kapt") version ("2.4.10") // KAPT & KSP broken since 1.9.11
+    kotlin("jvm") version ("2.4.10")
+    id("com.google.devtools.ksp") version ("2.3.11")
+    id("org.openapi.generator") version ("7.24.0")
     id("org.flywaydb.flyway") version ("8.4.2")
 }
 
@@ -37,7 +37,7 @@ dependencies {
     implementation("io.koraframework:http-client-ok")
     implementation("io.koraframework:database-jdbc")
     implementation("io.koraframework:micrometer-module")
-    implementation("io.koraframework:json-module")
+    implementation("io.koraframework:json-common")
     implementation("io.koraframework:validation-module")
     implementation("io.koraframework:cache-caffeine")
     implementation("io.koraframework:resilient-kora")
@@ -61,7 +61,7 @@ dependencies {
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 //    sourceSets.main { kotlin.srcDir("build/generated/source/kapt/main") } // KAPT & KSP broken since 1.9.11
@@ -70,7 +70,7 @@ kotlin {
 
 application {
     applicationName = "application"
-    mainClass.set("ru.tinkoff.kora.kotlin.example.crud.ApplicationKt")
+    mainClass.set("io.koraframework.kotlin.example.crud.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 
@@ -92,7 +92,7 @@ val openApiGenerateHttpServer = tasks.register<GenerateTask>("openApiGenerateHtt
     group = "openapi tools"
     inputSpec.set(layout.projectDirectory.file("src/main/resources/openapi/http-server.yaml"))
     outputDir.set(layout.buildDirectory.dir("generated/openapi"))
-    val corePackage = "ru.tinkoff.kora.example.crud.openapi.http.server"
+    val corePackage = "io.koraframework.example.crud.openapi.http.server"
     apiPackage = "${corePackage}.api"
     modelPackage = "${corePackage}.model"
     invokerPackage = "${corePackage}.invoker"

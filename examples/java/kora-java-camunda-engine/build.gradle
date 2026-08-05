@@ -6,7 +6,7 @@ plugins {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
         vendor = JvmVendorSpec.ADOPTIUM
     }
 }
@@ -22,9 +22,9 @@ dependencies {
     annotationProcessor "io.koraframework:annotation-processors"
 
     implementation "io.koraframework:http-server-undertow"
-    implementation "ru.tinkoff.kora.experimental:camunda-engine-bpmn"
-    implementation "ru.tinkoff.kora.experimental:camunda-rest-undertow"
-    implementation "io.koraframework:json-module"
+    implementation "io.koraframework.experimental:camunda-engine-bpmn"
+    implementation "io.koraframework.experimental:camunda-rest-undertow"
+    implementation "io.koraframework:json-common"
     implementation "org.postgresql:postgresql:42.7.7"
     implementation "io.koraframework:database-jdbc"
 
@@ -41,7 +41,7 @@ dependencies {
 
 application {
     applicationName = "application"
-    mainClass = "ru.tinkoff.kora.example.camunda.engine.Application"
+    mainClass = "io.koraframework.example.camunda.engine.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 
