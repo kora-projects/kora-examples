@@ -364,6 +364,61 @@ upstream-генератор или форк Kora, и управляется ли
 
 ---
 
+## Issue: для `HttpResponseEntity<T>` в sealed-ответе выбирается не тот шаблонный маппер
+
+- Status: Investigating
+- Severity: Major (блокирует модуль)
+- Type: Framework bug (разрешение шаблонных компонентов) либо генератор OpenAPI
+- Language: Java
+- Runtime: JVM
+- Component: `kora-app-annotation-processor` (разрешение шаблонов) / `openapi-generator`, режим `java-server`
+- Affected example modules: `guides/java/kora-java-guide-openapi-http-server-advanced-app`
+- Framework commit: `66800169f`
+
+### Actual behavior
+
+```
+error: No component found for dependency:
+    JsonWriter<HttpResponseEntity<PayloadTO>> (no tags)
+
+  Required at:
+    HttpServerResponseMapperModule#<T>jsonHttpServerResponseMapper(JsonWriter<T>)
+
+  Dependency resolution path:
+    ^--- component  DataApiServerResponseMappers.MappingByCodeApiResponseMapper
+    ^--- factory  HttpServerResponseMapperModule#jsonHttpServerResponseMapper(...)
+    ^--- JsonWriter<HttpResponseEntity<PayloadTO>>    [MISSING]
+```
+
+То же самое для `ErrorResponseTO`.
+
+### Investigation notes
+
+В `HttpServerResponseMapperModule` есть два `@Json @DefaultComponent` шаблона:
+
+```java
+default <T> HttpServerResponseMapper<HttpResponseEntity<T>> jsonHttpResponseEntityHttpServerResponseMapper(JsonWriter<T> writer)
+default <T> HttpServerResponseMapper<T> jsonHttpServerResponseMapper(JsonWriter<T> writer)
+```
+
+Для `HttpServerResponseMapper<HttpResponseEntity<PayloadTO>>` подходят оба, но выбран более общий,
+из-за чего требуется несуществующий `JsonWriter<HttpResponseEntity<PayloadTO>>` вместо
+`JsonWriter<PayloadTO>`. Клиентский аналог этой пары в своё время оказался дефектом отсутствующего
+тега (`fix/http-client-json-response-entity-mapper-tag`), но здесь **оба** метода помечены `@Json` —
+значит причина другая: либо приоритет более специфичного шаблона, либо генератор запрашивает не тот тип.
+
+Не доведено до конца: чтобы отличить одно от другого, нужно посмотреть сгенерированный
+`DataApiServerResponseMappers.MappingByCodeApiResponseMapper` и понять, какой тип он объявляет
+в конструкторе. Соседний рабочий модуль `examples/java/kora-java-openapi-generator-http-server`
+собирается на том же генераторе, поэтому различие стоит искать в спецификации: здесь операция
+`mappingByCode` описывает несколько кодов ответа, из-за чего появляется `HttpResponseEntity`.
+
+### Resolution
+
+Не закрыт. Модуль помечен `BLOCKED_BY_FRAMEWORK_BUG`.
+
+---
+
 ## Issue: KSP-процессоры Kora 2.0 падают с внутренним исключением вместо диагностики
 
 - Status: Investigating

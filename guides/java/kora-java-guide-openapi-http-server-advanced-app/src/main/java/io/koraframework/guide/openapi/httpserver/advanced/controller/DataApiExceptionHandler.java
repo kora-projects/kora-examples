@@ -1,9 +1,6 @@
 package io.koraframework.guide.openapi.httpserver.advanced.controller;
 
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.CompletionStage;
 import io.koraframework.common.annotation.Component;
-import io.koraframework.common.Context;
 import io.koraframework.guide.openapi.httpserver.data.model.ErrorResponseTO;
 import io.koraframework.http.common.body.HttpBody;
 import io.koraframework.http.server.common.interceptor.HttpServerInterceptor;
@@ -23,36 +20,24 @@ public final class DataApiExceptionHandler implements HttpServerInterceptor {
     }
 
     @Override
-    public CompletionStage<HttpServerResponse> intercept(Context context, HttpServerRequest request, InterceptChain chain)
-            throws Exception {
-        return chain.process(context, request).exceptionally(throwable -> {
-            var cause = unwrap(throwable);
-            if (cause instanceof ViolationException violationException) {
-                throw new CompletionException(violationException);
-            }
-            if (cause instanceof HttpServerResponseException responseException) {
-                return jsonResponse(responseException.code(), responseException.getMessage());
-            }
-            if (cause instanceof IllegalArgumentException) {
-                return jsonResponse(400, "Invalid request parameters");
-            }
-            if (cause instanceof SecurityException) {
-                return jsonResponse(403, cause.getMessage() != null ? cause.getMessage() : "Access denied");
-            }
+    public HttpServerResponse intercept(HttpServerRequest request, InterceptChain chain) throws Exception {
+        try {
+            return chain.process(request);
+        } catch (ViolationException e) {
+            // left to ViolationExceptionHttpServerResponseMapper, which renders the violations
+            throw e;
+        } catch (HttpServerResponseException e) {
+            return jsonResponse(e.code(), e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return jsonResponse(400, "Invalid request parameters");
+        } catch (SecurityException e) {
+            return jsonResponse(403, e.getMessage() != null ? e.getMessage() : "Access denied");
+        } catch (Exception e) {
             return jsonResponse(500, "An unexpected error occurred");
-        });
+        }
     }
 
     private HttpServerResponse jsonResponse(int statusCode, String message) {
-        return HttpServerResponse.of(statusCode, HttpBody.json(this.errorJsonWriter.toByteArray(new ErrorResponseTO(message, null))));
-    }
-
-    private static Throwable unwrap(Throwable throwable) {
-        var current = throwable;
-        while (current instanceof CompletionException && current.getCause() != null) {
-            current = current.getCause();
-        }
-        return current;
+        return HttpServerResponse.of(statusCode, HttpBody.json(this.errorJsonWriter.toByteArray(new ErrorResponseTO(message))));
     }
 }
-
