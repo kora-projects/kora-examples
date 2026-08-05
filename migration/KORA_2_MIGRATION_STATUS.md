@@ -4,96 +4,88 @@
 
 ## Как получены данные
 
-Статусы ниже — не оценка, а результат реального прогона:
+Статусы ниже — не оценка, а результат реального прогона тестов каждого модуля:
 
 ```shell
 export JAVA_HOME=<JDK 25>
-./gradlew clean --continue
-./gradlew classes testClasses --continue --no-build-cache
+./gradlew <все модули>:test --max-workers=1 --continue
 ```
 
-- Ветка примеров: `migration/2.0`, фреймворк: локальный `../kora` @ `master`, опубликован как `io.koraframework:*:2.0.0-SNAPSHOT` в Maven Local.
-- **Gradle-процесс обязан идти на JDK 25.** На JDK 21 сборка падает ещё на конфигурации: buildscript-зависимость `io.koraframework:openapi-generator` требует JVM 25. Toolchain-настройки модулей этого не покрывают — нужен именно JDK, которым запущен Gradle.
-- **Первый прогон после смены пакетов делать с `--no-build-cache` и после `clean`.** Задачи-генераторы (OpenAPI, protobuf, wsdl2java) не удаляют предыдущий вывод, а ключ кеша не учитывает смену `apiPackage`/`modelPackage`. Без этого компиляция валится сотнями фантомных `package ru.tinkoff.kora.* does not exist` из устаревших сгенерированных файлов, которых уже нет в исходниках.
+- Ветка примеров: `migration/2.0`, фреймворк: локальный `../kora` @ `integration/migration-fixes`,
+  опубликован как `io.koraframework:*:2.0.0-SNAPSHOT` в Maven Local.
+- **Gradle-процесс обязан идти на JDK 25.** На JDK 21 сборка падает ещё на конфигурации:
+  buildscript-зависимость `io.koraframework:openapi-generator` требует JVM 25. Toolchain-настройки
+  модулей этого не покрывают — нужен именно JDK, которым запущен Gradle.
+- **Первый прогон после смены пакетов делать с `--no-build-cache` и после `clean`.** Задачи-генераторы
+  (OpenAPI, protobuf, wsdl2java) не удаляют предыдущий вывод, а ключ кеша не учитывает смену
+  `apiPackage`/`modelPackage`. Без этого компиляция валится сотнями фантомных
+  `package ru.tinkoff.kora.* does not exist` из устаревших сгенерированных файлов.
+- **`--max-workers=1` обязателен для достоверных цифр.** При параллельной сборке KSP-процессоры
+  дают гонку (`JacksonIOException: Stream closed`) — на одном воркере таких падений ноль.
+- Колонка «Тесты» — фактические `PASSED`/`FAILED` из лога прогона, а не XML-отчёты: часть модулей
+  их отключает (`junitXml.required = false`).
 
 ## Сводка
 
-| Статус | Модулей |
+| Показатель | Значение |
 |---|---|
-| `MIGRATION_IN_PROGRESS` — компилируется (main + test), тесты ещё не прогонялись | 50 |
-| `READY_FOR_MIGRATION` — нужна семантическая правка кода | 55 |
-| `BLOCKED_BY_FRAMEWORK_BUG` — падает KSP-процессор Kora 2.0 | 22 |
-| `BLOCKED_BY_REMOVED_FUNCTIONALITY` — интеграция удалена в 2.0 (R2DBC, Vert.x) | 6 |
-| **Всего Gradle-модулей с исходниками** | **133** |
+| Gradle-модулей в `settings.gradle` | 127 |
+| Модулей с тестами | 116 |
+| Тестов пройдено | **556** |
+| Тестов упало | **0** |
+| Модулей со статусом `MIGRATED` | 124 |
+| Модулей со статусом `MIGRATION_IN_PROGRESS` (только GraalVM native) | 3 |
+| Дефектов фреймворка исправлено | 20 |
 
-Ни один модуль пока не может носить статус `MIGRATED`: по критериям миграции для этого нужны пройденные тесты, а тестовый прогон ещё не выполнялся. Единственное исключение — эталонный `examples/java/kora-java-crud`, он собирается и его тесты проходили ранее; он перепроверяется отдельно.
+Прогон: `./gradlew <116 задач>:test --max-workers=1 --continue`, 10 мин 53 с.
 
-## Фактический прогресс (обновляется по ходу)
+Единственное падение в этом прогоне — `:examples:java:kora-java-crud:compileJava` — воспроизводится
+только при инкрементальной сборке: процессор базы данных читает интерфейс репозитория из
+class-файла и видит `:arg0` вместо имён параметров. С `--rerun` модуль собирается и даёт 9/9.
+Это описано в обоих руководствах (§1.5/§1.6) как ловушка инкрементальной компиляции, а не как
+дефект примера.
 
-Таблица ниже отражает первый полный прогон. После него статусы изменились так:
+## Что сделано
 
-| Модуль | Статус | Проверено |
-|---|---|---|
-| `examples/java/kora-java-http-server` | `MIGRATED` | компиляция + 16/16 тестов (blackbox в Docker) |
-| `examples/java/kora-java-http-client` | `MIGRATED` | компиляция + 9/9 тестов (mockserver) |
-| `examples/java/kora-java-grpc-client` | `MIGRATION_IN_PROGRESS` | компиляция main + test; тесты не гонялись |
-| `examples/java/kora-java-database-jdbc` | `MIGRATION_IN_PROGRESS` | компиляция main + test; прогон тестов не завершён |
-| `examples/java/kora-java-kafka` | `MIGRATION_IN_PROGRESS` | компиляция main + test; требовал фикса фреймворка |
-| `examples/java/kora-java-database-cassandra` | `BLOCKED_BY_FRAMEWORK_BUG` | дефект генератора для `CompletableFuture<T>` |
-| `examples/java/kora-java-openapi-generator-http-server` | `MIGRATED` | компиляция + тесты |
-| `examples/java/kora-java-openapi-generator-http-client` | `MIGRATED` | 4/4 |
-| `examples/java/kora-java-s3-client-aws` | `MIGRATED` | переписан на AWS SDK-обёртку; компиляция + 5/5 тестов (Minio-контейнер) |
-| `examples/java/kora-java-s3-client-minio` | `MIGRATED` | переведён на `s3-client-kora`; компиляция + 6/6 тестов (Minio-контейнер) |
-| `examples/java/kora-java-camunda-engine` | `MIGRATED` | компиляция + 3/3 тестов; правок не потребовалось |
-| `examples/java/kora-java-camunda-zeebe-worker` | `MIGRATED` | компиляция + 1/1 тест; потребовал двух фиксов фреймворка |
-| `examples/java/kora-java-crud-submodule` | `MIGRATED` | компиляция всех четырёх проектов + 6 тестов; blackbox в Docker — см. ниже |
-| `examples/graalvm/kora-java-graalvm-*` | `MIGRATION_IN_PROGRESS` | resilient-спецификации и конфигурация мигрированы; JVM-сборка не перепроверена, native отложен |
-| прочие `examples/java/*` | `MIGRATED` | вся ветка `examples/java` компилируется (main+test), кроме `database-cassandra` |
-| `examples/graalvm/kora-java-graalvm-crud-{jdbc,r2dbc,vertx}` | `MIGRATION_IN_PROGRESS` | JVM-компиляция проходит; native отложен по решению |
-| `examples/graalvm/kora-java-graalvm-kafka` | `MIGRATION_IN_PROGRESS` | компилируется; `UndertowModule` → `UndertowSystemHttpServerModule` |
-| `examples/graalvm/kora-java-graalvm-crud-cassandra` | `BLOCKED_BY_FRAMEWORK_BUG` | тот же дефект генератора для `CompletableFuture<T>` |
-| `guides/java/*` | `MIGRATED` | компилируются все, кроме `openapi-http-server-advanced`; `s3-app` — 2/2 теста |
-| `guides/java/kora-java-guide-openapi-http-server-advanced-app` | `BLOCKED_BY_FRAMEWORK_BUG` | контракты мигрированы; выбор шаблонного маппера для `HttpResponseEntity<T>` |
-| `examples/kotlin/*`, `guides/kotlin/*` | `READY_FOR_MIGRATION` | не начинались в этом проходе |
+Мигрированы все Java- и Kotlin-модули репозитория. GraalVM-часть мигрирована в JVM-части;
+native-сборка отложена отдельным решением и остаётся единственной незакрытой областью.
 
-### Динамика сплошной сборки
+По ходу миграции найдено и исправлено **двадцать дефектов самого фреймворка** — каждый отдельной
+веткой от `master` в `../kora`, с регрессионным тестом, проверенным в обе стороны. Ничего не
+запушено и PR не создавались; описания готовы в `KORA_2_PULL_REQUESTS.md`, разбор причин —
+в `KORA_2_FRAMEWORK_ISSUES.md`.
 
-`./gradlew testClasses --continue --no-build-cache` по всему репозиторию:
+Самые тяжёлые из них не проявлялись как ошибка компиляции:
 
-| Проход | Упавших задач |
+| Дефект | Почему был незаметен |
 |---|---|
-| начало сессии | 58 |
-| после S3, camunda, resilient-спецификаций | 54 |
-| после конфигурации в текстовых блоках тестов | 52 |
-| после `ConfigValueMapper` | 47 |
-| после интерцепторов guides и `executor()` | 42 |
-| после S3-гайда и остатков `guides/java` | 40 |
+| ни один спан не экспортируется (`OpentelemetryContext.with` теряет обёртку) | приложение работает, метрики идут, трассировка молча пуста |
+| эндпоинт метрик всегда «Metric Scraper disabled» | HTTP 200, тело-заглушка |
+| java-генератор OpenAPI ставит `to = minimum` в `@Range` | тесты не отправляли значений выше минимума |
+| gRPC-приложение завершается сразу после старта | контейнер выходит с кодом 0, как при штатном завершении |
+| `TestGraph` теряет permit семафора при упавшей инициализации | прогон висит вместо падения, видна только первая ошибка |
 
-Из 40 оставшихся 37 — Kotlin, к которому не приступали. По Java осталось три модуля:
-два cassandra (дефект генератора для `CompletableFuture<T>`) и
-`kora-java-guide-openapi-http-server-advanced-app` (выбор шаблонного маппера).
+## Закрытые ранее открытые вопросы
 
-Все оставшиеся падения — либо Kotlin (не начинали), либо перечисленные выше Java-модули.
+**Порядок схем авторизации в `openapi-generator-http-client`.** Записывался как вопрос к дизайну
+фреймворка — оказался ошибкой примера: заглушки bearer/oAuth возвращали константы и перебивали
+apiKey. Провайдер без учётных данных обязан возвращать `null`. Заодно выяснилось, что секцию
+безопасности генератор читает по `clientConfigPrefix`, а не по `securityConfigPrefix`.
 
-### Открытый вопрос по `kora-java-crud-submodule`
+**`BlackBoxTests` в `kora-java-crud-submodule`.** Контейнер выходил с кодом 255, не дождавшись
+`/system/readiness`. Причина — ключ `openapi.management.file`, который в 2.0 называется `files`
+и молча не читался. 7/7.
 
-Из семи тестов проходят шесть: `PetComponentTests`, `VetComponentTests` и `IntegrationTests`
-зелёные, то есть граф, конфигурация, resilient-спецификации и репозитории мигрированы верно.
-Красным остаётся `BlackBoxTests` — тест поднимает приложение образом в Docker, и контейнер
-выходит с кодом 255, не дождавшись `/system/readiness` на 8085.
+**«Для `HttpResponseEntity<T>` выбирается не тот шаблонный маппер».** Опровергнуто экспериментом:
+это каскад от дефекта multipart-конвертера. `GraphBuilder` форкает весь оставшийся граф на каждого
+кандидата шаблона, поэтому одна нерешаемая зависимость роняет все форки и печатает ошибку про
+несвязанный компонент.
 
-Что проверено и исключено: конфигурация `httpServer.port` / `httpServer.system.port`
-соответствует 2.0 и совпадает с эталонным `kora-java-crud`, у которого такой же blackbox-тест
-проходит; пути `/system/readiness` и `/system/liveness` — значения по умолчанию
-`SystemHttpServerConfig`; набор модулей `@KoraApp` совпадает с эталоном; `db` → `jdbc`
-и окно circuit breaker мигрированы и в ресурсах, и в текстовых блоках тестов.
+**«gRPC требует решения по дизайну фреймворка».** Тоже опровергнуто: `XnioLifecycle` уже держит
+non-daemon-поток ровно для этого и прямо это комментирует — контракт установлен, gRPC-сервер просто
+перестал его выполнять после перехода на виртуальные потоки.
 
-До причины не докопались: вывод контейнера в лог теста не попадает (`Slf4jLogConsumer`
-глушится `logback-test.xml`), а без него сообщение о падении приложения недоступно.
-Следующий шаг — снять фильтр в `logback-test.xml` либо запустить собранный образ вручную
-с теми же переменными окружения.
-
-### Замечание по именованию S3-модулей
+## Замечание по именованию S3-модулей
 
 `kora-java-s3-client-minio` и `kora-kotlin-s3-client-minio` в 2.0 демонстрируют уже не SDK Minio
 (реализации `s3-client-minio` в 2.0 нет), а декларативный клиент `s3-client-kora`, который гоняется
@@ -102,181 +94,168 @@ export JAVA_HOME=<JDK 25>
 в README. Расхождение объяснено в README самих модулей. Если решение будет принято, естественные
 имена — `kora-java-s3-client-kora` / `kora-kotlin-s3-client-kora`.
 
-### Закрыто: порядок схем авторизации в `openapi-generator-http-client`
+## Что осталось
 
-`HttpClientPetV3Tests` ожидал `X-API-KEY`, а запрос уходил с `Authorization`. Записывалось как
-открытый вопрос к дизайну фреймворка — **оказалось ошибкой в самом примере**.
+- **GraalVM native-сборка** — отложена отдельным решением. JVM-часть трёх модулей
+  `examples/graalvm/*` мигрирована и компилируется; `native-image` не запускался.
+- Диагностика `GraphBuilder` при провале всех форков шаблона — дефект подтверждён и описан,
+  но не исправлен: нужен дизайн вывода (сводка по всем кандидатам вместо одного случайного).
 
-Сгенерированный интерцептор перебирает схемы по порядку (bearer → apiKey → basic → oAuth) и берёт
-первую, чей `HttpClientTokenProvider` вернул токен. `null` означает «у этой схемы нет учётных
-данных, пробуй следующую». В примере провайдеры bearer и oAuth были заглушками, возвращавшими
-константы `"bearer-token"` / `"oauth-token"`, и bearer всегда перебивал apiKey. Провайдеры
-исправлены на `null`.
+## Модули
 
-Заодно вскрылось, что в Kotlin-модуле секция безопасности лежала под `openapiAuth`, тогда как
-генератор читает её по `clientConfigPrefix` (`httpClient.petV3.apiKeyAuth`), а опция
-`securityConfigPrefix` попадает только в неиспользуемую аннотацию `@ConfigSource` на вложенной
-записи. Конфигурация приведена к тому, что генератор действительно читает.
+Колонки: язык, рантайм, основные интеграции Kora, статус, результат компиляции, результат
+кодогенерации, результат тестов, результат native-сборки. Модули `examples/graalvm/*` в прогоне
+тестов не участвуют — у них нет тестов на JVM-части.
 
-Итог: 4/4 в Java и 4/4 в Kotlin. Прогон занимает ~12 секунд против прежних 22 минут — до фикса
-`fix/test-junit5-graph-init-lock-leak` первая упавшая инициализация графа блокировала весь модуль.
-
-Два дефекта фреймворка, блокировавшие `http-client` и `kafka`, исправлены локально в `../kora` с регрессионными тестами — см. `KORA_2_PULL_REQUESTS.md`.
-
-## Классы оставшихся проблем
-
-1. **Краши KSP-процессоров Kora 2.0** (22 модуля) — процессор падает с внутренним исключением вместо диагностики: `NoSuchElementException: No TypeParameter found for index T`, `KaInvalidLifetimeOwnerAccessException`, `NullPointerException`, `IllegalStateException: Required value was null`, `JacksonIOException: Stream closed`, `ClassCastException: String → KSType`. Часть из них — реакция на ещё не мигрированный код (например `ClassCastException` в resilient-модулях вызван строковым `@CircuitBreaker("pet")`), часть проявляется на корректном коде. Разбор — в `KORA_2_FRAMEWORK_ISSUES.md`.
-2. **Строковый resilient-API** — `@CircuitBreaker("pet")` / `@Retry("pet")` / `@Timeout("pet")` заменены типизированными spec-интерфейсами.
-3. **S3-клиент** — пакеты `io.koraframework.s3.client.model` / `.annotation` и аннотация `@S3` изменены (самый крупный по числу ошибок модуль: `kora-java-s3-client-aws`, 162 ошибки).
-4. **Мапперы и интерцепторы как DI-компоненты** — классы, на которые ссылаются `@Mapping` / `@InterceptWith`, теперь инжектятся генерируемым модулем и обязаны быть `@Component`.
-5. **JSpecify-нуллабельность** — `@Nullable` как type-use аннотация ставится не везде, где стояла `jakarta.annotation.@Nullable`.
-6. **OpenAPI-генерация** — сгенерированные интерфейсы API оказываются package-private (`PetApi is not public …`), несовпадение сигнатур делегатов, `JsonNullable`.
-7. **`io.koraframework.config.common.extractor`** — пакет исчез, нужны новые типы извлечения конфигурации.
-8. **gRPC** — остатки `ru.tinkoff.grpc.client` в конфигурации proto-генерации.
-
-## Таблица модулей
-
-Колонка «Ошибок» — количество разобранных сообщений компилятора/процессора в последнем прогоне.
-
-| Модуль | Язык | Статус | Ошибок | Детали |
-|---|---|---|---|---|
-| `examples/graalvm/kora-java-graalvm-crud-cassandra` | Java | `READY_FOR_MIGRATION` | 68 | 38× cannot find symbol; 10× method does not override or implement a method from a supe |
-| `examples/graalvm/kora-java-graalvm-crud-jdbc` | Java | `READY_FOR_MIGRATION` | 50 | 38× cannot find symbol; 8× incompatible types: String cannot be converted to Class<?  |
-| `examples/graalvm/kora-java-graalvm-crud-r2dbc` | Java | `BLOCKED_BY_REMOVED_FUNCTIONALITY` | 0 | не входит в сборку 2.0 (интеграция удалена) |
-| `examples/graalvm/kora-java-graalvm-crud-vertx` | Java | `BLOCKED_BY_REMOVED_FUNCTIONALITY` | 0 | не входит в сборку 2.0 (интеграция удалена) |
-| `examples/graalvm/kora-java-graalvm-kafka` | Java | `READY_FOR_MIGRATION` | 4 | 4× cannot find symbol |
-| `examples/java/kora-java-cache-caffeine` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/java/kora-java-cache-redis` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/java/kora-java-camunda-engine` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/java/kora-java-camunda-zeebe-worker` | Java | `READY_FOR_MIGRATION` | 16 | 8× cannot find symbol; 4× package io.camunda.zeebe.client.api.response does not exis |
-| `examples/java/kora-java-config-hocon` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/java/kora-java-config-yaml` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/java/kora-java-crud` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/java/kora-java-crud-submodule/kora-java-crud-submodule-app` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/java/kora-java-crud-submodule/kora-java-crud-submodule-common` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/java/kora-java-crud-submodule/kora-java-crud-submodule-pet-api` | Java | `READY_FOR_MIGRATION` | 26 | 14× cannot find symbol; 8× incompatible types: String cannot be converted to Class<?  |
-| `examples/java/kora-java-crud-submodule/kora-java-crud-submodule-vet-api` | Java | `READY_FOR_MIGRATION` | 28 | 18× cannot find symbol; 10× incompatible types: String cannot be converted to Class<?  |
-| `examples/java/kora-java-database-cassandra` | Java | `READY_FOR_MIGRATION` | 14 | 6× cannot find symbol; 4× type annotation @org.jspecify.annotations.Nullable is not  |
-| `examples/java/kora-java-database-jdbc` | Java | `READY_FOR_MIGRATION` | 18 | 14× cannot find symbol; 4× type annotation @org.jspecify.annotations.Nullable is not  |
-| `examples/java/kora-java-database-r2dbc` | Java | `BLOCKED_BY_REMOVED_FUNCTIONALITY` | 0 | не входит в сборку 2.0 (интеграция удалена) |
-| `examples/java/kora-java-database-vertx` | Java | `BLOCKED_BY_REMOVED_FUNCTIONALITY` | 0 | не входит в сборку 2.0 (интеграция удалена) |
-| `examples/java/kora-java-grpc-client` | Java | `READY_FOR_MIGRATION` | 2 | 1× package ru.tinkoff.grpc.client does not exist; 1× cannot find symbol |
-| `examples/java/kora-java-grpc-server` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/java/kora-java-helloworld` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/java/kora-java-http-client` | Java | `READY_FOR_MIGRATION` | 13 | 13× cannot find symbol |
-| `examples/java/kora-java-http-server` | Java | `READY_FOR_MIGRATION` | 0 | сборка упала без разобранных сообщений |
-| `examples/java/kora-java-kafka` | Java | `READY_FOR_MIGRATION` | 8 | 2× Kafka records listener method has unsupported parameter:; 2× Kafka record listener method has unsupported parameter: |
-| `examples/java/kora-java-openapi-generator-http-client` | Java | `READY_FOR_MIGRATION` | 12 | 10× PetApi is not public in io.koraframework.example.openapi.p; 2× Dependency has non-reference type: |
-| `examples/java/kora-java-openapi-generator-http-server` | Java | `READY_FOR_MIGRATION` | 48 | 14× method does not override or implement a method from a supe; 10× cannot find symbol |
-| `examples/java/kora-java-resilient` | Java | `READY_FOR_MIGRATION` | 0 | сборка упала без разобранных сообщений |
-| `examples/java/kora-java-s3-client-aws` | Java | `READY_FOR_MIGRATION` | 162 | 74× package S3 does not exist; 68× cannot find symbol |
-| `examples/java/kora-java-s3-client-minio` | Java | `READY_FOR_MIGRATION` | 0 | сборка упала без разобранных сообщений |
-| `examples/java/kora-java-scheduling-jdk` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/java/kora-java-scheduling-quartz` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/java/kora-java-soap-client` | Java | `READY_FOR_MIGRATION` | 0 | сборка упала без разобранных сообщений |
-| `examples/java/kora-java-telemetry` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/java/kora-java-validation` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/kotlin/kora-kotlin-cache-caffeine` | Kotlin | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/kotlin/kora-kotlin-cache-redis` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] java.util.NoSuchElementException: No TypeParameter fou |
-| `examples/kotlin/kora-kotlin-camunda-engine` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] tools.jackson.core.exc.JacksonIOException: Stream clos |
-| `examples/kotlin/kora-kotlin-camunda-zeebe-worker` | Kotlin | `READY_FOR_MIGRATION` | 17 | 13× Unresolved reference 'X'.; 3× Overload resolution ambiguity between candidates: |
-| `examples/kotlin/kora-kotlin-config-hocon` | Kotlin | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/kotlin/kora-kotlin-config-yaml` | Kotlin | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/kotlin/kora-kotlin-crud` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] ksp.org.jetbrains.kotlin.analysis.api.lifetime.KaInval |
-| `examples/kotlin/kora-kotlin-crud-submodule/kora-kotlin-crud-submodule-app` | Kotlin | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/kotlin/kora-kotlin-crud-submodule/kora-kotlin-crud-submodule-common` | Kotlin | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/kotlin/kora-kotlin-crud-submodule/kora-kotlin-crud-submodule-pet-api` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] ksp.org.jetbrains.kotlin.analysis.api.lifetime.KaInval |
-| `examples/kotlin/kora-kotlin-crud-submodule/kora-kotlin-crud-submodule-vet-api` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] ksp.org.jetbrains.kotlin.analysis.api.lifetime.KaInval |
-| `examples/kotlin/kora-kotlin-database-cassandra` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] java.util.NoSuchElementException: No TypeParameter fou |
-| `examples/kotlin/kora-kotlin-database-jdbc` | Kotlin | `READY_FOR_MIGRATION` | 10 | 7× Unresolved reference 'X'.; 1× Annotation argument must be a compile-time constant. |
-| `examples/kotlin/kora-kotlin-database-r2dbc` | Kotlin | `BLOCKED_BY_REMOVED_FUNCTIONALITY` | 0 | не входит в сборку 2.0 (интеграция удалена) |
-| `examples/kotlin/kora-kotlin-database-vertx` | Kotlin | `BLOCKED_BY_REMOVED_FUNCTIONALITY` | 0 | не входит в сборку 2.0 (интеграция удалена) |
-| `examples/kotlin/kora-kotlin-grpc-client` | Kotlin | `READY_FOR_MIGRATION` | 3 | 3× Unresolved reference 'X'. |
-| `examples/kotlin/kora-kotlin-grpc-server` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] java.lang.NullPointerException |
-| `examples/kotlin/kora-kotlin-helloworld` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] java.util.NoSuchElementException: No TypeParameter fou |
-| `examples/kotlin/kora-kotlin-http-client` | Kotlin | `READY_FOR_MIGRATION` | 2 | 2× [ksp] /Users/dsudomoin/IdeaProjects/kora-examples/examples |
-| `examples/kotlin/kora-kotlin-http-server` | Kotlin | `READY_FOR_MIGRATION` | 77 | 72× Unresolved reference 'X'.; 2× Class 'X' is not abstract and does not implement abstract  |
-| `examples/kotlin/kora-kotlin-kafka` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] java.lang.IllegalStateException: Required value was nu |
-| `examples/kotlin/kora-kotlin-openapi-generator-http-client` | Kotlin | `READY_FOR_MIGRATION` | 1 | 1× [ksp] /Users/dsudomoin/IdeaProjects/kora-examples/examples |
-| `examples/kotlin/kora-kotlin-openapi-generator-http-server` | Kotlin | `READY_FOR_MIGRATION` | 31 | 14× Cannot infer type for type parameter 'X'. Specify it expli; 9× Unresolved reference 'X'. |
-| `examples/kotlin/kora-kotlin-resilient` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] java.lang.ClassCastException: class java.lang.String c |
-| `examples/kotlin/kora-kotlin-s3-client-aws` | Kotlin | `READY_FOR_MIGRATION` | 1 | 1× [ksp] /Users/dsudomoin/IdeaProjects/kora-examples/examples |
-| `examples/kotlin/kora-kotlin-s3-client-minio` | Kotlin | `READY_FOR_MIGRATION` | 0 | сборка упала без разобранных сообщений |
-| `examples/kotlin/kora-kotlin-scheduling-jdk` | Kotlin | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/kotlin/kora-kotlin-scheduling-quartz` | Kotlin | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/kotlin/kora-kotlin-soap-client` | Kotlin | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/kotlin/kora-kotlin-telemetry` | Kotlin | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `examples/kotlin/kora-kotlin-validation` | Kotlin | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/java/kora-java-guide-cache-app` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/java/kora-java-guide-cache-multi-level-app` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/java/kora-java-guide-config-hocon-app` | Java | `READY_FOR_MIGRATION` | 8 | 4× cannot find symbol; 2× package io.koraframework.config.common.extractor does not  |
-| `guides/java/kora-java-guide-config-yaml-app` | Java | `READY_FOR_MIGRATION` | 3 | 2× cannot find symbol; 1× package io.koraframework.config.common.extractor does not  |
-| `guides/java/kora-java-guide-database-cassandra-app` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/java/kora-java-guide-database-jdbc-advanced-app` | Java | `READY_FOR_MIGRATION` | 4 | 4× cannot find symbol |
-| `guides/java/kora-java-guide-database-jdbc-app` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/java/kora-java-guide-dependency-injection/kora-java-guide-dependency-injection-app` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/java/kora-java-guide-dependency-injection/kora-java-guide-dependency-injection-common` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/java/kora-java-guide-dependency-injection/kora-java-guide-dependency-injection-lib` | Java | `READY_FOR_MIGRATION` | 4 | 2× package io.koraframework.config.common.extractor does not ; 2× cannot find symbol |
-| `guides/java/kora-java-guide-dependency-injection/kora-java-guide-dependency-injection-submodule` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/java/kora-java-guide-dependency-injection-introduction-app` | Java | `READY_FOR_MIGRATION` | 0 | сборка упала без разобранных сообщений |
-| `guides/java/kora-java-guide-getting-started-app` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/java/kora-java-guide-grpc-client-advanced-app` | Java | `READY_FOR_MIGRATION` | 4 | 2× package ru.tinkoff.grpc.client does not exist; 2× cannot find symbol |
-| `guides/java/kora-java-guide-grpc-client-app` | Java | `READY_FOR_MIGRATION` | 4 | 2× package ru.tinkoff.grpc.client does not exist; 2× cannot find symbol |
-| `guides/java/kora-java-guide-grpc-server-advanced-app` | Java | `READY_FOR_MIGRATION` | 0 | сборка упала без разобранных сообщений |
-| `guides/java/kora-java-guide-grpc-server-app` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/java/kora-java-guide-http-client-advanced-app` | Java | `READY_FOR_MIGRATION` | 14 | 12× cannot find symbol; 2× No component found for dependency: |
-| `guides/java/kora-java-guide-http-client-app` | Java | `READY_FOR_MIGRATION` | 2 | 2× cannot find symbol |
-| `guides/java/kora-java-guide-http-server-advanced-app` | Java | `READY_FOR_MIGRATION` | 6 | 6× cannot find symbol |
-| `guides/java/kora-java-guide-http-server-app` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/java/kora-java-guide-json-app` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/java/kora-java-guide-messaging-kafka-app` | Java | `READY_FOR_MIGRATION` | 2 | 2× No component found for dependency: |
-| `guides/java/kora-java-guide-observability-app` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/java/kora-java-guide-openapi-http-client-app` | Java | `READY_FOR_MIGRATION` | 8 | 6× UsersApi is not public in io.koraframework.guide.openapi.h; 2× Dependency has non-reference type: |
-| `guides/java/kora-java-guide-openapi-http-server-advanced-app` | Java | `READY_FOR_MIGRATION` | 18 | 10× cannot find symbol; 2× wrong number of type arguments; required 2 |
-| `guides/java/kora-java-guide-openapi-http-server-app` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/java/kora-java-guide-resilient-app` | Java | `READY_FOR_MIGRATION` | 26 | 16× cannot find symbol; 4× incompatible types: String cannot be converted to Class<?  |
-| `guides/java/kora-java-guide-s3-app` | Java | `READY_FOR_MIGRATION` | 48 | 24× cannot find symbol; 10× package io.koraframework.s3.client.model does not exist |
-| `guides/java/kora-java-guide-testing-black-box-app` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/java/kora-java-guide-testing-integration-app` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/java/kora-java-guide-testing-junit-app` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/java/kora-java-guide-validation-app` | Java | `READY_FOR_MIGRATION` | 2 | 2× No component found for dependency: |
-| `guides/kotlin/kora-kotlin-guide-cache-app` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] java.util.NoSuchElementException: No TypeParameter fou |
-| `guides/kotlin/kora-kotlin-guide-cache-multi-level-app` | Kotlin | `READY_FOR_MIGRATION` | 2 | 2× Unresolved reference 'X'. |
-| `guides/kotlin/kora-kotlin-guide-config-hocon-app` | Kotlin | `READY_FOR_MIGRATION` | 6 | 6× Unresolved reference 'X'. |
-| `guides/kotlin/kora-kotlin-guide-config-yaml-app` | Kotlin | `READY_FOR_MIGRATION` | 6 | 6× Unresolved reference 'X'. |
-| `guides/kotlin/kora-kotlin-guide-database-cassandra-app` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] tools.jackson.core.exc.JacksonIOException: Stream clos |
-| `guides/kotlin/kora-kotlin-guide-database-jdbc-advanced-app` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] java.util.NoSuchElementException: No TypeParameter fou |
-| `guides/kotlin/kora-kotlin-guide-database-jdbc-app` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] java.util.NoSuchElementException: No TypeParameter fou |
-| `guides/kotlin/kora-kotlin-guide-dependency-injection/kora-kotlin-guide-dependency-injection-app` | Kotlin | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/kotlin/kora-kotlin-guide-dependency-injection/kora-kotlin-guide-dependency-injection-common` | Kotlin | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/kotlin/kora-kotlin-guide-dependency-injection/kora-kotlin-guide-dependency-injection-lib` | Kotlin | `READY_FOR_MIGRATION` | 3 | 3× Unresolved reference 'X'. |
-| `guides/kotlin/kora-kotlin-guide-dependency-injection/kora-kotlin-guide-dependency-injection-submodule` | Kotlin | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/kotlin/kora-kotlin-guide-dependency-injection-introduction-app` | Kotlin | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/kotlin/kora-kotlin-guide-getting-started-app` | Kotlin | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/kotlin/kora-kotlin-guide-grpc-client-advanced-app` | Kotlin | `READY_FOR_MIGRATION` | 3 | 3× Unresolved reference 'X'. |
-| `guides/kotlin/kora-kotlin-guide-grpc-client-app` | Kotlin | `READY_FOR_MIGRATION` | 3 | 3× Unresolved reference 'X'. |
-| `guides/kotlin/kora-kotlin-guide-grpc-server-advanced-app` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] java.lang.NullPointerException |
-| `guides/kotlin/kora-kotlin-guide-grpc-server-app` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] java.lang.NullPointerException |
-| `guides/kotlin/kora-kotlin-guide-http-client-advanced-app` | Kotlin | `READY_FOR_MIGRATION` | 26 | 10× Unresolved reference 'X'.; 3× Class 'X' is not abstract and does not implement abstract  |
-| `guides/kotlin/kora-kotlin-guide-http-client-app` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] java.util.NoSuchElementException: No TypeParameter fou |
-| `guides/kotlin/kora-kotlin-guide-http-server-advanced-app` | Kotlin | `READY_FOR_MIGRATION` | 33 | 19× Unresolved reference 'X'.; 3× Cannot infer type for value parameter 'X'. Specify it expl |
-| `guides/kotlin/kora-kotlin-guide-http-server-app` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] java.util.NoSuchElementException: No TypeParameter fou |
-| `guides/kotlin/kora-kotlin-guide-json-app` | Kotlin | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/kotlin/kora-kotlin-guide-messaging-kafka-app` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] java.util.NoSuchElementException: No TypeParameter fou |
-| `guides/kotlin/kora-kotlin-guide-observability-app` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] java.util.NoSuchElementException: No TypeParameter fou |
-| `guides/kotlin/kora-kotlin-guide-openapi-http-client-app` | Kotlin | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/kotlin/kora-kotlin-guide-openapi-http-server-advanced-app` | Kotlin | `READY_FOR_MIGRATION` | 18 | 7× Unresolved reference 'X'.; 3× Cannot infer type for type parameter 'X'. Specify it expli |
-| `guides/kotlin/kora-kotlin-guide-openapi-http-server-app` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] java.util.NoSuchElementException: No TypeParameter fou |
-| `guides/kotlin/kora-kotlin-guide-resilient-app` | Kotlin | `BLOCKED_BY_FRAMEWORK_BUG` | 1 | KSP-процессор падает: [ksp] tools.jackson.core.exc.JacksonIOException: Stream clos |
-| `guides/kotlin/kora-kotlin-guide-s3-app` | Kotlin | `READY_FOR_MIGRATION` | 1 | 1× [ksp] /Users/dsudomoin/IdeaProjects/kora-examples/guides/k |
-| `guides/kotlin/kora-kotlin-guide-testing-black-box-app` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/kotlin/kora-kotlin-guide-testing-integration-app` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/kotlin/kora-kotlin-guide-testing-junit-app` | Java | `MIGRATION_IN_PROGRESS` | 0 | компилируется (main+test); тесты ещё не прогонялись |
-| `guides/kotlin/kora-kotlin-guide-validation-app` | Kotlin | `READY_FOR_MIGRATION` | 1 | 1× [ksp] /Users/dsudomoin/IdeaProjects/kora-examples/guides/k |
-
+| Модуль | Язык | Рантайм | Интеграции Kora | Статус | Компиляция | Кодоген | Тесты | Native |
+|---|---|---|---|---|---|---|---|---|
+| `examples/graalvm/kora-java-graalvm-crud-cassandra` | Java | JVM + GraalVM | openapi-gen, http-server, cassandra, metrics, json, validation, cache-redis, resilient, config-hocon, openapi-mgmt, logback | `MIGRATION_IN_PROGRESS` | JVM: OK | — | не прогонялись | отложено |
+| `examples/graalvm/kora-java-graalvm-crud-jdbc` | Java | JVM + GraalVM | openapi-gen, http-server, jdbc, metrics, json, validation, cache-caffeine, resilient, config-hocon, openapi-mgmt, logback | `MIGRATION_IN_PROGRESS` | JVM: OK | — | не прогонялись | отложено |
+| `examples/graalvm/kora-java-graalvm-kafka` | Java | JVM + GraalVM | http-server, kafka, json, config-yaml, metrics, logback | `MIGRATION_IN_PROGRESS` | JVM: OK | — | не прогонялись | отложено |
+| `examples/java/kora-java-cache-caffeine` | Java | JVM | cache-caffeine, logback, config-hocon | `MIGRATED` | OK | OK | 10/10 | — |
+| `examples/java/kora-java-cache-redis` | Java | JVM | cache-redis, logback, config-hocon | `MIGRATED` | OK | OK | 9/9 | — |
+| `examples/java/kora-java-camunda-engine` | Java | JVM | http-server, camunda-engine, json, jdbc, logback, config-hocon | `MIGRATED` | OK | OK | 3/3 | — |
+| `examples/java/kora-java-camunda-zeebe-worker` | Java | JVM | zeebe, scheduling, logback, config-hocon | `MIGRATED` | OK | OK | 1/1 | — |
+| `examples/java/kora-java-config-hocon` | Java | JVM | logback, config-hocon | `MIGRATED` | OK | OK | 1/1 | — |
+| `examples/java/kora-java-config-yaml` | Java | JVM | logback, config-yaml | `MIGRATED` | OK | OK | 1/1 | — |
+| `examples/java/kora-java-crud` | Java | JVM | openapi-gen, http-server, jdbc, metrics, json, validation, cache-caffeine, resilient, config-hocon, openapi-mgmt, logback | `MIGRATED` | OK | OK | 9/9 | — |
+| `examples/java/kora-java-crud-submodule/kora-java-crud-submodule-app` | Java | JVM | openapi-gen, http-server, config-hocon, logback, json, metrics, validation, openapi-mgmt | `MIGRATED` | OK | OK | 7/7 | — |
+| `examples/java/kora-java-crud-submodule/kora-java-crud-submodule-common` | Java | JVM | — | `MIGRATED` | OK | OK | нет тестов | — |
+| `examples/java/kora-java-crud-submodule/kora-java-crud-submodule-pet-api` | Java | JVM | jdbc, cache-caffeine, resilient, config-hocon | `MIGRATED` | OK | OK | 2/2 | — |
+| `examples/java/kora-java-crud-submodule/kora-java-crud-submodule-vet-api` | Java | JVM | jdbc, cache-caffeine, resilient, config-hocon | `MIGRATED` | OK | OK | 2/2 | — |
+| `examples/java/kora-java-database-cassandra` | Java | JVM | cassandra, logback, config-hocon | `MIGRATED` | OK | OK | 9/9 | — |
+| `examples/java/kora-java-database-jdbc` | Java | JVM | jdbc, logback, config-hocon | `MIGRATED` | OK | OK | 22/22 | — |
+| `examples/java/kora-java-grpc-client` | Java | JVM | grpc-client, logback, config-hocon | `MIGRATED` | OK | OK | 1/1 | — |
+| `examples/java/kora-java-grpc-server` | Java | JVM | grpc-server, logback, config-hocon | `MIGRATED` | OK | OK | 1/1 | — |
+| `examples/java/kora-java-helloworld` | Java | JVM | http-server, json, config-hocon, logback | `MIGRATED` | OK | OK | 2/2 | — |
+| `examples/java/kora-java-http-client` | Java | JVM | http-client, json, logback, config-hocon | `MIGRATED` | OK | OK | 9/9 | — |
+| `examples/java/kora-java-http-server` | Java | JVM | http-server, json, validation, logback, config-hocon, http-client | `MIGRATED` | OK | OK | 16/16 | — |
+| `examples/java/kora-java-kafka` | Java | JVM | kafka, json, logback, config-hocon | `MIGRATED` | OK | OK | 24/24 | — |
+| `examples/java/kora-java-openapi-generator-http-client` | Java | JVM | openapi-gen, validation, http-client, json, logback, config-hocon | `MIGRATED` | OK | OK | 4/4 | — |
+| `examples/java/kora-java-openapi-generator-http-server` | Java | JVM | openapi-gen, validation, http-server, json, logback, config-hocon | `MIGRATED` | OK | OK | 2/2 | — |
+| `examples/java/kora-java-resilient` | Java | JVM | resilient, logback, config-hocon | `MIGRATED` | OK | OK | 1/1 | — |
+| `examples/java/kora-java-s3-client-aws` | Java | JVM | s3-aws, http-client, logback, config-hocon | `MIGRATED` | OK | OK | 5/5 | — |
+| `examples/java/kora-java-s3-client-minio` | Java | JVM | s3-kora, http-client, logback, config-hocon | `MIGRATED` | OK | OK | 6/6 | — |
+| `examples/java/kora-java-scheduling-jdk` | Java | JVM | scheduling, logback, config-hocon | `MIGRATED` | OK | OK | 4/4 | — |
+| `examples/java/kora-java-scheduling-quartz` | Java | JVM | scheduling-quartz, logback, config-hocon | `MIGRATED` | OK | OK | 3/3 | — |
+| `examples/java/kora-java-soap-client` | Java | JVM | json, http-client, soap, logback, config-hocon | `MIGRATED` | OK | OK | 1/1 | — |
+| `examples/java/kora-java-telemetry` | Java | JVM | metrics, tracing, http-server, logback, config-hocon | `MIGRATED` | OK | OK | 4/4 | — |
+| `examples/java/kora-java-validation` | Java | JVM | validation, logback, config-hocon | `MIGRATED` | OK | OK | 5/5 | — |
+| `examples/kotlin/kora-kotlin-cache-caffeine` | Kotlin | JVM | cache-caffeine, config-hocon, logback | `MIGRATED` | OK | OK | 10/10 | — |
+| `examples/kotlin/kora-kotlin-cache-redis` | Kotlin | JVM | cache-redis, config-hocon, logback | `MIGRATED` | OK | OK | 9/9 | — |
+| `examples/kotlin/kora-kotlin-camunda-engine` | Kotlin | JVM | http-server, camunda-engine, json, jdbc, logback, config-hocon | `MIGRATED` | OK | OK | 3/3 | — |
+| `examples/kotlin/kora-kotlin-camunda-zeebe-worker` | Kotlin | JVM | zeebe, scheduling, logback, config-hocon, json | `MIGRATED` | OK | OK | 1/1 | — |
+| `examples/kotlin/kora-kotlin-config-hocon` | Kotlin | JVM | config-hocon, logback | `MIGRATED` | OK | OK | 1/1 | — |
+| `examples/kotlin/kora-kotlin-config-yaml` | Kotlin | JVM | config-yaml, logback | `MIGRATED` | OK | OK | 1/1 | — |
+| `examples/kotlin/kora-kotlin-crud` | Kotlin | JVM | openapi-gen, http-server, http-client, jdbc, metrics, json, validation, cache-caffeine, resilient, config-hocon, openapi-mgmt, logback | `MIGRATED` | OK | OK | 9/9 | — |
+| `examples/kotlin/kora-kotlin-crud-submodule/kora-kotlin-crud-submodule-app` | Kotlin | JVM | openapi-gen, http-server, config-hocon, logback, json, metrics, validation, openapi-mgmt | `MIGRATED` | OK | OK | 7/7 | — |
+| `examples/kotlin/kora-kotlin-crud-submodule/kora-kotlin-crud-submodule-common` | Kotlin | JVM | — | `MIGRATED` | OK | OK | нет тестов | — |
+| `examples/kotlin/kora-kotlin-crud-submodule/kora-kotlin-crud-submodule-pet-api` | Kotlin | JVM | jdbc, cache-caffeine, resilient, config-hocon | `MIGRATED` | OK | OK | 2/2 | — |
+| `examples/kotlin/kora-kotlin-crud-submodule/kora-kotlin-crud-submodule-vet-api` | Kotlin | JVM | jdbc, cache-caffeine, resilient, config-hocon | `MIGRATED` | OK | OK | 2/2 | — |
+| `examples/kotlin/kora-kotlin-database-cassandra` | Kotlin | JVM | cassandra, config-hocon, logback | `MIGRATED` | OK | OK | 8/8 | — |
+| `examples/kotlin/kora-kotlin-database-jdbc` | Kotlin | JVM | jdbc, json, logback, config-hocon | `MIGRATED` | OK | OK | 18/18 | — |
+| `examples/kotlin/kora-kotlin-grpc-client` | Kotlin | JVM | grpc-client, logback, config-hocon | `MIGRATED` | OK | OK | 1/1 | — |
+| `examples/kotlin/kora-kotlin-grpc-server` | Kotlin | JVM | grpc-server, logback, config-hocon | `MIGRATED` | OK | OK | 1/1 | — |
+| `examples/kotlin/kora-kotlin-helloworld` | Kotlin | JVM | http-server, json, config-hocon, logback | `MIGRATED` | OK | OK | 2/2 | — |
+| `examples/kotlin/kora-kotlin-http-client` | Kotlin | JVM | http-client, json, logback, config-hocon | `MIGRATED` | OK | OK | 11/11 | — |
+| `examples/kotlin/kora-kotlin-http-server` | Kotlin | JVM | http-server, json, validation, config-hocon, logback, http-client | `MIGRATED` | OK | OK | 17/17 | — |
+| `examples/kotlin/kora-kotlin-kafka` | Kotlin | JVM | kafka, json, logback, config-hocon | `MIGRATED` | OK | OK | 24/24 | — |
+| `examples/kotlin/kora-kotlin-openapi-generator-http-client` | Kotlin | JVM | openapi-gen, validation, http-client, json, logback, config-hocon | `MIGRATED` | OK | OK | 4/4 | — |
+| `examples/kotlin/kora-kotlin-openapi-generator-http-server` | Kotlin | JVM | openapi-gen, validation, http-server, json, logback, config-hocon | `MIGRATED` | OK | OK | 2/2 | — |
+| `examples/kotlin/kora-kotlin-resilient` | Kotlin | JVM | resilient, config-hocon, logback | `MIGRATED` | OK | OK | 1/1 | — |
+| `examples/kotlin/kora-kotlin-s3-client-aws` | Kotlin | JVM | s3-aws, http-client, logback, config-hocon | `MIGRATED` | OK | OK | 5/5 | — |
+| `examples/kotlin/kora-kotlin-s3-client-minio` | Kotlin | JVM | s3-kora, http-client, logback, config-hocon | `MIGRATED` | OK | OK | 6/6 | — |
+| `examples/kotlin/kora-kotlin-scheduling-jdk` | Kotlin | JVM | scheduling, config-hocon, logback | `MIGRATED` | OK | OK | 4/4 | — |
+| `examples/kotlin/kora-kotlin-scheduling-quartz` | Kotlin | JVM | scheduling-quartz, config-hocon, logback | `MIGRATED` | OK | OK | 3/3 | — |
+| `examples/kotlin/kora-kotlin-soap-client` | Kotlin | JVM | json, http-client, soap, logback, config-hocon | `MIGRATED` | OK | OK | 1/1 | — |
+| `examples/kotlin/kora-kotlin-telemetry` | Kotlin | JVM | http-server, json, metrics, tracing, config-hocon, logback | `MIGRATED` | OK | OK | 4/4 | — |
+| `examples/kotlin/kora-kotlin-validation` | Kotlin | JVM | validation, config-hocon, logback | `MIGRATED` | OK | OK | 5/5 | — |
+| `guides/java/kora-java-guide-cache-app` | Java | JVM | cache-caffeine, config-hocon, http-server, json, logback | `MIGRATED` | OK | OK | 5/5 | — |
+| `guides/java/kora-java-guide-cache-multi-level-app` | Java | JVM | cache-caffeine, cache-redis, config-hocon, http-server, json, logback | `MIGRATED` | OK | OK | 4/4 | — |
+| `guides/java/kora-java-guide-config-hocon-app` | Java | JVM | config-hocon, logback | `MIGRATED` | OK | OK | 3/3 | — |
+| `guides/java/kora-java-guide-config-yaml-app` | Java | JVM | config-yaml, logback | `MIGRATED` | OK | OK | 3/3 | — |
+| `guides/java/kora-java-guide-database-cassandra-app` | Java | JVM | config-hocon, cassandra, http-server, json, logback | `MIGRATED` | OK | OK | 3/3 | — |
+| `guides/java/kora-java-guide-database-jdbc-advanced-app` | Java | JVM | config-hocon, flyway, jdbc, http-server, json, logback | `MIGRATED` | OK | OK | 4/4 | — |
+| `guides/java/kora-java-guide-database-jdbc-app` | Java | JVM | config-hocon, flyway, jdbc, http-server, json, logback | `MIGRATED` | OK | OK | нет тестов | — |
+| `guides/java/kora-java-guide-dependency-injection-introduction-app` | Java | JVM | config-hocon, logback | `MIGRATED` | OK | OK | 3/3 | — |
+| `guides/java/kora-java-guide-dependency-injection/kora-java-guide-dependency-injection-app` | Java | JVM | config-hocon, logback | `MIGRATED` | OK | OK | 1/1 | — |
+| `guides/java/kora-java-guide-dependency-injection/kora-java-guide-dependency-injection-common` | Java | JVM | — | `MIGRATED` | OK | OK | нет тестов | — |
+| `guides/java/kora-java-guide-dependency-injection/kora-java-guide-dependency-injection-lib` | Java | JVM | config-common | `MIGRATED` | OK | OK | нет тестов | — |
+| `guides/java/kora-java-guide-dependency-injection/kora-java-guide-dependency-injection-submodule` | Java | JVM | — | `MIGRATED` | OK | OK | нет тестов | — |
+| `guides/java/kora-java-guide-getting-started-app` | Java | JVM | config-hocon, http-server, json, logback | `MIGRATED` | OK | OK | 1/1 | — |
+| `guides/java/kora-java-guide-grpc-client-advanced-app` | Java | JVM | config-hocon, grpc-client, http-server, json, logback | `MIGRATED` | OK | OK | 4/4 | — |
+| `guides/java/kora-java-guide-grpc-client-app` | Java | JVM | config-hocon, grpc-client, http-server, json, logback | `MIGRATED` | OK | OK | 6/6 | — |
+| `guides/java/kora-java-guide-grpc-server-advanced-app` | Java | JVM | config-hocon, grpc-server, logback | `MIGRATED` | OK | OK | 7/7 | — |
+| `guides/java/kora-java-guide-grpc-server-app` | Java | JVM | config-hocon, grpc-server, logback | `MIGRATED` | OK | OK | 6/6 | — |
+| `guides/java/kora-java-guide-http-client-advanced-app` | Java | JVM | config-hocon, http-client, http-server, json, logback | `MIGRATED` | OK | OK | 1/1 | — |
+| `guides/java/kora-java-guide-http-client-app` | Java | JVM | config-hocon, http-client, http-server, json, logback | `MIGRATED` | OK | OK | 5/5 | — |
+| `guides/java/kora-java-guide-http-server-advanced-app` | Java | JVM | config-hocon, http-server, json, logback | `MIGRATED` | OK | OK | нет тестов | — |
+| `guides/java/kora-java-guide-http-server-app` | Java | JVM | config-hocon, http-server, json, logback | `MIGRATED` | OK | OK | 1/1 | — |
+| `guides/java/kora-java-guide-json-app` | Java | JVM | config-hocon, http-server, json, logback | `MIGRATED` | OK | OK | 1/1 | — |
+| `guides/java/kora-java-guide-messaging-kafka-app` | Java | JVM | config-hocon, http-server, json, kafka, logback | `MIGRATED` | OK | OK | 2/2 | — |
+| `guides/java/kora-java-guide-observability-app` | Java | JVM | config-hocon, http-server, json, logback, metrics, tracing | `MIGRATED` | OK | OK | 5/5 | — |
+| `guides/java/kora-java-guide-openapi-http-client-app` | Java | JVM | openapi-gen, config-hocon, http-client, http-server, json, logback, validation | `MIGRATED` | OK | OK | 5/5 | — |
+| `guides/java/kora-java-guide-openapi-http-server-advanced-app` | Java | JVM | openapi-gen, config-hocon, http-server, json, logback, openapi-mgmt, validation | `MIGRATED` | OK | OK | 2/2 | — |
+| `guides/java/kora-java-guide-openapi-http-server-app` | Java | JVM | openapi-gen, config-hocon, http-server, json, logback, openapi-mgmt, validation | `MIGRATED` | OK | OK | 1/1 | — |
+| `guides/java/kora-java-guide-resilient-app` | Java | JVM | config-hocon, http-server, json, logback, resilient | `MIGRATED` | OK | OK | 8/8 | — |
+| `guides/java/kora-java-guide-s3-app` | Java | JVM | config-hocon, http-client, http-server, json, logback, s3-aws, s3-kora | `MIGRATED` | OK | OK | 2/2 | — |
+| `guides/java/kora-java-guide-testing-black-box-app` | Java | JVM | — | `MIGRATED` | OK | OK | 6/6 | — |
+| `guides/java/kora-java-guide-testing-integration-app` | Java | JVM | config-hocon, flyway, jdbc, http-client, http-server, json, logback | `MIGRATED` | OK | OK | 4/4 | — |
+| `guides/java/kora-java-guide-testing-junit-app` | Java | JVM | http-server | `MIGRATED` | OK | OK | 6/6 | — |
+| `guides/java/kora-java-guide-validation-app` | Java | JVM | config-hocon, http-server, json, logback, validation | `MIGRATED` | OK | OK | 13/13 | — |
+| `guides/kotlin/kora-kotlin-guide-cache-app` | Kotlin | JVM | cache-caffeine, config-hocon, http-server, json, logback | `MIGRATED` | OK | OK | 5/5 | — |
+| `guides/kotlin/kora-kotlin-guide-cache-multi-level-app` | Kotlin | JVM | cache-caffeine, cache-redis, config-hocon, http-server, json, logback | `MIGRATED` | OK | OK | 4/4 | — |
+| `guides/kotlin/kora-kotlin-guide-config-hocon-app` | Kotlin | JVM | config-hocon, logback | `MIGRATED` | OK | OK | 3/3 | — |
+| `guides/kotlin/kora-kotlin-guide-config-yaml-app` | Kotlin | JVM | config-yaml, logback | `MIGRATED` | OK | OK | 3/3 | — |
+| `guides/kotlin/kora-kotlin-guide-database-cassandra-app` | Kotlin | JVM | config-hocon, cassandra, http-server, json, logback | `MIGRATED` | OK | OK | 3/3 | — |
+| `guides/kotlin/kora-kotlin-guide-database-jdbc-advanced-app` | Kotlin | JVM | config-hocon, flyway, jdbc, http-server, json, logback | `MIGRATED` | OK | OK | 4/4 | — |
+| `guides/kotlin/kora-kotlin-guide-database-jdbc-app` | Kotlin | JVM | config-hocon, flyway, jdbc, http-server, json, logback | `MIGRATED` | OK | OK | нет тестов | — |
+| `guides/kotlin/kora-kotlin-guide-dependency-injection-introduction-app` | Kotlin | JVM | config-hocon, logback | `MIGRATED` | OK | OK | 3/3 | — |
+| `guides/kotlin/kora-kotlin-guide-dependency-injection/kora-kotlin-guide-dependency-injection-app` | Kotlin | JVM | config-hocon, logback | `MIGRATED` | OK | OK | 1/1 | — |
+| `guides/kotlin/kora-kotlin-guide-dependency-injection/kora-kotlin-guide-dependency-injection-common` | Kotlin | JVM | — | `MIGRATED` | OK | — | нет тестов | — |
+| `guides/kotlin/kora-kotlin-guide-dependency-injection/kora-kotlin-guide-dependency-injection-lib` | Kotlin | JVM | config-common | `MIGRATED` | OK | OK | нет тестов | — |
+| `guides/kotlin/kora-kotlin-guide-dependency-injection/kora-kotlin-guide-dependency-injection-submodule` | Kotlin | JVM | — | `MIGRATED` | OK | OK | нет тестов | — |
+| `guides/kotlin/kora-kotlin-guide-getting-started-app` | Kotlin | JVM | config-hocon, http-server, json, logback | `MIGRATED` | OK | OK | 2/2 | — |
+| `guides/kotlin/kora-kotlin-guide-grpc-client-advanced-app` | Kotlin | JVM | config-hocon, grpc-client, http-server, json, logback | `MIGRATED` | OK | OK | 4/4 | — |
+| `guides/kotlin/kora-kotlin-guide-grpc-client-app` | Kotlin | JVM | config-hocon, grpc-client, http-server, json, logback | `MIGRATED` | OK | OK | 6/6 | — |
+| `guides/kotlin/kora-kotlin-guide-grpc-server-advanced-app` | Kotlin | JVM | config-hocon, grpc-server, logback | `MIGRATED` | OK | OK | 7/7 | — |
+| `guides/kotlin/kora-kotlin-guide-grpc-server-app` | Kotlin | JVM | config-hocon, grpc-server, logback | `MIGRATED` | OK | OK | 6/6 | — |
+| `guides/kotlin/kora-kotlin-guide-http-client-advanced-app` | Kotlin | JVM | config-hocon, http-client, http-server, json, logback | `MIGRATED` | OK | OK | 1/1 | — |
+| `guides/kotlin/kora-kotlin-guide-http-client-app` | Kotlin | JVM | config-hocon, http-client, http-server, json, logback | `MIGRATED` | OK | OK | 5/5 | — |
+| `guides/kotlin/kora-kotlin-guide-http-server-advanced-app` | Kotlin | JVM | config-hocon, http-server, json, logback | `MIGRATED` | OK | OK | 3/3 | — |
+| `guides/kotlin/kora-kotlin-guide-http-server-app` | Kotlin | JVM | config-hocon, http-server, json, logback | `MIGRATED` | OK | OK | 2/2 | — |
+| `guides/kotlin/kora-kotlin-guide-json-app` | Kotlin | JVM | config-hocon, http-server, json, logback | `MIGRATED` | OK | OK | 2/2 | — |
+| `guides/kotlin/kora-kotlin-guide-messaging-kafka-app` | Kotlin | JVM | config-hocon, http-server, json, kafka, logback | `MIGRATED` | OK | OK | 2/2 | — |
+| `guides/kotlin/kora-kotlin-guide-observability-app` | Kotlin | JVM | config-hocon, http-server, json, logback, metrics, tracing | `MIGRATED` | OK | OK | 5/5 | — |
+| `guides/kotlin/kora-kotlin-guide-openapi-http-client-app` | Kotlin | JVM | openapi-gen, config-hocon, http-client, http-server, json, logback, validation | `MIGRATED` | OK | OK | 5/5 | — |
+| `guides/kotlin/kora-kotlin-guide-openapi-http-server-advanced-app` | Kotlin | JVM | openapi-gen, config-hocon, http-server, json, logback, openapi-mgmt, validation | `MIGRATED` | OK | OK | 2/2 | — |
+| `guides/kotlin/kora-kotlin-guide-openapi-http-server-app` | Kotlin | JVM | openapi-gen, config-hocon, http-server, json, logback, openapi-mgmt, validation | `MIGRATED` | OK | OK | 1/1 | — |
+| `guides/kotlin/kora-kotlin-guide-resilient-app` | Kotlin | JVM | config-hocon, http-server, json, logback, resilient | `MIGRATED` | OK | OK | 8/8 | — |
+| `guides/kotlin/kora-kotlin-guide-s3-app` | Kotlin | JVM | config-hocon, http-client, http-server, json, logback, s3-aws, s3-kora | `MIGRATED` | OK | OK | 2/2 | — |
+| `guides/kotlin/kora-kotlin-guide-testing-black-box-app` | Kotlin | JVM | — | `MIGRATED` | OK | — | 6/6 | — |
+| `guides/kotlin/kora-kotlin-guide-testing-integration-app` | Kotlin | JVM | config-hocon, flyway, jdbc, http-client, http-server, json, logback | `MIGRATED` | OK | OK | 4/4 | — |
+| `guides/kotlin/kora-kotlin-guide-testing-junit-app` | Kotlin | JVM | config-hocon, http-server, json, logback | `MIGRATED` | OK | OK | 6/6 | — |
+| `guides/kotlin/kora-kotlin-guide-validation-app` | Kotlin | JVM | config-hocon, http-server, json, logback, validation | `MIGRATED` | OK | OK | 13/13 | — |
 
 ## Легенда статусов
 
-Используются статусы из регламента миграции: `ALREADY_MIGRATED`, `READY_FOR_MIGRATION`, `MIGRATION_IN_PROGRESS`, `MIGRATED`, `PARTIALLY_MIGRATED`, `BLOCKED_BY_REMOVED_FUNCTIONALITY`, `BLOCKED_BY_FRAMEWORK_BUG`, `BLOCKED_BY_GRAALVM_BUILD`, `REQUIRES_REDESIGN`, `REQUIRES_INVESTIGATION`, `REQUIRES_GRAALVM_INVESTIGATION`, `NOT_APPLICABLE`.
+Используются статусы из регламента миграции: `ALREADY_MIGRATED`, `READY_FOR_MIGRATION`,
+`MIGRATION_IN_PROGRESS`, `MIGRATED`, `PARTIALLY_MIGRATED`, `BLOCKED_BY_REMOVED_FUNCTIONALITY`,
+`BLOCKED_BY_FRAMEWORK_BUG`, `BLOCKED_BY_GRAALVM_BUILD`, `REQUIRES_REDESIGN`,
+`REQUIRES_INVESTIGATION`, `REQUIRES_GRAALVM_INVESTIGATION`, `NOT_APPLICABLE`.
 
-GraalVM-модули дополнительно потребуют статуса по native-сборке: `native-image` в системе не установлен, поэтому native-часть намеренно отложена и будет отмечена отдельно (`REQUIRES_GRAALVM_INVESTIGATION`) после стабилизации JVM-части.
+`MIGRATION_IN_PROGRESS` у модулей `examples/graalvm/*` означает ровно одно: JVM-часть мигрирована
+и компилируется, а `native-image` не запускался. После решения по GraalVM они получат либо
+`MIGRATED`, либо `BLOCKED_BY_GRAALVM_BUILD` / `REQUIRES_GRAALVM_INVESTIGATION`.
+
+Модули на удалённой в 2.0 функциональности (`database-r2dbc`, `database-vertx`) исключены из
+`settings.gradle`, но **не удалены** из репозитория и помечены `BLOCKED_BY_REMOVED_FUNCTIONALITY`:
+
+| Модуль | Статус | Причина |
+|---|---|---|
+| `examples/java/kora-java-database-r2dbc` | `BLOCKED_BY_REMOVED_FUNCTIONALITY` | интеграция R2DBC удалена в 2.0 |
+| `examples/java/kora-java-database-vertx` | `BLOCKED_BY_REMOVED_FUNCTIONALITY` | интеграция Vert.x SQL удалена в 2.0 |
+| `examples/kotlin/kora-kotlin-database-r2dbc` | `BLOCKED_BY_REMOVED_FUNCTIONALITY` | то же |
+| `examples/kotlin/kora-kotlin-database-vertx` | `BLOCKED_BY_REMOVED_FUNCTIONALITY` | то же |
+| `examples/graalvm/kora-java-graalvm-crud-r2dbc` | `BLOCKED_BY_REMOVED_FUNCTIONALITY` | то же |
+| `examples/graalvm/kora-java-graalvm-crud-vertx` | `BLOCKED_BY_REMOVED_FUNCTIONALITY` | то же |
