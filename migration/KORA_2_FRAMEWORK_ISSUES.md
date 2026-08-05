@@ -468,6 +468,7 @@ export JAVA_HOME=<JDK 25>
 - Версии совпадают с теми, на которых собран сам фреймворк: Kotlin `2.4.10`, KSP `2.3.11` (`../kora/gradle/libs.versions.toml`). Рассинхрон версий как причина исключён.
 - **Подтверждено, что минимум один подвид — реакция на немигрированный код, а не самостоятельный баг.** `ClassCastException: String → KSType` в `kora-kotlin-resilient` возникает потому, что код всё ещё использует строковый API `@CircuitBreaker("pet")`, тогда как в 2.0 атрибут имеет тип класса. То есть первопричина — код примера; дефектом фреймворка здесь является **отсутствие диагностики** (падение вместо сообщения «ожидался класс, получена строка»).
 - Гипотеза (не проверена): часть подвидов `NoSuchElementException: No TypeParameter found` также вызвана несоответствием кода новому API и исчезнет после семантической миграции модуля. Проверяется по мере миграции — каждый модуль перепроверяется после правок, и запись уточняется.
+- **Гипотеза опровергнута для `NoSuchElementException`.** Оба подвида воспроизводятся на корректном коде 2.0 и оказались самостоятельными дефектами фреймворка, разобранными отдельными записями ниже: `index T` — построение текста `UnresolvedDependencyException` (исправлено), `index E`/`index K` — потеря аргументов типа в `KspCommonUtils.fixPlatformType` (исправлено). После этих двух фиксов число падающих Kotlin-задач упало с 37 до 31 без единой правки в примерах.
 
 ### Suspected cause
 
@@ -672,3 +673,151 @@ No component found for dependency:
 ```
 
 Проверено по исходникам: в `http/http-server-common/src/main` нет ни одного упоминания `reactor`/`Mono`, то есть мапперы для реактивных возвратов фреймворком не предоставляются. Это соответствует синхронной модели 2.0, а не дефекту. Пример, демонстрирующий реактивный контроллер, подлежит переработке или удалению с отметкой в обоих языковых гайдах — решение фиксируется в `KORA_2_MIGRATION_STATUS.md`.
+
+---
+
+## Issue: построение текста ошибки DI роняет разрешение шаблонных компонентов
+
+- Status: Fixed
+- Severity: Blocker
+- Type: Framework bug
+- Language: Kotlin
+- Runtime: Both
+- Component: `kora-app-symbol-processor`, `UnresolvedDependencyException`
+- Affected framework module: `core/kora-app-symbol-processor`
+- Affected example modules: `examples/kotlin/kora-kotlin-helloworld`, `guides/kotlin/kora-kotlin-guide-cache-app` и ещё ~8 модулей, падавших с `No TypeParameter found for index T`
+- Framework commit: `66800169f`
+- Related migration guide: `KORA_2_KOTLIN_MIGRATION_GUIDE.md`
+- Related fix branch: `fix/ksp-unresolved-dependency-message-generic-factory` (локально, коммит `12b5ef5a4`)
+- Related PR: подготовлен, не отправлен — PR 6 в `KORA_2_PULL_REQUESTS.md`
+
+### Description
+
+`UnresolvedDependencyException` собирает весь текст диагностики прямо в конструкторе. Типы параметров фабричного метода рендерились `toTypeName()` с пустым `TypeParameterResolver`. Для шаблонной фабрики вида `fun <T> wrapper(holder: Holder<T>): Wrapper<T>` параметр ссылается на собственный параметр типа метода, и KotlinPoet бросал `NoSuchElementException: No TypeParameter found for index T`.
+
+Это не только потерянная диагностика. `GraphBuilder` бросает это исключение как **штатный поток управления**: когда claim могут удовлетворить несколько шаблонов, он форкается по каждому и ловит `UnresolvedDependencyException` для тех, что не разрешились (`GraphBuilder.kt:246-259`). Построение исключения для отброшенного форка роняло KSP целиком — приложения с корректно разрешимым графом не компилировались, а сообщение не называло ни зависимости, ни места.
+
+### Steps to reproduce
+
+```shell
+./gradlew :examples:kotlin:kora-kotlin-helloworld:kspKotlin --no-build-cache --stacktrace
+```
+
+### Minimal reproduction
+
+```kotlin
+@KoraApp
+interface ExampleApplication {
+    class Holder<T>(val value: T)
+    class Wrapper<T>(val value: T)
+
+    fun <T> wrapper(holder: Holder<T>): Wrapper<T> = Wrapper(holder.value)
+
+    @Root
+    fun root(wrapper: Wrapper<String>): Any = ""
+}
+```
+
+### Relevant output
+
+```
+e: [ksp] java.util.NoSuchElementException: No TypeParameter found for index T
+	at com.squareup.kotlinpoet.ksp.TypeParameterResolver$Companion$EMPTY$1.get(TypeParameterResolver.kt:48)
+	...
+	at io.koraframework.kora.app.ksp.exception.UnresolvedDependencyException$Companion.getRequestedMessage(UnresolvedDependencyException.kt:112)
+	at io.koraframework.kora.app.ksp.GraphBuilder.build(GraphBuilder.kt:320)
+```
+
+### Suspected cause
+
+Подтверждено: `toTypeName()` без резолвера параметров типа в двух местах формирования сообщения.
+
+### Proposed fix
+
+Строить `TypeParameterResolver` из параметров типа модуля и фабричного метода и передавать его в оба места. Неиспользуемая приватная копия `getRequestedMessage` содержала тот же дефект и удалена.
+
+Отдельным улучшением (в фикс не входит, отмечено в описании PR): сообщение стоит вычислять лениво — сейчас полная диагностика строится для каждого отброшенного форка.
+
+### Resolution
+
+Исправлено. Регрессионный тест `DependencyTest#testUnresolvedDependencyOfTemplateFactoryIsReportedAsDiagnostic` без фикса падает исходным `NoSuchElementException`.
+
+---
+
+## Issue: `fixPlatformType` теряет аргументы типа у Java-коллекций
+
+- Status: Fixed
+- Severity: Blocker
+- Type: Framework bug
+- Language: Kotlin
+- Runtime: Both
+- Component: `symbol-processor-common`, `KspCommonUtils.fixPlatformType`
+- Affected framework module: `core/symbol-processor-common`
+- Affected example modules: `examples/kotlin/kora-kotlin-camunda-zeebe-worker` и все Kotlin-модули, тянущие Java-определённые модули с коллекциями в конфигурации
+- Framework commit: `66800169f`
+- Related migration guide: `KORA_2_KOTLIN_MIGRATION_GUIDE.md`
+- Related fix branch: `fix/ksp-platform-type-drops-generic-arguments` (локально, коммит `d140f0a29`)
+- Related PR: подготовлен, не отправлен — PR 7 в `KORA_2_PULL_REQUESTS.md`
+
+### Description
+
+`KspCommonUtils.fixPlatformType` приводит гибкий (flexible) тип, пришедший из Java, к неизменяемому Kotlin-аналогу. В ветке, где ни один аргумент типа не потребовал правки, вызывался `asType(listOf())`. В KSP это **не** «без аргументов»: подставляются собственные параметры типа декларации, и `List<String>` превращался в `List<E>`.
+
+Ветка срабатывает ровно для `@NullMarked` Java-модулей и сгенерированных компонентов: сама коллекция остаётся гибкой по изменяемости, а её аргумент уже не платформенный — то есть `changed == false`. Полученный claim (`ConfigValueMapper<List<E>>`) KotlinPoet отрендерить не может, и KSP падал с `NoSuchElementException: No TypeParameter found for index E`, не называя ни компонента, ни зависимости.
+
+### Steps to reproduce
+
+```shell
+./gradlew :examples:kotlin:kora-kotlin-camunda-zeebe-worker:clean :examples:kotlin:kora-kotlin-camunda-zeebe-worker:kspKotlin --no-build-cache --stacktrace
+```
+
+### Relevant output
+
+```
+e: [ksp] java.util.NoSuchElementException: No TypeParameter found for index E
+	at com.squareup.kotlinpoet.ksp.TypeParameterResolver$Companion$EMPTY$1.get(TypeParameterResolver.kt:48)
+	...
+	at io.koraframework.kora.app.ksp.component.ComponentDependencyHelper.parseClaim(ComponentDependencyHelper.kt:113)
+	at io.koraframework.kora.app.ksp.GraphBuilder.build(GraphBuilder.kt:232)
+```
+
+### Investigation notes
+
+Первая попытка — расширить `catch (e: IllegalArgumentException)` в `parseClaim` до `NoSuchElementException` — **отвергнута**: она превращает падение в `WARNING`, KSP откладывает раунд, сборка завершается «успешно», но `ApplicationGraph` не генерируется, и пользователь получает бессмысленное `Unresolved reference 'ApplicationGraph'`. Маскировка хуже краша, изменение откачено.
+
+### Proposed fix
+
+В ветке `changed == false` использовать уже собранный список аргументов: `type.immutableDeclaration(resolver).asType(args)`.
+
+### Resolution
+
+Исправлено. Регрессионный тест `ModuleTest#testJavaModuleKeepsGenericArgumentsOfPlatformTypes` строит граф поверх `@NullMarked` Java-модуля, скомпилированного в тестовый classpath, и без фикса падает исходным исключением. Воспроизведение потребовало именно **class-файла** и `@NullMarked`: Java-исходник в той же компиляции даёт платформенный аргумент, и дефектная ветка не срабатывает.
+
+---
+
+## Issue: KSP-воркер Zeebe не поднимает BPMN-ошибку для `JobWorkerException`
+
+- Status: Fixed
+- Severity: Critical
+- Type: Regression
+- Language: Kotlin
+- Runtime: Both
+- Component: `camunda-zeebe-worker-symbol-processor`
+- Affected framework module: `experimental/camunda-zeebe-worker-symbol-processor`
+- Affected example modules: `examples/kotlin/kora-kotlin-camunda-zeebe-worker`
+- Framework commit: `66800169f`
+- Related migration guide: `KORA_2_KOTLIN_MIGRATION_GUIDE.md`
+- Related fix branch: `fix/zeebe-worker-ksp-exception-throws-bpmn-error` (локально, коммит `8c792983b`)
+- Related PR: подготовлен, не отправлен — PR 8 в `KORA_2_PULL_REQUESTS.md`
+
+### Description
+
+Тот же дефект, что исправлен для Java-процессора (PR 5), присутствует и в KSP-генераторе: `catch (e: JobWorkerException) { throw e }` вместо `client.newThrowErrorCommand(job)`. Джоба падает и ретраится до исчерпания бюджета, граничное событие ошибки BPMN не срабатывает — идентичное Kotlin-приложение ведёт себя иначе, чем Java-аналог.
+
+### Steps to reproduce
+
+`./gradlew :examples:kotlin:kora-kotlin-camunda-zeebe-worker:test` — процесс не доходит до завершения, в логе повторяется `Zeebe JobWorker failed Job`.
+
+### Resolution
+
+Исправлено симметрично Java-версии. Регрессионный тест `ZeebeWorkerTests#workerJobWorkerExceptionIsTurnedIntoBpmnError`; без фикса исключение выходит из `handle()`. После фикса тест примера проходит.

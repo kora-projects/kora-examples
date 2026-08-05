@@ -308,3 +308,118 @@ PR 4 и PR 5 независимы, но затрагивают один тест
 ## Обнаружено, но не исправлено
 
 `Cassandra-репозиторий с CompletableFuture<T> генерирует некомпилируемый код` — подробности, репродукция и предлагаемый фикс в `KORA_2_FRAMEWORK_ISSUES.md`. Фикс требует изменения генерации внутри обёртки `observe(...).call(...)` и отдельного теста в `CassandraResultsTest`; в рамках текущего прохода не делался, модуль помечен `BLOCKED_BY_FRAMEWORK_BUG`.
+
+---
+
+## PR 6 — `fix(kora-app-symbol-processor): stop template resolution from dying on message rendering`
+
+- **Ветка:** `fix/ksp-unresolved-dependency-message-generic-factory` (локальная, не отправлена)
+- **Коммит:** `12b5ef5a4`
+- **Модуль фреймворка:** `core/kora-app-symbol-processor`
+
+### Постановка задачи
+
+`UnresolvedDependencyException` строит всю диагностику в конструкторе и рендерит объявленные типы параметров фабричного метода через `toTypeName()` с пустым `TypeParameterResolver`. Для шаблонной фабрики параметры ссылаются на собственные параметры типа метода, и KotlinPoet бросает `NoSuchElementException: No TypeParameter found for index T`.
+
+Это не только потерянная диагностика: `GraphBuilder` бросает это исключение как штатный поток управления при переборе шаблонов-кандидатов (`GraphBuilder.kt:246-259`). Построение исключения для отброшенного форка роняло KSP, и приложение с корректно разрешимым графом не собиралось.
+
+### Воспроизведение
+
+```kotlin
+@KoraApp
+interface ExampleApplication {
+    class Holder<T>(val value: T)
+    class Wrapper<T>(val value: T)
+
+    fun <T> wrapper(holder: Holder<T>): Wrapper<T> = Wrapper(holder.value)
+
+    @Root
+    fun root(wrapper: Wrapper<String>): Any = ""
+}
+```
+
+### Причина
+
+`toTypeName()` без резолвера параметров типа в `getRequestedMessage` и в рендере параметра-источника claim.
+
+### Что сделано
+
+Оба места используют резолвер, построенный из параметров типа модуля и фабричного метода. Неиспользуемая приватная копия `getRequestedMessage` с тем же дефектом удалена.
+
+### Покрытие тестами
+
+`DependencyTest#testUnresolvedDependencyOfTemplateFactoryIsReportedAsDiagnostic` — без фикса падает исходным `NoSuchElementException`.
+
+### Совместимость
+
+Поведение меняется только на пути ошибки: вместо краша выдаётся штатная диагностика, а корректные графы собираются.
+
+### Предложение вне рамок фикса
+
+Сообщение стоит вычислять лениво: сейчас полная диагностика строится для каждого отброшенного форка шаблона.
+
+### Затронутые модули `kora-examples`
+
+`examples/kotlin/kora-kotlin-helloworld`, `guides/kotlin/kora-kotlin-guide-cache-app` и ещё ~8 модулей.
+
+---
+
+## PR 7 — `fix(symbol-processor-common): keep generic arguments when unwrapping a Java platform type`
+
+- **Ветка:** `fix/ksp-platform-type-drops-generic-arguments` (локальная, не отправлена)
+- **Коммит:** `d140f0a29`
+- **Модуль фреймворка:** `core/symbol-processor-common`
+
+### Постановка задачи
+
+`KspCommonUtils.fixPlatformType` приводит гибкий тип из Java к неизменяемому Kotlin-аналогу. В ветке, где ни один аргумент не требовал правки, вызывался `asType(listOf())` — в KSP это подставляет собственные параметры типа декларации, превращая `List<String>` в `List<E>`.
+
+Ветка срабатывает для `@NullMarked` Java-модулей и сгенерированных компонентов. Claim `ConfigValueMapper<List<E>>` нерендерим, KSP падал с `NoSuchElementException: No TypeParameter found for index E` без указания компонента и зависимости. Kotlin-приложения на `camunda-zeebe-worker` и других Java-определённых модулях не собирались вовсе.
+
+### Причина
+
+`asType(listOf())` вместо `asType(args)` в ветке `changed == false`.
+
+### Что сделано
+
+Ветка переиспользует уже собранный список аргументов.
+
+### Покрытие тестами
+
+`ModuleTest#testJavaModuleKeepsGenericArgumentsOfPlatformTypes` строит граф поверх `@NullMarked` Java-модуля, скомпилированного в тестовый classpath. `AbstractSymbolProcessorTest` получил перегрузку `compile0`, принимающую Java-исходники — она нужна другим случаям, но конкретно этот дефект требует именно class-файла.
+
+### Совместимость
+
+Исправляет типы, которые раньше были заведомо некорректны; корректные типы не затрагивает.
+
+### Затронутые модули `kora-examples`
+
+`examples/kotlin/kora-kotlin-camunda-zeebe-worker` и все Kotlin-модули с Java-определёнными модулями, содержащими коллекции в конфигурации.
+
+---
+
+## PR 8 — `fix(camunda-zeebe-worker): raise a BPMN error for JobWorkerException in the KSP worker too`
+
+- **Ветка:** `fix/zeebe-worker-ksp-exception-throws-bpmn-error` (локальная, не отправлена)
+- **Коммит:** `8c792983b`
+- **Модуль фреймворка:** `experimental/camunda-zeebe-worker-symbol-processor`
+
+### Постановка задачи
+
+Kotlin-генератор воркера содержит тот же дефект, что исправлен для Java-процессора в PR 5: `JobWorkerException` пробрасывается вместо `client.newThrowErrorCommand(...)`. Джоба падает и ретраится, граничное событие ошибки BPMN не срабатывает — идентичное Kotlin-приложение ведёт себя иначе, чем Java.
+
+### Что сделано
+
+Симметрично PR 5. Только `JobWorkerException` отображается в BPMN-ошибку; остальные исключения по-прежнему оборачиваются в `JobWorkerException("UNEXPECTED", e)`.
+
+### Покрытие тестами
+
+`ZeebeWorkerTests#workerJobWorkerExceptionIsTurnedIntoBpmnError`; без фикса исключение выходит из `handle()`. Модуль получил тестовую зависимость `mockito-core`.
+
+### Связь с PR 5
+
+Логически один дефект в двух реализациях генератора. PR 5 и PR 8 трогают разные модули и не конфликтуют; порядок слияния не важен.
+
+### Затронутые модули `kora-examples`
+
+`examples/kotlin/kora-kotlin-camunda-zeebe-worker` — после фикса тест проходит.
