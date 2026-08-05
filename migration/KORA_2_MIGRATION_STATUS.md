@@ -46,6 +46,27 @@ export JAVA_HOME=<JDK 25>
 | `examples/java/kora-java-s3-client-minio` | `MIGRATED` | переведён на `s3-client-kora`; компиляция + 6/6 тестов (Minio-контейнер) |
 | `examples/java/kora-java-camunda-engine` | `MIGRATED` | компиляция + 3/3 тестов; правок не потребовалось |
 | `examples/java/kora-java-camunda-zeebe-worker` | `MIGRATED` | компиляция + 1/1 тест; потребовал двух фиксов фреймворка |
+| `examples/java/kora-java-crud-submodule` | `MIGRATED` | компиляция всех четырёх проектов + 6 тестов; blackbox в Docker — см. ниже |
+| `examples/graalvm/kora-java-graalvm-*` | `MIGRATION_IN_PROGRESS` | resilient-спецификации и конфигурация мигрированы; JVM-сборка не перепроверена, native отложен |
+| прочие `examples/java/*` | `MIGRATED` | вся ветка `examples/java` компилируется (main+test), кроме `database-cassandra` |
+
+### Открытый вопрос по `kora-java-crud-submodule`
+
+Из семи тестов проходят шесть: `PetComponentTests`, `VetComponentTests` и `IntegrationTests`
+зелёные, то есть граф, конфигурация, resilient-спецификации и репозитории мигрированы верно.
+Красным остаётся `BlackBoxTests` — тест поднимает приложение образом в Docker, и контейнер
+выходит с кодом 255, не дождавшись `/system/readiness` на 8085.
+
+Что проверено и исключено: конфигурация `httpServer.port` / `httpServer.system.port`
+соответствует 2.0 и совпадает с эталонным `kora-java-crud`, у которого такой же blackbox-тест
+проходит; пути `/system/readiness` и `/system/liveness` — значения по умолчанию
+`SystemHttpServerConfig`; набор модулей `@KoraApp` совпадает с эталоном; `db` → `jdbc`
+и окно circuit breaker мигрированы и в ресурсах, и в текстовых блоках тестов.
+
+До причины не докопались: вывод контейнера в лог теста не попадает (`Slf4jLogConsumer`
+глушится `logback-test.xml`), а без него сообщение о падении приложения недоступно.
+Следующий шаг — снять фильтр в `logback-test.xml` либо запустить собранный образ вручную
+с теми же переменными окружения.
 
 ### Замечание по именованию S3-модулей
 
