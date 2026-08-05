@@ -14,7 +14,6 @@ import io.koraframework.kotlin.example.openapi.petV3.api.ApiSecurity
 import io.koraframework.logging.logback.LogbackModule
 import io.koraframework.validation.module.ValidationModule
 import io.koraframework.validation.module.http.server.ViolationExceptionHttpServerResponseMapper
-import java.util.concurrent.CompletableFuture
 
 @KoraApp
 interface Application : HoconConfigModule, LogbackModule, ValidationModule, JsonModule, UndertowPublicHttpServerModule {
@@ -24,24 +23,26 @@ interface Application : HoconConfigModule, LogbackModule, ValidationModule, Json
         }
     }
 
-    @Tag(ApiSecurity.BearerAuth::class)
-    fun bearerHttpServerPrincipalExtractor(): HttpServerPrincipalExtractor<Principal> {
-        return HttpServerPrincipalExtractor { _, _ -> CompletableFuture.completedFuture(UserPrincipal("name")) }
+    // В Kora 2.0 генератор именует теги по порядку security requirement в спецификации,
+    // а не по имени схемы: Tag0 = bearerAuth, Tag1 = apiKeyAuth, Tag2 = basicAuth, Tag3 = oAuth
+    @Tag(ApiSecurity.SecurityRequirementTag0::class)
+    fun bearerHttpServerPrincipalExtractor(): HttpServerPrincipalExtractor<String, Principal> {
+        return HttpServerPrincipalExtractor { _, _ -> UserPrincipal("name") }
     }
 
-    @Tag(ApiSecurity.BasicAuth::class)
-    fun basicHttpServerPrincipalExtractor(): HttpServerPrincipalExtractor<Principal> {
-        return HttpServerPrincipalExtractor { _, _ -> CompletableFuture.completedFuture(UserPrincipal("name")) }
+    @Tag(ApiSecurity.SecurityRequirementTag2::class)
+    fun basicHttpServerPrincipalExtractor(): HttpServerPrincipalExtractor<String, Principal> {
+        return HttpServerPrincipalExtractor { _, _ -> UserPrincipal("name") }
     }
 
-    @Tag(ApiSecurity.ApiKeyAuth::class)
-    fun apiKeyHttpServerPrincipalExtractor(): HttpServerPrincipalExtractor<Principal> {
-        return HttpServerPrincipalExtractor { _, _ -> CompletableFuture.completedFuture(UserPrincipal("name")) }
+    @Tag(ApiSecurity.SecurityRequirementTag1::class)
+    fun apiKeyHttpServerPrincipalExtractor(): HttpServerPrincipalExtractor<String, Principal> {
+        return HttpServerPrincipalExtractor { _, _ -> UserPrincipal("name") }
     }
 
-    @Tag(ApiSecurity.OAuth::class)
-    fun oauthHttpServerPrincipalExtractor(): HttpServerPrincipalExtractor<PrincipalWithScopes> {
-        return HttpServerPrincipalExtractor { _, _ -> CompletableFuture.completedFuture(UserPrincipal("name")) }
+    @Tag(ApiSecurity.SecurityRequirementTag3::class)
+    fun oauthHttpServerPrincipalExtractor(): HttpServerPrincipalExtractor<String, PrincipalWithScopes> {
+        return HttpServerPrincipalExtractor { _, _ -> UserPrincipal("name") }
     }
 }
 

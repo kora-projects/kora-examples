@@ -4,6 +4,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -34,7 +35,8 @@ public final class PetV2Delegate implements PetApiDelegate {
     @Override
     public PetApiResponses.FindPetsByStatusApiResponse findPetsByStatus(List<String> status) {
         final Set<Pet.StatusEnum> petStatuses = status.stream()
-                .map(Pet.StatusEnum::valueOf)
+                .map(PetV2Delegate::statusOf)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
         final List<Pet> pets = petMap.values().stream()
@@ -93,9 +95,23 @@ public final class PetV2Delegate implements PetApiDelegate {
 
         final Pet updated = pet
                 .withName(form.name())
-                .withStatus(Pet.StatusEnum.valueOf(form.status()));
+                .withStatus(statusOf(form.status()));
         petMap.put(updated.id(), updated);
 
         return new PetApiResponses.UpdatePetWithFormApiResponse.UpdatePetWithForm200ApiResponse(new Message("OK"));
+    }
+
+    // The 2.0 generator dropped StatusEnum.fromValue and upper-cases the constants, so the wire
+    // value ("available") no longer matches the constant name and has to be looked up by getValue().
+    private static Pet.@Nullable StatusEnum statusOf(@Nullable String value) {
+        if (value == null) {
+            return null;
+        }
+        for (var status : Pet.StatusEnum.values()) {
+            if (status.getValue().equals(value)) {
+                return status;
+            }
+        }
+        return null;
     }
 }
