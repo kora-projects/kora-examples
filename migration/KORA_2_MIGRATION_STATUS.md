@@ -28,6 +28,21 @@ export JAVA_HOME=<JDK 25>
 
 Ни один модуль пока не может носить статус `MIGRATED`: по критериям миграции для этого нужны пройденные тесты, а тестовый прогон ещё не выполнялся. Единственное исключение — эталонный `examples/java/kora-java-crud`, он собирается и его тесты проходили ранее; он перепроверяется отдельно.
 
+## Фактический прогресс (обновляется по ходу)
+
+Таблица ниже отражает первый полный прогон. После него статусы изменились так:
+
+| Модуль | Статус | Проверено |
+|---|---|---|
+| `examples/java/kora-java-http-server` | `MIGRATED` | компиляция + 16/16 тестов (blackbox в Docker) |
+| `examples/java/kora-java-http-client` | `MIGRATED` | компиляция + 9/9 тестов (mockserver) |
+| `examples/java/kora-java-grpc-client` | `MIGRATION_IN_PROGRESS` | компиляция main + test; тесты не гонялись |
+| `examples/java/kora-java-database-jdbc` | `MIGRATION_IN_PROGRESS` | компиляция main + test; прогон тестов не завершён |
+| `examples/java/kora-java-kafka` | `MIGRATION_IN_PROGRESS` | компиляция main + test; требовал фикса фреймворка |
+| `examples/java/kora-java-database-cassandra` | `BLOCKED_BY_FRAMEWORK_BUG` | дефект генератора для `CompletableFuture<T>` |
+
+Два дефекта фреймворка, блокировавшие `http-client` и `kafka`, исправлены локально в `../kora` с регрессионными тестами — см. `KORA_2_PULL_REQUESTS.md`.
+
 ## Классы оставшихся проблем
 
 1. **Краши KSP-процессоров Kora 2.0** (22 модуля) — процессор падает с внутренним исключением вместо диагностики: `NoSuchElementException: No TypeParameter found for index T`, `KaInvalidLifetimeOwnerAccessException`, `NullPointerException`, `IllegalStateException: Required value was null`, `JacksonIOException: Stream closed`, `ClassCastException: String → KSType`. Часть из них — реакция на ещё не мигрированный код (например `ClassCastException` в resilient-модулях вызван строковым `@CircuitBreaker("pet")`), часть проявляется на корректном коде. Разбор — в `KORA_2_FRAMEWORK_ISSUES.md`.
