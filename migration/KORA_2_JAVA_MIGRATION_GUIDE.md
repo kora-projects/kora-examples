@@ -304,6 +304,46 @@ public interface UserApiClient { … }
 
 ---
 
+### 4.6. `HttpResponseEntity<Void>` требует собственного маппера
+
+Из коробки в 2.0 есть мапперы ответа только для `String` и `byte[]`. Метод, который отдаёт
+`HttpResponseEntity<Void>` (обычный приём, когда от ответа нужен только статус-код), не
+собирается:
+
+```
+error: No component found for dependency:
+    HttpClientResponseMapper<java.lang.Void> (no tags)
+```
+
+Маппер объявляется в самом клиенте и **не** указывается через `@Mapping`:
+
+```java
+@Component
+final class VoidResponseMapper implements HttpClientResponseMapper<Void> {
+
+    @Override
+    public Void apply(HttpClientResponse response) throws IOException {
+        try (var body = response.body()) {
+            body.asInputStream().readAllBytes();
+        }
+        return null;
+    }
+}
+```
+
+`@Mapping` здесь сделало бы только хуже: с ним маппер обязан произвести весь тип возврата,
+то есть `HttpResponseEntity<Void>`, тогда как шаблонная фабрика фреймворка ждёт маппер
+полезной нагрузки и оборачивает его в entity сама.
+
+### 4.7. Мапперу нужен `@Component` ровно тогда, когда у него есть зависимости
+
+Маппер без зависимостей Kora создаёт сама — пометить такой класс `@Component` значит получить
+`Multiple components match`. Маппер, которому нужен, скажем, `JsonReader<T>`, она создать не
+может, и без `@Component` будет `No component found for dependency` на его собственный тип.
+Ориентироваться надо на конструктор, а не на вид аннотации над методом.
+
+---
+
 ## 5. Конфигурация
 
 ### 5.1 Порты HTTP-сервера — молчаливый убийца старта

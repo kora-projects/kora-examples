@@ -4,12 +4,14 @@
 Rules
 -----
 1. JSON module rename:      JsonCommonModule -> JsonModule
-2. JSON unchecked methods:  the `*Unchecked` variants are gone, the plain ones no longer
+2. Repository executor: `<db>Repository#get<Db>ConnectionFactory()` became `executor()`,
+                            returning the `<Db>Executor` that still carries `inTx(...)`.
+3. JSON unchecked methods:  the `*Unchecked` variants are gone, the plain ones no longer
                             declare checked exceptions:
                                 JsonWriter.toStringUnchecked(x)    -> toString(x)
                                 JsonWriter.toByteArrayUnchecked(x) -> toByteArray(x)
                                 JsonReader.readUnchecked(x)        -> read(x)
-3. Config extraction contract: the runtime interface was renamed and moved, and its method
+4. Config extraction contract: the runtime interface was renamed and moved, and its method
    now has an explicit "or throw" variant:
                                 io.koraframework.config.common.extractor.ConfigMapper<T>
                              -> io.koraframework.config.common.mapper.ConfigValueMapper<T>
@@ -17,10 +19,10 @@ Rules
    The `@ConfigMapper` *annotation* keeps its name and lives in
    `io.koraframework.config.common.annotation` - it must not be renamed, which is why the
    rule keys off the old package and off the generic parameter.
-4. Fallback lost its name: 2.0 has no FallbackSpec and no named fallback configuration,
+5. Fallback lost its name: 2.0 has no FallbackSpec and no named fallback configuration,
    so the `value` attribute is gone and only `method` remains:
                                 @Fallback(value = "default", method = "f()") -> @Fallback(method = "f()")
-5. JSpecify placement (Java only): JSpecify annotations are type-use, so on a qualified
+6. JSpecify placement (Java only): JSpecify annotations are type-use, so on a qualified
    nested type they must sit right before the simple name:
                                 @Nullable Entity.FieldType -> Entity.@Nullable FieldType
    javac itself suggests this form:
@@ -34,11 +36,11 @@ Usage:
 
 Limitations
 -----------
-- Rule 5 only rewrites `@Nullable` / `@NonNull` / `@NullMarked` immediately followed by a
+- Rule 6 only rewrites `@Nullable` / `@NonNull` / `@NullMarked` immediately followed by a
   dotted type whose every segment starts with an upper-case letter (a nested type). Package
   qualified names (`java.lang.String`) are intentionally not touched, since the correct
   placement there depends on the surrounding declaration.
-- Rule 5 is skipped for Kotlin: there nullability is expressed by the type (`T?`), and the
+- Rule 6 is skipped for Kotlin: there nullability is expressed by the type (`T?`), and the
   annotation is removed rather than moved.
 """
 
@@ -57,6 +59,11 @@ TEXT_RENAMES = (
     ("toStringUnchecked(", "toString("),
     ("toByteArrayUnchecked(", "toByteArray("),
     ("readUnchecked(", "read("),
+    # the repository no longer exposes a connection factory, it exposes the executor
+    ("getJdbcConnectionFactory()", "executor()"),
+    ("getR2dbcConnectionFactory()", "executor()"),
+    ("getVertxConnectionFactory()", "executor()"),
+    ("getCassandraConnectionFactory()", "executor()"),
 )
 
 # The old config extraction contract. Keyed off the old package so the `@ConfigMapper`
