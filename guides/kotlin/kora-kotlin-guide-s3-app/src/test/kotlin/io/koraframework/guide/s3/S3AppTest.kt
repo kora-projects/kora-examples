@@ -5,19 +5,20 @@ import io.goodforgod.testcontainers.extensions.minio.Bucket
 import io.goodforgod.testcontainers.extensions.minio.ConnectionMinio
 import io.goodforgod.testcontainers.extensions.minio.MinioConnection
 import io.goodforgod.testcontainers.extensions.minio.TestcontainersMinio
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import io.koraframework.guide.s3.controller.DataController
 import io.koraframework.guide.s3.s3.S3FileClient
 import io.koraframework.http.common.form.FormMultipart
-import io.koraframework.s3.client.S3NotFoundException
-import io.koraframework.s3.client.model.S3Body
+import io.koraframework.s3.client.kora.exception.S3ClientNoSuchKeyException
 import io.koraframework.test.extension.junit5.KoraAppTest
 import io.koraframework.test.extension.junit5.KoraAppTestConfigModifier
 import io.koraframework.test.extension.junit5.KoraConfigModification
 import io.koraframework.test.extension.junit5.TestComponent
 import software.amazon.awssdk.services.s3.S3Client
-import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 
@@ -50,16 +51,16 @@ class S3AppTest : KoraAppTestConfigModifier {
         val content = "guide-client-body".toByteArray(StandardCharsets.UTF_8)
         val fileId = "file-1"
 
-        s3FileClient.uploadFile(
-            fileId,
-            S3Body.ofInputStream(ByteArrayInputStream(content), content.size.toLong(), "text/plain")
-        )
+        s3FileClient.uploadFile(fileId, content)
 
-        val downloaded = s3FileClient.downloadFile(fileId)
-        assertArrayEquals(content, downloaded.body().asBytes())
+        s3FileClient.downloadFile(fileId).use { downloaded ->
+            downloaded.body().asInputStream().use { body ->
+                assertArrayEquals(content, body.readAllBytes())
+            }
+        }
 
         s3FileClient.deleteFile(fileId)
-        assertThrows(S3NotFoundException::class.java) { s3FileClient.downloadFile(fileId) }
+        assertThrows(S3ClientNoSuchKeyException::class.java) { s3FileClient.downloadFile(fileId) }
     }
 
     @Test
@@ -74,7 +75,7 @@ class S3AppTest : KoraAppTestConfigModifier {
         val downloaded = dataController.downloadFile(uploaded.fileId)
         assertEquals(200, downloaded.code())
         val output = ByteArrayOutputStream()
-        downloaded.body().write(output)
+        downloaded.body()!!.write(output)
         assertArrayEquals(content, output.toByteArray())
 
         val deleteResponse = dataController.deleteFile(uploaded.fileId)

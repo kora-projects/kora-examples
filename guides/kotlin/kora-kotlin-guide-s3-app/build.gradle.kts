@@ -29,6 +29,7 @@ dependencies {
     implementation("io.koraframework:json-common")
     implementation("io.koraframework:logging-logback")
     implementation("io.koraframework:s3-client-aws")
+    implementation("io.koraframework.experimental:s3-client-kora")
     kspTest("io.koraframework:symbol-processors")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
