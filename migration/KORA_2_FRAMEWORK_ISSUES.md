@@ -1513,15 +1513,15 @@ RuntimeException: Failed to load class com.zaxxer.hikari.metrics.micrometer.Micr
 
 ## Issue: `ConfigWatcher` читает узел графа до его инициализации
 
-- Status: Open
-- Severity: Minor
+- Status: Fixed
+- Severity: Major
 - Type: Framework bug
 - Language: Java
 - Runtime: JVM и GraalVM native-image
 - Component: `config-common`
 - Affected framework module: `config/config-common`
 - Affected example modules: все приложения с файловым конфигом
-- Related fix branch: нет
+- Related fix branch: `fix/config-watcher-starts-before-graph-ready` (`c6d6ddd24`) — [#818](https://github.com/kora-projects/kora/pull/818)
 
 ### Description
 
@@ -1548,15 +1548,28 @@ Exception in thread "config-reload" java.lang.IllegalStateException: Graph node 
 `graph.get(applicationConfigNode)`. Компонент держит `Node<…>`, а не значение, поэтому граф не считает
 конфиг его зависимостью и может ещё не инициализировать его к моменту старта потока.
 
-### Почему не исправлен
+### Investigation notes
 
-Исправление — решение о контракте (ждать готовности графа, либо объявить зависимость на значение,
-либо стартовать поток после инициализации), а не однострочная правка. Заглушить исключение было б
-маскировкой — слежение за конфигом осталось бы нерабочим.
+Решающая деталь нашлась в сгенерированном `ApplicationGraph`: узел watcher'а добавлен с **пустым**
+списком зависимостей (`List.of()`), потому что фабрика принимает `Node<ConfigOrigin>`, а не значение.
+При этом сам `ConfigWatcherTest` во фреймворке строит граф вручную и зависимость **указывает**
+(`List.of(originNode)`) — поэтому штатные тесты гонку никогда не ловили.
 
-### Workaround
+### Implemented fix
 
-`KORA_CONFIG_WATCHER_ENABLED=false` — убирает стектрейс из лога ценой отключения слежения.
+Фабрика модуля теперь просит **значение** конфига, а не только узел, — зависимость становится явной,
+и граф инициализирует конфиг раньше watcher'а **по построению**. Начальное значение приходит
+параметром, и `graph.get(...)` на старте больше не вызывается вообще.
+
+Первая версия фикса была слабее — она ждала готовности узла, ловя `IllegalStateException`. Такой подход
+лечил следствие и глушил бы любую другую ошибку графа, поэтому был заменён.
+
+### Test coverage
+
+Отдельного модульного теста нет, и это осознанно: дефект живёт в том, как процессор связывает узел,
+а тест, собирающий граф вручную, может объявить любые зависимости и ничего не докажет. Проверка —
+сгенерированный граф примера: было `List.of()`, стало `List.of(component1)`, и стектрейс из потока
+`config-reload` исчез из лога старта. `config-common`, `config-hocon`, `config-yaml` и `test-junit5` — зелёные.
 
 ---
 

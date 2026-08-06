@@ -115,21 +115,27 @@ non-daemon-поток ровно для этого и прямо это комм
 
 Про колонку «Native» у `examples/graalvm/*`: образ собран `nativeCompile` на GraalVM CE 25.0.4
 и запущен против реальных зависимостей — `/system/readiness` отвечает `OK`, `/metrics` отдаёт
-метрики, сценарий модуля отрабатывает (CRUD либо обработка сообщения). Для `crud-jdbc` тот же
-образ дополнительно собирается внутри Docker по `Dockerfile` и проверяется `BlackBoxTests` (5/5).
+метрики, сценарий модуля отрабатывает (CRUD либо обработка сообщения).
 
-**Примечание по `BlackBoxTests` двух модулей.** У `kora-java-graalvm-kafka` контейнер приложения
-не доходит до первого `poll` в тестовом окружении (тест подменяет порт брокера на `:9093`);
-у `kora-java-graalvm-crud-cassandra` не поднимается сам контейнер Scylla —
-`testcontainers-extensions-scylla:0.13.1` не дожидается своей строки в логе. Ни то, ни другое
-не относится к native-образу: те же бинари проверены вручную против Kafka и Scylla + Redis.
-Оба случая остаются открытыми.
+Сверх того, у всех трёх модулей тот же образ собирается **внутри Docker** по `Dockerfile`
+(`ghcr.io/graalvm/native-image-community:25`) и проверяется `BlackBoxTests` против реальных
+зависимостей — Postgres, Kafka, Scylla + Redis.
+
+**Две ловушки тестового окружения, которые стоит знать.** `BlackBoxTests` сассандры требуют
+свободного Docker: при параллельно поднятых четырёх контейнерах Scylla не успевает стартовать
+и расширение отваливается по таймауту. А kafka-модуль ждал готовности контейнера по строке в логе —
+а строка не появлялась, потому что логи терялись из-за дефекта `KoraAsyncAppender`
+([#816](https://github.com/kora-projects/kora/pull/816)). После его фикса тест проходит практически
+в исходном виде: расширение по-прежнему управляет брокером и топиками, а изменилось два места —
+готовность контейнера ждётся по `/system/readiness` (формулировки логов Kora — не контракт), и убраны
+отладочные `System.out.println`, оставшиеся от миграции. Подмена порта на `:9093` — не костыль:
+брокер Testcontainers объявляет хосту `:9092`, а внутрисетевой listener — на `:9093`.
 
 | Модуль | Язык | Рантайм | Интеграции Kora | Статус | Компиляция | Кодоген | Тесты | Native |
 |---|---|---|---|---|---|---|---|---|
-| `examples/graalvm/kora-java-graalvm-crud-cassandra` | Java | JVM + GraalVM | openapi-gen, http-server, cassandra, metrics, json, validation, cache-redis, resilient, config-hocon, openapi-mgmt, logback | `MIGRATED` | OK | OK | 2/2 (`ComponentTests`) | OK, 76 МиБ |
+| `examples/graalvm/kora-java-graalvm-crud-cassandra` | Java | JVM + GraalVM | openapi-gen, http-server, cassandra, metrics, json, validation, cache-redis, resilient, config-hocon, openapi-mgmt, logback | `MIGRATED` | OK | OK | 7/7 (вкл. `BlackBoxTests` на native-образе) | OK, 76 МиБ |
 | `examples/graalvm/kora-java-graalvm-crud-jdbc` | Java | JVM + GraalVM | openapi-gen, http-server, jdbc, metrics, json, validation, cache-caffeine, resilient, config-hocon, openapi-mgmt, logback | `MIGRATED` | OK | OK | 7/7 (вкл. `BlackBoxTests` на native-образе) | OK, 51 МиБ |
-| `examples/graalvm/kora-java-graalvm-kafka` | Java | JVM + GraalVM | http-server, kafka, json, config-yaml, metrics, logback | `MIGRATED` | OK | — | см. примечание | OK, 80 МиБ |
+| `examples/graalvm/kora-java-graalvm-kafka` | Java | JVM + GraalVM | http-server, kafka, json, config-yaml, metrics, logback | `MIGRATED` | OK | — | 1/1 (`BlackBoxTests` на native-образе) | OK, 80 МиБ |
 | `examples/java/kora-java-cache-caffeine` | Java | JVM | cache-caffeine, logback, config-hocon | `MIGRATED` | OK | OK | 10/10 | — |
 | `examples/java/kora-java-cache-redis` | Java | JVM | cache-redis, logback, config-hocon | `MIGRATED` | OK | OK | 9/9 | — |
 | `examples/java/kora-java-camunda-engine` | Java | JVM | http-server, camunda-engine, json, jdbc, logback, config-hocon | `MIGRATED` | OK | OK | 3/3 | — |

@@ -1,6 +1,6 @@
 # Изменения во фреймворк, отправленные в upstream
 
-Все двадцать шесть исправлений отправлены как отдельные pull request'ы в
+Все двадцать семь исправлений отправлены как отдельные pull request'ы в
 [`kora-projects/kora`](https://github.com/kora-projects/kora) из форка `dsudomoin/kora`.
 Каждая ветка отведена от `master`, содержит один логический фикс с регрессионным тестом и
 перебазирована на актуальный `origin/master` перед отправкой.
@@ -33,6 +33,7 @@
 | [#814](https://github.com/kora-projects/kora/pull/814) | `fix/graalvm-reflect-config-file-name` | `274e3b039` | `telemetry/micrometer-module`, `grpc/grpc-server`, `kafka/kafka` |
 | [#815](https://github.com/kora-projects/kora/pull/815) | `fix/graalvm-cassandra-guava-comparator-init` | `d2fd730ca` | `database/database-cassandra` |
 | [#816](https://github.com/kora-projects/kora/pull/816) | `fix/logback-appender-outside-scope` | `5797597c7` | `logging/logging-logback` |
+| [#818](https://github.com/kora-projects/kora/pull/818) | `fix/config-watcher-starts-before-graph-ready` | `6fe02bab7` | `config/config-common` |
 
 > [#811](https://github.com/kora-projects/kora/pull/811)–[#815](https://github.com/kora-projects/kora/pull/815) — дефекты, найденные только при сборке GraalVM
 > native-image. Ни один из них не воспроизводится на JVM, поэтому ни к одному невозможно написать
@@ -1003,3 +1004,27 @@ MDC читается только при `MDC.VALUE.isBound()`, иначе — �
 не доставляет событие до `ListAppender` ни с фиксом, ни без него — такой тест был бы зелёным
 в обоих состояниях и ничего не доказывал. Сквозное доказательство: лог приложения — 591 байт до фикса
 и 16 001 байт после, при той же конфигурации.
+
+---
+
+## PR 27 — `fix(config-common): let the config watcher wait for the graph to initialize`
+
+- **Ветка:** `fix/config-watcher-starts-before-graph-ready` — [#818](https://github.com/kora-projects/kora/pull/818)
+- **Коммит:** `6fe02bab7`
+- **Модуль фреймворка:** `config/config-common`
+
+### Постановка задачи
+
+При каждом старте любого приложения с файловым конфигом в лог падал стектрейс из потока
+`config-reload`. Приложение продолжало работать, поэтому выглядело безобидно — но поток умирал на первом
+же выражении, и слежение за конфигом молча не работало вообще.
+
+`ConfigModule` передаёт watcher'у **узел** конфига, а не значение, поэтому в сгенерированном графе узел
+добавлен с пустым списком зависимостей — граф вправе инициализировать его раньше конфига.
+Примечательно, что штатный `ConfigWatcherTest` строит граф вручную и зависимость указывает — поэтому
+гонка никогда не ловилась.
+
+### Покрытие тестами
+
+`ConfigWatcherStartupOrderTest` собирает граф ровно так, как его генерирует процессор. Без фикса красный,
+с фиксом зелёный (проверено в обе стороны); остальные тесты `config-common` зелёные.

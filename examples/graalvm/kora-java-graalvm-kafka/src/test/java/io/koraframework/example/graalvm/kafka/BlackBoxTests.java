@@ -25,9 +25,10 @@ class BlackBoxTests {
     @BeforeAll
     public static void setup(@ConnectionKafka KafkaConnection connection) {
         var params = connection.paramsInNetwork().orElseThrow();
-        System.out.println(params);
-        System.out.println("BOOTS - " + params.bootstrapServers());
         container.withEnv(Map.of(
+                // the broker advertises :9092 to the host and its BROKER listener on :9093 inside
+                // the network, so a sibling container has to bootstrap on the latter - otherwise it
+                // connects and then receives metadata pointing back at localhost
                 "KAFKA_BOOTSTRAP", params.bootstrapServers().replace(":9092", ":9093"),
                 "LOGGING_LEVEL_KORA", "INFO",
                 "LOGGING_LEVEL_APP", "DEBUG",
