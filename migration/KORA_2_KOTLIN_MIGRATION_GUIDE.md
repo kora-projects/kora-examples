@@ -11,8 +11,8 @@
 
 ## 0. Порядок миграции проекта
 
-1. OpenRewrite-рецепт (`migration/openrewrite/`) — **только для Java-исходников и Gradle**; Kotlin-код он не трансформирует.
-2. `python migration/scripts/migrate_kora_2.py` (сначала dry-run, затем `--apply`) — Kotlin-файлы, Gradle Kotlin DSL, ресурсы, перенос пакетных каталогов.
+1. `python migration/scripts/migrate_kora_2.py` (сначала dry-run, затем `--apply`) — Kotlin-файлы, Gradle DSL, ресурсы, перенос пакетных каталогов. Для Kotlin это единственный слой автоматизации.
+2. OpenRewrite-рецепт (`migration/openrewrite/`) Kotlin не трансформирует вовсе; если в проекте есть и Java-модули — см. `migration/openrewrite/README.md`.
 3. **Обязательно**: `clean` + первая сборка с `--no-build-cache` (см. §1.4).
 4. `./gradlew <module>:kspKotlin --console=plain` — KSP отрабатывает раньше компиляции и даёт первую волну ошибок.
 5. Применить семантические правила из этого документа.
@@ -713,6 +713,199 @@ Kora 2.0 исполняет синхронные контракты на вир�
 
 ---
 
+## 15. GraalVM Native Image
+
+В репозитории нет Kotlin-модулей с native-сборкой — все три GraalVM-примера на Java. Поэтому
+ниже явно разделено: §15.1–§15.7 — правила, **проверенные сборкой и запуском** образов и не
+зависящие от языка (это конфигурация Gradle и метаданные самого фреймворка), §15.8 — то, что
+специфично для Kotlin и **не измерено** на этом репозитории.
+
+Окружение проверки: GraalVM CE 25.2.4+7.1 (`native-image 25.0.4`), установка —
+`sdk install java 25.2.4-graalce`; образ для сборки в Docker — `ghcr.io/graalvm/native-image-community:25`.
+
+### 15.1. Плагин `org.graalvm.buildtools.native`: 0.11.5 → 1.1.7
+
+**Было / Стало** — в корневом build-файле:
+
+```groovy
+id "org.graalvm.buildtools.native" version "1.1.7" apply false   // было 0.11.5
+```
+
+**Причина:** на Gradle 9 `collectReachabilityMetadata` падает на резолве конфигурации из чужого
+проекта: до 1.1.6 плагин регистрировал один shared build service `nativeConfigurationService`
+на весь build, и все GraalVM-модули кроме первого получали сервис из чужого контекста.
+В 1.1.6 имя сервиса стало включать `project.getPath()`
+([native-build-tools#760](https://github.com/graalvm/native-build-tools/issues/760)).
+
+**Ограничение:** ошибка возникает на конфигурации всего build'а, поэтому «собирать по одному
+модулю» как обход не работает.
+
+### 15.2. GraalVM 25 вместо 21
+
+Меняется в трёх местах сразу — toolchain модуля, launcher самого native-образа и базовый образ Docker:
+
+```groovy
+kotlin {
+    jvmToolchain(25)   // было 21
+}
+
+graalvmNative {
+    binaries {
+        main {
+            javaLauncher = javaToolchains.launcherFor {
+                languageVersion = JavaLanguageVersion.of(25)   // было 21
+                vendor = JvmVendorSpec.matching("GraalVM Community")
+            }
+        }
+    }
+}
+```
+
+```dockerfile
+FROM ghcr.io/graalvm/native-image-community:25 as builder   # было :21
+```
+
+**Причина:** артефакты Kora 2.0 собраны под JVM 25, а `native-image` не читает class-file формат
+новее своего JDK. Отдельно проверьте, что `kotlin.jvmToolchain` и `jvmTarget` согласованы — рассогласование
+даёт ошибку уже на этапе компиляции, а не сборки образа.
+
+### 15.3. `imageName` и `mainClass`: передавать провайдер, а не интерполяцию
+
+**Было** (Groovy DSL):
+
+```groovy
+imageName = "$project.name"
+mainClass = "$application.mainClass"
+```
+
+**Стало:**
+
+```groovy
+imageName = project.name
+mainClass = application.mainClass
+```
+
+В Kotlin DSL (`build.gradle.kts`) то же самое пишется явно через `set(...)`:
+
+```kotlin
+imageName.set(project.name)
+mainClass.set(application.mainClass)
+```
+
+**Причина:** `application.mainClass` — это `Property<String>`. При строковой интерполяции в командную
+строку `native-image` попадает не имя класса, а отладочное представление вида
+`property(java.lang.String, fixed(...))`. Старый плагин разворачивал значение раньше и это работало
+по совпадению; в 1.1.7 — нет.
+
+**Поведенческое изменение:** проявляется как «main class not found» на этапе сборки образа, а не
+как ошибка конфигурации Gradle.
+
+### 15.4. `jar.enabled = false` больше нельзя
+
+**Было:** `jar.enabled = false`, чтобы в `build/libs` оставался только shadow-артефакт.
+
+**Стало:** строка удалена.
+
+**Причина:** `nativeCompile` строит classpath из артефактов самого проекта. Без обычного `jar`
+в classpath оказываются только зависимости, но не классы приложения (shadow-jar туда не входит —
+он собирается для Docker-пути).
+
+### 15.5. Метаданные достижимости: что теперь даёт сам фреймворк
+
+Метаданные едут внутри артефактов Kora (`META-INF/native-image/<модуль>/`) и от языка приложения
+не зависят. При миграции выяснилось, что пять наборов были неполными или не читались вовсе;
+все пять исправлены в upstream:
+
+| Симптом в native-образе | Модуль | PR |
+|---|---|---|
+| `java.lang.IllegalArgumentException: No XNIO provider found` на старте HTTP-сервера | `http-server-undertow` | [#811](https://github.com/kora-projects/kora/pull/811) |
+| HikariCP не находит micrometer-трекер метрик | `database-jdbc` | [#812](https://github.com/kora-projects/kora/pull/812) |
+| кеш Caffeine без статистики падает на создании | `cache-caffeine` | [#813](https://github.com/kora-projects/kora/pull/813) |
+| регистрации молча не применяются | `micrometer-module`, `grpc-server`, `kafka` | [#814](https://github.com/kora-projects/kora/pull/814) |
+| сборка образа падает на этапе анализа | `database-cassandra` | [#815](https://github.com/kora-projects/kora/pull/815) |
+
+Самый переносимый вывод — четвёртая строка: файл с именем **`reflection-config.json`** native-image
+не читает вовсе, правильное имя — **`reflect-config.json`**. Диагностики нет никакой: сборка идёт
+успешно, просто регистрации никогда не применяются. В своём проекте это проверяется одной командой:
+
+```shell
+find . -name "reflection-config.json"   # каждое попадание — мёртвый файл
+```
+
+**Ограничение (важное):** не удаляйте собственные метаданные приложения на том основании,
+что приложение работает на JVM. При переименовании пакетов каталог `META-INF/native-image/<group>/`
+переименовывается вручную — ни OpenRewrite, ни скрипт каталоги ресурсов не трогают.
+
+### 15.6. Как метаданные попадают в образ, собираемый в Docker
+
+Два пути сборки ведут себя по-разному:
+
+- `nativeCompile` сам подкладывает metadata repository (`graalvmNative.metadataRepository.enabled = true`);
+- `native-image -cp application.jar` внутри Docker читает только то, что лежит в самом jar.
+
+Чтобы второй путь видел те же метаданные, их собирают в ресурсы до упаковки:
+
+```groovy
+processResources.dependsOn tasks.collectReachabilityMetadata
+sourceSets.main { resources.srcDirs += "$buildDir/native-reachability-metadata" }
+
+shadowJar {
+    mergeServiceFiles()   // без этого теряются META-INF/services — в native это фатально
+}
+```
+
+Эта связка была в примерах и в 1.x — менять её при миграции не нужно, но её надо знать: если
+образ из Gradle работает, а из Docker — нет, первый подозреваемый именно она, а не код.
+
+### 15.7. Когда GraalVM-модуль считается мигрированным
+
+Успешная сборка образа критерием не является: все пять дефектов из §15.5 давали зелёную сборку
+и падали только в рантайме. Минимальный набор проверок:
+
+1. бинарь стартует и не падает через секунду;
+2. `GET /system/readiness` отвечает 200 — граф инициализировался целиком;
+3. `GET /metrics` отдаёт метрики, а не заглушку и не 500;
+4. сценарий модуля отрабатывает против реальной зависимости, а не на моках;
+5. в логе нет стектрейсов при старте.
+
+Ожидание готовности контейнера стройте на HTTP-пробе, а не на строке в логе: формулировки
+стартовых сообщений Kora не являются контрактом и между 1.x и 2.0 поменялись:
+
+```kotlin
+waitingFor(
+    Wait.forHttp("/system/readiness").forPort(8080).forStatusCode(200)
+        .withStartupTimeout(Duration.ofSeconds(60))
+)
+```
+
+### 15.8. Что специфично для Kotlin (гипотезы, не измерено)
+
+Native-образ Kotlin-приложения на Kora 2.0 в этом репозитории не собирался. Ниже — рассуждения,
+которые нужно проверить на своём проекте, а не принимать на веру:
+
+- **Вывод KSP дополнительных метаданных требовать не должен.** Сгенерированный `ApplicationGraph`
+  — обычный JVM-байткод со статическими вызовами конструкторов; DI в Kora не рефлексивен
+  ни в Java-, ни в Kotlin-варианте. Это главная причина ожидать паритета с Java.
+- **`kotlin-reflect` — главный риск.** Он притягивается транзитивно (например, через Jackson
+  `jackson-module-kotlin`) и требует своих регистраций. JSON в Kora 2.0 генерируется и в рефлексии
+  не нуждается — перед native-сборкой стоит проверить `./gradlew <module>:dependencies` на предмет
+  случайного `kotlin-reflect` и убрать его.
+- **`data class` с аргументами по умолчанию** компилируется в дополнительный синтетический
+  конструктор `<init>(..., int, DefaultConstructorMarker)`. Если какой-то библиотеке нужно создавать
+  такой класс рефлексивно, регистрировать надо именно его, а не «видимый» конструктор из исходника.
+
+Методика проверки любой из этих гипотез — трассирующий агент и минимальный native-пробник;
+она описана в `KORA_MIGRATION_NEURO.md`, раздел
+*Diagnostic pattern: native-image собрался, но падает в рантайме*.
+
+### 15.9. GraalVM-модули на удалённой функциональности
+
+Модуль на R2DBC или Vert.x не мигрируется в native не потому, что он native: сами интеграции удалены
+из 2.0 (§12). Сначала переводите его на синхронный JDBC/Cassandra (§13), и только потом возвращайтесь
+к native-части.
+
+---
+
 ## 14. Что покрыто автоматизацией
 
 | Изменение | OpenRewrite | Скрипт | Вручную / нейро-агент |
@@ -735,5 +928,8 @@ Kora 2.0 исполняет синхронные контракты на вир�
 | `JdbcExecutor.SqlSupplier`/`SqlRunnable` в `inTx` | — | — | ✅ |
 | `kspTest` в модулях с `@KoraApp` в тестах | — | — | ✅ |
 | Именованные аргументы для сгенерированных TO | — | — | ✅ |
+| Версия плагина GraalVM, толчейн 25, базовый образ Docker | — | ✅ | — |
+| `imageName`/`mainClass`, `jar.enabled` (§15.3–§15.4) | — | — | ✅ |
+| Метаданные достижимости native-image | — | — | ✅ |
 
 OpenRewrite в текущем виде **не трансформирует Kotlin** — для Kotlin-модулей рабочей автоматикой остаётся скрипт, а всё семантическое делается вручную или нейро-агентом по `KORA_MIGRATION_NEURO.md`.

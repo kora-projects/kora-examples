@@ -1,0 +1,126 @@
+########################################################################################
+# Kora 1.x -> 2.0, OpenRewrite recipes.
+#
+# Focused recipes that can be activated one by one; Kora1To2 composes all of them.
+# Only deterministic, AST-safe changes live here. Semantic changes (resilient specs,
+# suspend removal, JSpecify placement, S3 client) are out of scope on purpose and are
+# described in KORA_MIGRATION_NEURO.md.
+########################################################################################
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.Kora1To2
+displayName: Migrate Kora 1.x to 2.0
+description: >-
+  Aggregate of every deterministic Kora 1.x to 2.0 change: package relocation, annotation
+  and type moves, nullability annotations and build coordinates. Semantic API changes are
+  intentionally left to module-specific migration.
+recipeList:
+  - io.koraframework.migration.RelocateKoraPackages
+  - io.koraframework.migration.RelocateKoraAnnotations
+  - io.koraframework.migration.RenameKoraTypes
+  - io.koraframework.migration.MigrateNullabilityAnnotations
+  - io.koraframework.migration.UpdateKoraDependencies
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.RelocateKoraPackages
+displayName: Relocate Kora packages
+description: Kora 2.0 moved every package from `ru.tinkoff.kora` to `io.koraframework`.
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: ru.tinkoff.kora
+      newPackageName: io.koraframework
+      recursive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.RelocateKoraAnnotations
+displayName: Relocate Kora DI annotations into `common.annotation`
+description: >-
+  Kora 2.0 moved the dependency injection annotations out of `io.koraframework.common`
+  into `io.koraframework.common.annotation`. Runs after RelocateKoraPackages, so the
+  source type names are already the 2.0 ones.
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.KoraApp
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.KoraApp
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.Component
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.Component
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.DefaultComponent
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.DefaultComponent
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.KoraSubmodule
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.KoraSubmodule
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.Mapping
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.Mapping
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.Module
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.Module
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.Tag
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.Tag
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.RenameKoraTypes
+displayName: Rename Kora types that changed name or module
+description: >-
+  Types whose fully qualified name changed for a reason other than the package relocation:
+  the Undertow module was split into public and private servers, the JSON module moved to
+  `json-common`, the config extractor annotation was renamed, and the Redis cache module
+  became transport specific.
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.http.server.undertow.UndertowHttpServerModule
+      newFullyQualifiedTypeName: io.koraframework.http.server.undertow.UndertowPublicHttpServerModule
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.json.module.JsonModule
+      newFullyQualifiedTypeName: io.koraframework.json.common.JsonModule
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.config.common.annotation.ConfigValueExtractor
+      newFullyQualifiedTypeName: io.koraframework.config.common.annotation.ConfigMapper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.cache.redis.RedisCacheModule
+      newFullyQualifiedTypeName: io.koraframework.cache.redis.lettuce.LettuceRedisCacheModule
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.MigrateNullabilityAnnotations
+displayName: Replace `jakarta.annotation.Nullable` with JSpecify
+description: >-
+  Kora 2.0 reads JSpecify annotations. This recipe only swaps the type; it does NOT move
+  the annotation to the type-use position that JSpecify requires on generics and arrays --
+  that placement is a semantic change and is described in the language migration guides.
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: jakarta.annotation.Nullable
+      newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.UpdateKoraDependencies
+displayName: Update Kora build coordinates
+description: >-
+  Kora 2.0 publishes under the `io.koraframework` group; two artifacts were also renamed.
+  Versions are left untouched -- the Kora version is normally driven by the
+  `io.koraframework:kora-parent` BOM.
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: ru.tinkoff.kora
+      oldArtifactId: "*"
+      newGroupId: io.koraframework
+      overrideManagedVersion: false
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: io.koraframework
+      oldArtifactId: json-module
+      newGroupId: io.koraframework
+      newArtifactId: json-common
+      overrideManagedVersion: false
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: io.koraframework
+      oldArtifactId: cache-redis
+      newGroupId: io.koraframework
+      newArtifactId: cache-redis-lettuce
+      overrideManagedVersion: false

@@ -33,7 +33,7 @@
 | [#814](https://github.com/kora-projects/kora/pull/814) | `fix/graalvm-reflect-config-file-name` | `274e3b039` | `telemetry/micrometer-module`, `grpc/grpc-server`, `kafka/kafka` |
 | [#815](https://github.com/kora-projects/kora/pull/815) | `fix/graalvm-cassandra-guava-comparator-init` | `d2fd730ca` | `database/database-cassandra` |
 | [#816](https://github.com/kora-projects/kora/pull/816) | `fix/logback-appender-outside-scope` | `5797597c7` | `logging/logging-logback` |
-| [#818](https://github.com/kora-projects/kora/pull/818) | `fix/config-watcher-starts-before-graph-ready` | `6fe02bab7` | `config/config-common` |
+| [#818](https://github.com/kora-projects/kora/pull/818) | `fix/config-watcher-starts-before-graph-ready` | `c6d6ddd24` | `config/config-common` |
 
 > [#811](https://github.com/kora-projects/kora/pull/811)–[#815](https://github.com/kora-projects/kora/pull/815) — дефекты, найденные только при сборке GraalVM
 > native-image. Ни один из них не воспроизводится на JVM, поэтому ни к одному невозможно написать
@@ -989,7 +989,7 @@ native-image читает из `META-INF/native-image/<group>/<artifact>/` фа�
 ### Постановка задачи
 
 Найдено при разборе падающего `BlackBoxTests` kafka-модуля — и это самый широкий дефект из всех
-двадцати шести: `KoraAsyncAppender.append` читает MDC через `ScopedValue.get()`, который вне скоупа
+двадцати семи: `KoraAsyncAppender.append` читает MDC через `ScopedValue.get()`, который вне скоупа
 бросает `NoSuchElementException`. logback ловит исключение и выбрасывает событие, поэтому **всё,
 что логируется вне обработки запроса или сообщения, теряется молча**: старт приложения, фоновые
 задачи, логи драйверов, ошибки инициализации.
@@ -1007,10 +1007,10 @@ MDC читается только при `MDC.VALUE.isBound()`, иначе — �
 
 ---
 
-## PR 27 — `fix(config-common): let the config watcher wait for the graph to initialize`
+## PR 27 — `fix(config-common): declare the config as a dependency of the config watcher`
 
 - **Ветка:** `fix/config-watcher-starts-before-graph-ready` — [#818](https://github.com/kora-projects/kora/pull/818)
-- **Коммит:** `6fe02bab7`
+- **Коммит:** `c6d6ddd24`
 - **Модуль фреймворка:** `config/config-common`
 
 ### Постановка задачи
@@ -1024,7 +1024,36 @@ MDC читается только при `MDC.VALUE.isBound()`, иначе — �
 Примечательно, что штатный `ConfigWatcherTest` строит граф вручную и зависимость указывает — поэтому
 гонка никогда не ловилась.
 
+### Что сделано
+
+`ConfigModule` передаёт в `ConfigWatcher` не только узел, но и само значение конфига:
+
+```java
+default ConfigWatcher applicationConfigWatcher(RefreshableGraph graph,
+        @Nullable @ApplicationConfig Node<? extends ConfigOrigin> applicationConfigNode,
+        @Nullable @ApplicationConfig ConfigOrigin applicationConfig) {
+```
+
+Оттого граф обязан инициализировать конфиг раньше watcher'а, а начальное значение приходит
+параметром — `graph.get()` на старте больше не вызывается вовсе. Первая версия фикса ждала
+готовности узла в цикле с `catch (IllegalStateException)` — от неё отказались: глушить исключение
+вместо того, чтобы объявить зависимость, — лечение симптома.
+
 ### Покрытие тестами
 
-`ConfigWatcherStartupOrderTest` собирает граф ровно так, как его генерирует процессор. Без фикса красный,
-с фиксом зелёный (проверено в обе стороны); остальные тесты `config-common` зелёные.
+Нового модульного теста нет, и это осознанное решение: дефект был в том, как узел связывается
+процессором, а тест, собирающий граф руками, вправе объявить любые зависимости и потому ничего
+не доказывает. Ровно по этой причине штатный `ConfigWatcherTest` гонку и не ловил.
+
+Доказательство — сгенерированный граф примера до и после фикса:
+
+```java
+// было
+component2 = graphDraw.addNode(..., List.of(), ...)
+// стало
+component2 = graphDraw.addNode(..., List.of(component1), ...)
+```
+
+Стектрейс из потока `config-reload` при старте больше не появляется. Прогнаны зелёными:
+`config-common`, `config-hocon`, `config-yaml`, `test-junit5`; штатный `ConfigWatcherTest` обновлён под
+новую сигнатуру конструктора.

@@ -12,8 +12,8 @@
 
 ## 0. Порядок миграции проекта
 
-1. Прогнать OpenRewrite-рецепт (`migration/openrewrite/`) — пакеты, типы, координаты зависимостей.
-2. Прогнать `python migration/scripts/migrate_kora_2.py` (сначала без флагов — dry-run, затем `--apply`) — то, что OpenRewrite не покрывает.
+1. Прогнать `python migration/scripts/migrate_kora_2.py` (сначала без флагов — dry-run, затем `--apply`) — пакеты, типы, координаты, версия, ресурсы.
+2. Альтернатива для чисто Java-проектов, где текстовые замены нежелательны: OpenRewrite-рецепт `io.koraframework.migration.Kora1To2`, применяемый из самого мигрируемого проекта — `migration/openrewrite/README.md`.
 3. **Обязательно**: `clean` + первая сборка с `--no-build-cache` (см. §1.3).
 4. Собрать модуль: `./gradlew <module>:classes --console=plain`.
 5. Применить семантические правила из этого документа под конкретные ошибки компиляции.
@@ -897,6 +897,203 @@ zeebe.client {
 
 ---
 
+## 17. GraalVM Native Image
+
+Раздел проверен на трёх модулях `examples/graalvm/*`: каждый собран в native-образ и запущен
+против реальных зависимостей (Postgres, Kafka, Scylla + Redis) — двумя путями сразу: `nativeCompile`
+через Gradle-плагин и `native-image` внутри Docker по `Dockerfile`.
+
+Окружение, на котором всё проверено: GraalVM CE 25.2.4+7.1 (`native-image 25.0.4`), установка —
+`sdk install java 25.2.4-graalce`. Образ для Docker-сборки — `ghcr.io/graalvm/native-image-community:25`.
+
+### 17.1. Плагин `org.graalvm.buildtools.native`: 0.11.5 → 1.1.7
+
+**Было:**
+
+```groovy
+id "org.graalvm.buildtools.native" version "0.11.5" apply false
+```
+
+**Стало:**
+
+```groovy
+id "org.graalvm.buildtools.native" version "1.1.7" apply false
+```
+
+**Причина:** на Gradle 9 задача `collectReachabilityMetadata` падает на резолве конфигурации
+из чужого проекта. До 1.1.6 плагин регистрировал один shared build service `nativeConfigurationService`
+на весь build — второй и последующие GraalVM-модули получали сервис, созданный в контексте
+первого. В Gradle 8 это было предупреждением, в Gradle 9 — ошибка. В 1.1.6 имя сервиса стало
+включать `project.getPath()` — сервис стал попроектным
+([native-build-tools#760](https://github.com/graalvm/native-build-tools/issues/760)).
+
+**Ограничение:** обходов в виде «запускать по одному модулю» недостаточно — ошибка возникает на
+конфигурации всего build'а. Нужно поднимать версию плагина.
+
+### 17.2. GraalVM 25 вместо 21
+
+**Было / Стало** — три места, и менять нужно все три:
+
+```groovy
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)   // было 21
+        vendor = JvmVendorSpec.ADOPTIUM
+    }
+}
+
+graalvmNative {
+    binaries {
+        main {
+            javaLauncher = javaToolchains.launcherFor {
+                languageVersion = JavaLanguageVersion.of(25)   // было 21
+                vendor = JvmVendorSpec.matching("GraalVM Community")
+            }
+        }
+    }
+}
+```
+
+```dockerfile
+FROM ghcr.io/graalvm/native-image-community:25 as builder   # было :21
+```
+
+**Причина:** та же, что и в §1.1 — артефакты Kora 2.0 собраны под JVM 25. `native-image` отказывается
+читать классы более нового class-file формата, чем его собственный JDK.
+
+**Проверка:** `native-image --version` внутри выбранного launcher'а должен показать 25.x.
+Если в системе нет GraalVM, `nativeCompile` падает на поиске toolchain — это не ошибка миграции.
+
+### 17.3. `imageName` и `mainClass`: передавать провайдер, а не интерполяцию
+
+**Было:**
+
+```groovy
+imageName = "$project.name"
+mainClass = "$application.mainClass"
+```
+
+**Стало:**
+
+```groovy
+imageName = project.name
+mainClass = application.mainClass
+```
+
+**Причина:** `application.mainClass` — это `Property<String>`, а не `String`. В строковой интерполяции
+Groovy вызывает `toString()` самого свойства, и в командную строку `native-image` уезжает не имя класса,
+а отладочное представление вида `property(java.lang.String, fixed(...))`. На старом плагине это
+работало по совпадению (значение разворачивалось раньше), в 1.1.7 — нет.
+
+**Поведенческое изменение:** ошибка выглядит как «main class not found» или как бинарь со странным
+именем — не как ошибка конфигурации Gradle.
+
+### 17.4. `jar.enabled = false` больше нельзя
+
+**Было:** модули гасили обычный `jar`, чтобы в `build/libs` лежал только shadow-артефакт:
+
+```groovy
+jar.enabled = false
+```
+
+**Стало:** строка удалена.
+
+**Причина:** `nativeCompile` строит classpath из артефактов самого проекта. С выключенным `jar`
+в classpath попадают только зависимости, а классы приложения — нет. Shadow-jar здесь не спасает:
+он собирается для Docker-пути и в classpath `nativeCompile` не участвует.
+
+**Проверка:** если строку вернуть, сборка падает на том, что не находит класс `Application`,
+хотя `compileJava` прошёл.
+
+### 17.5. Метаданные достижимости: что теперь даёт сам фреймворк
+
+Kora поставляет метаданные внутри своих артефактов
+(`META-INF/native-image/<модуль>/`). При миграции выяснилось, что пять наборов были неполными
+или не читались вовсе. Все пять исправлены в upstream:
+
+| Симптом в native-образе | Модуль | PR |
+|---|---|---|
+| `java.lang.IllegalArgumentException: No XNIO provider found` на старте HTTP-сервера | `http-server-undertow` | [#811](https://github.com/kora-projects/kora/pull/811) |
+| HikariCP не находит micrometer-трекер метрик | `database-jdbc` | [#812](https://github.com/kora-projects/kora/pull/812) |
+| кеш Caffeine без статистики падает на создании | `cache-caffeine` | [#813](https://github.com/kora-projects/kora/pull/813) |
+| регистрации молча не применяются | `micrometer-module`, `grpc-server`, `kafka` | [#814](https://github.com/kora-projects/kora/pull/814) |
+| сборка образа падает на этапе анализа | `database-cassandra` | [#815](https://github.com/kora-projects/kora/pull/815) |
+
+Самый переносимый вывод — четвёртая строка: файл с именем **`reflection-config.json`** native-image
+не читает вовсе. Правильное имя — **`reflect-config.json`**. Ошибка не диагностируется никак:
+сборка идёт успешно, просто регистрации не применяются. Проверьте имена файлов в своём проекте
+отдельно — это одна команда:
+
+```shell
+find . -name "reflection-config.json"   # каждое попадание — мёртвый файл
+```
+
+**Ограничение (важное):** не удаляйте собственные метаданные приложения на том основании,
+что приложение работает на JVM. В примерах собственные метаданные остались только для logback
+(`src/main/resources/META-INF/native-image/io.koraframework.examples/logback/`) — они нужны и сейчас.
+При переименовании пакетов каталог с именем группы (`.../native-image/<group>/`) переименовывается
+вручную — ни OpenRewrite, ни скрипт каталоги ресурсов не трогают.
+
+### 17.6. Как метаданные попадают в образ, собираемый в Docker
+
+Два пути сборки ведут себя по-разному, и это источник путаницы:
+
+- `nativeCompile` сам подкладывает metadata repository (`graalvmNative.metadataRepository.enabled = true`);
+- `native-image -cp application.jar` внутри Docker никакого Gradle не видит и читает только то,
+  что лежит в самом jar.
+
+Чтобы второй путь видел те же метаданные, их надо собрать в ресурсы до упаковки:
+
+```groovy
+processResources.dependsOn tasks.collectReachabilityMetadata
+sourceSets.main { resources.srcDirs += "$buildDir/native-reachability-metadata" }
+
+shadowJar {
+    mergeServiceFiles()   // без этого теряются META-INF/services — в native это фатально
+}
+```
+
+Эта связка была в примерах и в 1.x — менять её при миграции не нужно, но её надо знать: если
+образ из Gradle работает, а из Docker — нет, первый подозреваемый именно она, а не код.
+
+### 17.7. Когда GraalVM-модуль считается мигрированным
+
+Сборка образа — не критерий: все перечисленные в §17.5 дефекты давали **успешную сборку**
+и падали только в рантайме. Минимальный набор проверок после сборки:
+
+1. бинарь стартует и не падает через секунду;
+2. `GET /system/readiness` отвечает 200 — значит граф инициализировался целиком;
+3. `GET /metrics` отдаёт метрики, а не заглушку и не 500 (см. #810 и #814);
+4. сценарий модуля отрабатывает против реальной зависимости (БД, брокер), а не на моках;
+5. в логе нет стектрейсов при старте — они тут часто единственный признак отвалившейся подсистемы.
+
+Самый дешёвый способ закрепить это в CI — `BlackBoxTests`, которые собирают образ по `Dockerfile`
+и гоняют его Testcontainers'ами; в репозитории так сделаны все три GraalVM-модуля.
+
+**Отдельно про ожидание готовности контейнера.** Не ждите строку в логе — формулировки
+стартовых сообщений Kora не являются контрактом и между 1.x и 2.0 поменялись. Ждите HTTP-пробу:
+
+```java
+waitingFor(Wait.forHttp("/system/readiness").forPort(8080).forStatusCode(200)
+        .withStartupTimeout(Duration.ofSeconds(60)));
+```
+
+### 17.8. GraalVM-модули на удалённой функциональности
+
+`kora-java-graalvm-crud-r2dbc` и `kora-java-graalvm-crud-vertx` миграции не подлежат: дело не в native,
+а в том, что сами интеграции удалены из 2.0 (§12). Они исключены из `settings.gradle`, но оставлены
+в репозитории. Если у вас такой модуль — сначала переводите его на синхронный JDBC/Cassandra
+(§13), и только потом возвращайтесь к native-части.
+
+### 17.9. Диагностика
+
+Отладка native-образа плохо формализуется в правила «было → стало»: одна и та же ошибка может
+быть и дефектом фреймворка, и нехваткой метаданных приложения. Рабочая методика — трассирующий
+агент, изоляция через минимальный native-пробник и проверка того, что метаданные вообще читаются —
+описана в `KORA_MIGRATION_NEURO.md`, раздел *Diagnostic pattern: native-image собрался, но падает в рантайме*.
+
+---
+
 ## 14. Что покрыто автоматизацией
 
 | Изменение | OpenRewrite | Скрипт | Вручную / нейро-агент |
@@ -912,5 +1109,8 @@ zeebe.client {
 | `@Component` на мапперы/интерцепторы | — | частично (хардкод) | ✅ |
 | Сигнатуры интерцепторов, удаление `Context` | — | — | ✅ |
 | S3-клиент | — | — | ✅ |
+| Версия плагина GraalVM, толчейн 25, базовый образ Docker | — | ✅ | — |
+| `imageName`/`mainClass`, `jar.enabled` (§17.3–§17.4) | — | — | ✅ |
+| Метаданные достижимости native-image | — | — | ✅ |
 
 Ограничения текущего скрипта `migrate_kora_2.py` описаны в `migration/README.md` — он содержит замены с хардкодом имён классов конкретных примеров и несколько слишком широких текстовых замен; для применения к чужому проекту требуется доработка.
