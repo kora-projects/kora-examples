@@ -34,7 +34,8 @@ public final class AppContainer extends GenericContainer<AppContainer> {
         withExposedPorts(8080, 8085);
         withStartupTimeout(Duration.ofSeconds(20));
         withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(AppContainer.class)));
-        waitingFor(Wait.forLogMessage(".*Kafka Consumer '.*' first poll.*", 1).withStartupTimeout(Duration.ofSeconds(20)));
+        // Kora 2.0 logs the listener as "KafkaListener" / "KafkaListener-N", not as "Kafka Consumer '...'"
+        waitingFor(Wait.forLogMessage(".*KafkaListener.* first poll.*", 1).withStartupTimeout(Duration.ofSeconds(20)));
     }
 
     public int getPort() {

@@ -1,6 +1,6 @@
 # Изменения во фреймворк, отправленные в upstream
 
-Все двадцать исправлений отправлены как отдельные pull request'ы в
+Все двадцать шесть исправлений отправлены как отдельные pull request'ы в
 [`kora-projects/kora`](https://github.com/kora-projects/kora) из форка `dsudomoin/kora`.
 Каждая ветка отведена от `master`, содержит один логический фикс с регрессионным тестом и
 перебазирована на актуальный `origin/master` перед отправкой.
@@ -27,6 +27,17 @@
 | [#808](https://github.com/kora-projects/kora/pull/808) | `fix/openapi-java-range-upper-bound` | `13089ab8f` | `openapi/openapi-generator` |
 | [#809](https://github.com/kora-projects/kora/pull/809) | `fix/otel-context-with-loses-kora-wrapper` | `52e95a17f` | `core/common` |
 | [#810](https://github.com/kora-projects/kora/pull/810) | `fix/metrics-scraper-not-bound` | `500975770` | `telemetry/micrometer-module` |
+| [#811](https://github.com/kora-projects/kora/pull/811) | `fix/graalvm-undertow-xnio-metadata` | `587ef109f` | `http/http-server-undertow` |
+| [#812](https://github.com/kora-projects/kora/pull/812) | `fix/graalvm-jdbc-hikari-micrometer-metadata` | `18aa0fa2d` | `database/database-jdbc` |
+| [#813](https://github.com/kora-projects/kora/pull/813) | `fix/graalvm-caffeine-node-metadata` | `28a2b38b2` | `cache/cache-caffeine` |
+| [#814](https://github.com/kora-projects/kora/pull/814) | `fix/graalvm-reflect-config-file-name` | `274e3b039` | `telemetry/micrometer-module`, `grpc/grpc-server`, `kafka/kafka` |
+| [#815](https://github.com/kora-projects/kora/pull/815) | `fix/graalvm-cassandra-guava-comparator-init` | `d2fd730ca` | `database/database-cassandra` |
+| [#816](https://github.com/kora-projects/kora/pull/816) | `fix/logback-appender-outside-scope` | `5797597c7` | `logging/logging-logback` |
+
+> [#811](https://github.com/kora-projects/kora/pull/811)–[#815](https://github.com/kora-projects/kora/pull/815) — дефекты, найденные только при сборке GraalVM
+> native-image. Ни один из них не воспроизводится на JVM, поэтому ни к одному невозможно написать
+> модульный тест, который краснеет без фикса; это оговорено в каждом PR, а доказательством служит
+> воспроизведение на модулях `examples/graalvm/*` с конкретными цифрами до/после.
 
 > [#805](https://github.com/kora-projects/kora/pull/805) и
 > [#808](https://github.com/kora-projects/kora/pull/808) обе добавляют тест в
@@ -822,3 +833,173 @@ Kora хранит контекст OpenTelemetry в `ScopedValue`, поэтом�
 ### Смежное изменение в примерах (не дефект)
 
 После фикса `/metrics` отдаёт JVM-метрики, но не `http_server_*`: в 2.0 `TelemetryConfig.MetricsConfig.enabled()` по умолчанию `false`. Гайдам добавлено `httpServer.telemetry.metrics.enabled = true` — это изменение поведения 2.0, а не баг.
+
+---
+
+## PR 21 — `fix(http-server-undertow): register the XNIO provider metadata needed by native-image`
+
+- **Ветка:** `fix/graalvm-undertow-xnio-metadata` — [#811](https://github.com/kora-projects/kora/pull/811)
+- **Коммит:** `587ef109f`
+- **Модуль фреймворка:** `http/http-server-undertow`
+
+### Постановка задачи
+
+Любое приложение с Undertow, собранное в native-image, не стартует: `XNIO001001: No XNIO provider found`.
+Сообщение вводит в заблуждение — провайдер в образе есть. `NioXnioProvider.<clinit>` тянет `NioXnio` →
+`org.xnio.nio.Log`, а jboss-logging грузит сгенерированную реализацию `<интерфейс>_$logger` рефлексией.
+Класс не зарегистрирован → `ServiceConfigurationError` → его глотает `catch (Throwable)` внутри `Xnio.doGetInstance`,
+и наружу выходит «провайдеров нет».
+
+### Что сделано
+
+В `reflect-config.json` добавлены `org.xnio.nio.Log_$logger` и `org.xnio._private.Messages_$logger` с конструктором
+от `org.jboss.logging.Logger`; добавлен `resource-config.json` с файлом сервиса и `Version.properties`.
+
+### Покрытие тестами
+
+Модульного теста нет и быть не может: на JVM этот путь работает и без метаданных. Причина локализована
+отдельным native-пробником на том же classpath (до: `ServiceConfigurationError`, после: `XNIO provider "nio"`),
+а сквозная проверка — на `kora-java-graalvm-crud-jdbc` и `kora-java-graalvm-crud-cassandra`: `/system/readiness`
+отвечает `OK` за 886 мс.
+
+---
+
+## PR 22 — `fix(database-jdbc): register the Hikari micrometer tracker for native-image`
+
+- **Ветка:** `fix/graalvm-jdbc-hikari-micrometer-metadata` — [#812](https://github.com/kora-projects/kora/pull/812)
+- **Коммит:** `18aa0fa2d`
+- **Модуль фреймворка:** `database/database-jdbc`
+
+### Постановка задачи
+
+`JdbcDataSource` при включённых driver-метриках зовёт `HikariDataSource.setMetricRegistry`, а Hikari создаёт
+`MicrometerMetricsTrackerFactory` по имени. Статических ссылок на класс нет, в образ он не попадает,
+и пул падает при инициализации графа. Метаданные GraalVM для HikariCP покрывают dropwizard-ветку, но не micrometer.
+
+### Что сделано
+
+Добавлен `reflect-config.json` с конструктором `MicrometerMetricsTrackerFactory(MeterRegistry)` — ровно той
+сигнатурой, которую запрашивает `UtilityElf.createInstance` (зафиксировано tracing-агентом).
+
+### Покрытие тестами
+
+Теста нет по той же причине — на JVM класс есть всегда. Проверено на `kora-java-graalvm-crud-jdbc`:
+до фикса — `Failed to load class ...MicrometerMetricsTrackerFactory` в списке ошибок инициализации,
+после — полный CRUD-цикл отвечает 200.
+
+---
+
+## PR 23 — `fix(cache-caffeine): register the Caffeine node classes used without statistics`
+
+- **Ветка:** `fix/graalvm-caffeine-node-metadata` — [#813](https://github.com/kora-projects/kora/pull/813)
+- **Коммит:** `28a2b38b2`
+- **Модуль фреймворка:** `cache/cache-caffeine`
+
+### Постановка задачи
+
+Кэш Caffeine падает при первом же обращении: `Cannot reflectively invoke constructor 'PSMS()'`.
+Caffeine выбирает сгенерированный класс узла по конфигурации кэша и создаёт его рефлексией. Общие
+метаданные GraalVM регистрируют `PSMS` только под условием `"typeReached": "SSSMS"` — это класс кэша,
+построенного **с** `recordStats()`. `CaffeineFactory` включает статистику только при включённых метриках,
+а в 2.0 они по умолчанию выключены — строится `SSMS`, условие никогда не срабатывает.
+
+Соответствие конфигураций и классов снято экспериментом на JVM:
+
+| expireAfterAccess | expireAfterWrite | recordStats | кэш | узел |
+|---|---|---|---|---|
+| нет | нет | нет | `SSMS` | `PSMS` |
+| нет | да | нет | `SSMSW` | `PSWMS` |
+| да | нет | нет | `SSMSA` | `PSAMS` |
+| да | да | нет | `SSMSAW` | `PSAWMS` |
+| … | … | да | `SSSMS…` | те же узлы |
+
+### Что сделано
+
+Зарегистрированы все восемь классов кэша и четыре класса узла с базовыми родителями — кэш работает
+независимо от того, включены ли метрики.
+
+### Покрытие тестами
+
+На JVM кэш работает в обоих состояниях, поэтому модульный тест не различает фикс. Проверено на
+`kora-java-graalvm-crud-jdbc` (кэш Caffeine, метрики выключены).
+
+---
+
+## PR 24 — `fix(micrometer-module,grpc-server,kafka): name the reflection configs so native-image reads them`
+
+- **Ветка:** `fix/graalvm-reflect-config-file-name` — [#814](https://github.com/kora-projects/kora/pull/814)
+- **Коммит:** `274e3b039`
+- **Модули фреймворка:** `telemetry/micrometer-module`, `grpc/grpc-server`, `kafka/kafka`
+
+### Постановка задачи
+
+native-image читает из `META-INF/native-image/<group>/<artifact>/` файл `reflect-config.json`. Три модуля
+поставляли его под именем `reflection-config.json`, которое сборщик не ищет, — то есть эти регистрации
+(netty-хендлеры gRPC, `RangeAssignor`/`AppInfo`/`DefaultPartitioner` у Kafka, методы `OperatingSystemMXBean`)
+**никогда не попадали в образ**.
+
+Доказано на micrometer: метод, добавленный в старый файл, не дал эффекта (`/metrics` продолжал отвечать 500),
+а та же запись в `reflect-config.json` — дала.
+
+### Что сделано
+
+Файлы переименованы в трёх модулях. Заодно добавлен `getProcessCpuTime`: micrometer 1.17 добавил метрику
+`process.cpu.time`, которая читает этот метод рефлексией.
+
+### Покрытие тестами
+
+Имя файла значимо только для сборщика образа, поэтому любой JVM-тест зелён в обоих состояниях. Проверено на
+трёх native-модулях: до — `GET /metrics` отвечает 500 и 670 байт текста ошибки; после — 200 и ~4,6 КБ
+с `system_cpu_usage`, `process_cpu_usage`, `process_cpu_time_ns_total`.
+
+---
+
+## PR 25 — `fix(database-cassandra): initialize the shaded guava comparator at build time`
+
+- **Ветка:** `fix/graalvm-cassandra-guava-comparator-init` — [#815](https://github.com/kora-projects/kora/pull/815)
+- **Коммит:** `d2fd730ca`
+- **Модуль фреймворка:** `database/database-cassandra`
+
+### Постановка задачи
+
+Сборка native-image падает на этапе анализа: объект shaded-компаратора `UnsignedBytes$…$PureJavaComparator`
+оказывается в image heap, хотя его тип инициализируется в рантайме. Путь достижимости идёт через
+`HashedWheelTimer$HashedWheelTimeout.<clinit>` → `AtomicIntegerFieldUpdater.newUpdater` → декодирование
+метаданных → компаратор из `SniEndPoint`.
+
+### Что сделано
+
+К `--initialize-at-build-time` модуля добавлен этот класс — ровно то, что советует сам сборщик.
+
+### Покрытие тестами
+
+Ошибка возникает в сборщике образа, а не в рантайме, поэтому из JVM-теста невоспроизводима. Проверено на
+`kora-java-graalvm-crud-cassandra`: до — `nativeCompile` падает через ~13 с; после — образ собирается за ~31 с
+(76 МиБ) и отдаёт полный CRUD против Scylla с Redis-кэшем.
+
+---
+
+## PR 26 — `fix(logging-logback): keep logging events that happen outside a scope`
+
+- **Ветка:** `fix/logback-appender-outside-scope` — [#816](https://github.com/kora-projects/kora/pull/816)
+- **Коммит:** `5797597c7`
+- **Модуль фреймворка:** `logging/logging-logback`
+
+### Постановка задачи
+
+Найдено при разборе падающего `BlackBoxTests` kafka-модуля — и это самый широкий дефект из всех
+двадцати шести: `KoraAsyncAppender.append` читает MDC через `ScopedValue.get()`, который вне скоупа
+бросает `NoSuchElementException`. logback ловит исключение и выбрасывает событие, поэтому **всё,
+что логируется вне обработки запроса или сообщения, теряется молча**: старт приложения, фоновые
+задачи, логи драйверов, ошибки инициализации.
+
+### Что сделано
+
+MDC читается только при `MDC.VALUE.isBound()`, иначе — пустая карта.
+
+### Покрытие тестами
+
+Модульного теста нет — честно оговорено в PR. Попытка гонять `AsyncAppenderBase` напрямую из теста
+не доставляет событие до `ListAppender` ни с фиксом, ни без него — такой тест был бы зелёным
+в обоих состояниях и ничего не доказывал. Сквозное доказательство: лог приложения — 591 байт до фикса
+и 16 001 байт после, при той же конфигурации.

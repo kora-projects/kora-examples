@@ -51,7 +51,6 @@ dependencies {
     implementation "io.koraframework:openapi-management"
     implementation "io.koraframework:logging-logback"
 
-    implementation "io.projectreactor:reactor-core:3.6.18" // For reactive examples (optional)
     implementation "org.mapstruct:mapstruct:1.5.5.Final"
 
     testImplementation "org.json:json:20231013"
@@ -89,8 +88,8 @@ compileJava.dependsOn openApiGenerateHttpServer
 graalvmNative {
     binaries {
         main {
-            imageName = "$project.name"
-            mainClass = "$application.mainClass"
+            imageName = project.name
+            mainClass = application.mainClass
             javaLauncher = javaToolchains.launcherFor {
                 languageVersion = JavaLanguageVersion.of(25)
                 vendor = JvmVendorSpec.matching("GraalVM Community")
@@ -119,7 +118,7 @@ run {
     ])
 }
 
-jar.enabled = false
+// nativeCompile takes the project's own artifact as its classpath entry, so the plain jar must stay enabled
 shadowJar {
     mergeServiceFiles()
     manifest {

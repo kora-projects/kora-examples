@@ -47,8 +47,8 @@ application {
 graalvmNative {
     binaries {
         main {
-            imageName = "$project.name"
-            mainClass = "$application.mainClass"
+            imageName = project.name
+            mainClass = application.mainClass
             javaLauncher = javaToolchains.launcherFor {
                 languageVersion = JavaLanguageVersion.of(25)
                 vendor = JvmVendorSpec.matching("GraalVM Community")
@@ -70,7 +70,7 @@ run {
     ])
 }
 
-jar.enabled = false
+// nativeCompile takes the project's own artifact as its classpath entry, so the plain jar must stay enabled
 shadowJar {
     mergeServiceFiles()
     manifest {

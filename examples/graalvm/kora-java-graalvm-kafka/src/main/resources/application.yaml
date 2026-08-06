@@ -19,9 +19,9 @@ kafka:
 
 
 logging:
-  level:
-    root: ${?LOGGING_LEVEL_ROOT:WARN}
-    io.koraframework: ${?LOGGING_LEVEL_KORA:INFO}
-    io.koraframework.kafka: ${?LOGGING_LEVEL_KORA_KAFKA:INFO}
-    io.koraframework.example: ${?LOGGING_LEVEL_APP:INFO}
-    io.koraframework.application.graph.internal.loom.VirtualThreadExecutorHolder: ${?LOGGING_LEVEL_VIRTUAL_THREAD_EXECUTOR:DEBUG}
+  levels:
+    root: ${LOGGING_LEVEL_ROOT:WARN}
+    io.koraframework: ${LOGGING_LEVEL_KORA:INFO}
+    io.koraframework.kafka: ${LOGGING_LEVEL_KORA_KAFKA:INFO}
+    io.koraframework.example: ${LOGGING_LEVEL_APP:INFO}
+    io.koraframework.application.graph.internal.loom.VirtualThreadExecutorHolder: ${LOGGING_LEVEL_VIRTUAL_THREAD_EXECUTOR:DEBUG}

@@ -15,7 +15,7 @@
 - [Validation](https://kora-projects.github.io/kora-docs/ru/documentation/validation/)
 - [Cache Caffeine](https://kora-projects.github.io/kora-docs/ru/documentation/cache/#caffeine)
 
-Скомпилирован с помощью [GraalVM](https://www.graalvm.org/release-notes/JDK_21/)
+Скомпилирован с помощью [GraalVM](https://www.graalvm.org/release-notes/JDK_25/)
 
 ## Build
 

@@ -1,7 +1,7 @@
 package io.koraframework.example.graalvm.crud.cassandra.service;
 
 import java.util.concurrent.ThreadLocalRandom;
-import reactor.core.publisher.Mono;
+import org.jspecify.annotations.Nullable;
 import io.koraframework.cache.annotation.CacheInvalidate;
 import io.koraframework.cache.annotation.CachePut;
 import io.koraframework.cache.annotation.Cacheable;
@@ -27,42 +27,50 @@ public class PetService {
     @CircuitBreakable(PetCircuitBreaker.class)
     @Retryable(PetRetry.class)
     @Timeout(PetTimeouter.class)
-    public Mono<Pet> findByID(long petId) {
+    @Nullable
+    public Pet findByID(long petId) {
         return petRepository.findById(petId);
     }
 
     @CircuitBreakable(PetCircuitBreaker.class)
     @Timeout(PetTimeouter.class)
-    public Mono<Pet> add(PetCreateTO createTO) {
+    public Pet add(PetCreateTO createTO) {
         final long petId = ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE);
         final Pet pet = new Pet(petId, createTO.name(), Pet.Status.AVAILABLE, createTO.category().name());
-        return petRepository.insert(pet).then(Mono.just(pet));
+        petRepository.insert(pet);
+        return pet;
     }
 
     @CircuitBreakable(PetCircuitBreaker.class)
     @Timeout(PetTimeouter.class)
     @CachePut(value = PetCache.class, args = "id")
-    public Mono<Pet> update(long id, PetUpdateTO updateTO) {
-        return petRepository.findById(id)
-                .flatMap(pet -> {
-                    var status = (updateTO.status() == null)
-                            ? pet.status()
-                            : toStatus(updateTO.status());
+    @Nullable
+    public Pet update(long id, PetUpdateTO updateTO) {
+        final Pet pet = petRepository.findById(id);
+        if (pet == null) {
+            return null;
+        }
 
-                    var category = (updateTO.category() == null)
-                            ? pet.category()
-                            : updateTO.category().name();
+        var status = (updateTO.status() == null)
+                ? pet.status()
+                : toStatus(updateTO.status());
 
-                    var petUpdate = new Pet(pet.id(), updateTO.name(), status, category);
-                    return petRepository.update(petUpdate).then(Mono.just(petUpdate));
-                });
+        var category = (updateTO.category() == null)
+                ? pet.category()
+                : updateTO.category().name();
+
+        var petUpdate = new Pet(pet.id(), updateTO.name(), status, category);
+        petRepository.update(petUpdate);
+        return petUpdate;
     }
 
     @CircuitBreakable(PetCircuitBreaker.class)
     @Timeout(PetTimeouter.class)
     @CacheInvalidate(PetCache.class)
-    public Mono<Boolean> delete(long petId) {
-        return petRepository.deleteById(petId).thenReturn(true);
+    public boolean delete(long petId) {
+        // Cassandra DELETE reports no affected row count, so a completed statement is the only success signal
+        petRepository.deleteById(petId);
+        return true;
     }
 
     private static Pet.Status toStatus(PetUpdateTO.StatusEnum statusEnum) {

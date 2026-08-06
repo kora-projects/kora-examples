@@ -33,9 +33,10 @@ export JAVA_HOME=<JDK 25>
 | Модулей с тестами | 116 |
 | Тестов пройдено | **556** |
 | Тестов упало | **0** |
-| Модулей со статусом `MIGRATED` | 124 |
-| Модулей со статусом `MIGRATION_IN_PROGRESS` (только GraalVM native) | 3 |
-| Дефектов фреймворка исправлено | 20 |
+| Модулей со статусом `MIGRATED` | 127 |
+| Модулей со статусом `MIGRATION_IN_PROGRESS` | 0 |
+| GraalVM native-образов собрано и проверено в работе | 3 |
+| Дефектов фреймворка исправлено | 25 |
 
 Прогон: `./gradlew <116 задач>:test --max-workers=1 --continue`, 10 мин 53 с.
 
@@ -47,13 +48,14 @@ class-файла и видит `:arg0` вместо имён параметро�
 
 ## Что сделано
 
-Мигрированы все Java- и Kotlin-модули репозитория. GraalVM-часть мигрирована в JVM-части;
-native-сборка отложена отдельным решением и остаётся единственной незакрытой областью.
+Мигрированы все модули репозитория — Java, Kotlin и GraalVM. Для трёх модулей `examples/graalvm/*`
+native-образ собран на GraalVM CE 25.0.4 и проверен в работе: бинарь запущен против реальных
+зависимостей (Postgres, Kafka, Scylla + Redis), отвечает на `/system/readiness`, отдаёт метрики и
+обслуживает свой сценарий (CRUD либо обработку сообщения).
 
-По ходу миграции найдено и исправлено **двадцать дефектов самого фреймворка** — каждый отдельной
-веткой от `master`, с регрессионным тестом, проверенным в обе стороны. Все двадцать отправлены
-в upstream как отдельные pull request'ы
-[#791–#810](https://github.com/kora-projects/kora/pulls?q=is%3Apr+author%3Adsudomoin);
+По ходу миграции найдено и исправлено **двадцать пять дефектов самого фреймворка** — каждый
+отдельной веткой от `master`. Все двадцать пять отправлены в upstream как отдельные pull request'ы
+[#791–#815](https://github.com/kora-projects/kora/pulls?q=is%3Apr+author%3Adsudomoin);
 разбор каждого — в `KORA_2_PULL_REQUESTS.md`, причины и опровергнутые гипотезы —
 в `KORA_2_FRAMEWORK_ISSUES.md`.
 
@@ -66,6 +68,8 @@ native-сборка отложена отдельным решением и ос
 | java-генератор OpenAPI ставит `to = minimum` в `@Range` | тесты не отправляли значений выше минимума |
 | gRPC-приложение завершается сразу после старта | контейнер выходит с кодом 0, как при штатном завершении |
 | `TestGraph` теряет permit семафора при упавшей инициализации | прогон висит вместо падения, видна только первая ошибка |
+| метаданные трёх модулей названы `reflection-config.json` | файл с таким именем native-image не читает вовсе — регистрации никогда не применялись |
+| Undertow в native падает с «No XNIO provider found» | провайдер в образе есть; настоящую ошибку глотает `catch (Throwable)` в XNIO |
 
 ## Закрытые ранее открытые вопросы
 
@@ -98,22 +102,34 @@ non-daemon-поток ровно для этого и прямо это комм
 
 ## Что осталось
 
-- **GraalVM native-сборка** — отложена отдельным решением. JVM-часть трёх модулей
-  `examples/graalvm/*` мигрирована и компилируется; `native-image` не запускался.
 - Диагностика `GraphBuilder` при провале всех форков шаблона — дефект подтверждён и описан,
   но не исправлен: нужен дизайн вывода (сводка по всем кандидатам вместо одного случайного).
+- `ConfigWatcher` читает узел графа до его инициализации — стектрейс при каждом старте и молчаливо
+  неработающее слежение за конфигом. Воспроизводится и на JVM, и в native. Не исправлен: нужно
+  решение о контракте, а не глушение исключения.
 
 ## Модули
 
 Колонки: язык, рантайм, основные интеграции Kora, статус, результат компиляции, результат
-кодогенерации, результат тестов, результат native-сборки. Модули `examples/graalvm/*` в прогоне
-тестов не участвуют — у них нет тестов на JVM-части.
+кодогенерации, результат тестов, результат native-сборки.
+
+Про колонку «Native» у `examples/graalvm/*`: образ собран `nativeCompile` на GraalVM CE 25.0.4
+и запущен против реальных зависимостей — `/system/readiness` отвечает `OK`, `/metrics` отдаёт
+метрики, сценарий модуля отрабатывает (CRUD либо обработка сообщения). Для `crud-jdbc` тот же
+образ дополнительно собирается внутри Docker по `Dockerfile` и проверяется `BlackBoxTests` (5/5).
+
+**Примечание по `BlackBoxTests` двух модулей.** У `kora-java-graalvm-kafka` контейнер приложения
+не доходит до первого `poll` в тестовом окружении (тест подменяет порт брокера на `:9093`);
+у `kora-java-graalvm-crud-cassandra` не поднимается сам контейнер Scylla —
+`testcontainers-extensions-scylla:0.13.1` не дожидается своей строки в логе. Ни то, ни другое
+не относится к native-образу: те же бинари проверены вручную против Kafka и Scylla + Redis.
+Оба случая остаются открытыми.
 
 | Модуль | Язык | Рантайм | Интеграции Kora | Статус | Компиляция | Кодоген | Тесты | Native |
 |---|---|---|---|---|---|---|---|---|
-| `examples/graalvm/kora-java-graalvm-crud-cassandra` | Java | JVM + GraalVM | openapi-gen, http-server, cassandra, metrics, json, validation, cache-redis, resilient, config-hocon, openapi-mgmt, logback | `MIGRATION_IN_PROGRESS` | JVM: OK | — | не прогонялись | отложено |
-| `examples/graalvm/kora-java-graalvm-crud-jdbc` | Java | JVM + GraalVM | openapi-gen, http-server, jdbc, metrics, json, validation, cache-caffeine, resilient, config-hocon, openapi-mgmt, logback | `MIGRATION_IN_PROGRESS` | JVM: OK | — | не прогонялись | отложено |
-| `examples/graalvm/kora-java-graalvm-kafka` | Java | JVM + GraalVM | http-server, kafka, json, config-yaml, metrics, logback | `MIGRATION_IN_PROGRESS` | JVM: OK | — | не прогонялись | отложено |
+| `examples/graalvm/kora-java-graalvm-crud-cassandra` | Java | JVM + GraalVM | openapi-gen, http-server, cassandra, metrics, json, validation, cache-redis, resilient, config-hocon, openapi-mgmt, logback | `MIGRATED` | OK | OK | 2/2 (`ComponentTests`) | OK, 76 МиБ |
+| `examples/graalvm/kora-java-graalvm-crud-jdbc` | Java | JVM + GraalVM | openapi-gen, http-server, jdbc, metrics, json, validation, cache-caffeine, resilient, config-hocon, openapi-mgmt, logback | `MIGRATED` | OK | OK | 7/7 (вкл. `BlackBoxTests` на native-образе) | OK, 51 МиБ |
+| `examples/graalvm/kora-java-graalvm-kafka` | Java | JVM + GraalVM | http-server, kafka, json, config-yaml, metrics, logback | `MIGRATED` | OK | — | см. примечание | OK, 80 МиБ |
 | `examples/java/kora-java-cache-caffeine` | Java | JVM | cache-caffeine, logback, config-hocon | `MIGRATED` | OK | OK | 10/10 | — |
 | `examples/java/kora-java-cache-redis` | Java | JVM | cache-redis, logback, config-hocon | `MIGRATED` | OK | OK | 9/9 | — |
 | `examples/java/kora-java-camunda-engine` | Java | JVM | http-server, camunda-engine, json, jdbc, logback, config-hocon | `MIGRATED` | OK | OK | 3/3 | — |
@@ -246,9 +262,10 @@ non-daemon-поток ровно для этого и прямо это комм
 `BLOCKED_BY_FRAMEWORK_BUG`, `BLOCKED_BY_GRAALVM_BUILD`, `REQUIRES_REDESIGN`,
 `REQUIRES_INVESTIGATION`, `REQUIRES_GRAALVM_INVESTIGATION`, `NOT_APPLICABLE`.
 
-`MIGRATION_IN_PROGRESS` у модулей `examples/graalvm/*` означает ровно одно: JVM-часть мигрирована
-и компилируется, а `native-image` не запускался. После решения по GraalVM они получат либо
-`MIGRATED`, либо `BLOCKED_BY_GRAALVM_BUILD` / `REQUIRES_GRAALVM_INVESTIGATION`.
+Статусов `MIGRATION_IN_PROGRESS`, `BLOCKED_BY_GRAALVM_BUILD` и `REQUIRES_GRAALVM_INVESTIGATION` в таблице
+больше нет: все три модуля `examples/graalvm/*` собираются в native-образ и проверены в работе
+— как через `nativeCompile` (Gradle-плагин), так и через `Dockerfile` (сборка внутри
+`ghcr.io/graalvm/native-image-community:25`), который гоняется тестами `BlackBoxTests`.
 
 Модули на удалённой в 2.0 функциональности (`database-r2dbc`, `database-vertx`) исключены из
 `settings.gradle`, но **не удалены** из репозитория и помечены `BLOCKED_BY_REMOVED_FUNCTIONALITY`:

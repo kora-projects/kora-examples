@@ -1317,3 +1317,294 @@ Exception in thread "config-reload" java.lang.IllegalStateException: Graph node 
 ### Workaround
 
 Не требуется.
+
+---
+
+## Issue: метаданные трёх модулей названы `reflection-config.json` и не читаются native-image
+
+- Status: Fixed
+- Severity: Major
+- Type: Framework bug
+- Language: Java
+- Runtime: GraalVM native-image
+- Component: метаданные GraalVM
+- Affected framework module: `telemetry/micrometer-module`, `grpc/grpc-server`, `kafka/kafka`
+- Affected example modules: все `examples/graalvm/*`
+- Related fix branch: `fix/graalvm-reflect-config-file-name` (`274e3b039`) — [#814](https://github.com/kora-projects/kora/pull/814)
+
+### Description
+
+`native-image` читает из `META-INF/native-image/<group>/<artifact>/` файлы со строго определёнными именами
+(`native-image.properties`, `reflect-config.json`, `resource-config.json`, и т.д.). Три модуля Kora
+поставляют файл под именем `reflection-config.json` — такого имени сборщик не ищет, поэтому
+регистрации никогда не применялись.
+
+### Steps to reproduce
+
+1. Добавить запись в `micrometer-module/.../reflection-config.json`.
+2. Собрать `nativeCompile` любого модуля `examples/graalvm/*`.
+3. Запись не даёт эффекта; перенос той же записи в `reflect-config.json` — даёт.
+
+### Investigation notes
+
+Сначала гипотеза была **ошибочно отвергнута**: в образе работали `system_cpu_usage` и
+`process_cpu_usage`, из чего был сделан вывод, что файл читается. Решающий эксперимент — добавить
+метод в старый файл и убедиться, что эффекта нет, — показал обратное: те две метрики
+регистрируются не из этого файла.
+
+### Implemented fix
+
+Переименование в трёх модулях + добавлен `getProcessCpuTime` (см. следующую запись).
+
+### Test coverage
+
+Имя файла значимо только для сборщика образа — JVM-тест не различает состояния. Доказательство —
+`GET /metrics` на трёх native-модулях: 500 и 670 байт ошибки до, 200 и ~4,6 КБ после.
+
+---
+
+## Issue: `/metrics` в native-образе отвечает 500 из-за `getProcessCpuTime`
+
+- Status: Fixed
+- Severity: Major
+- Type: Framework bug
+- Language: Java
+- Runtime: GraalVM native-image
+- Component: `micrometer-module`, метаданные GraalVM
+- Affected framework module: `telemetry/micrometer-module`
+- Affected example modules: все `examples/graalvm/*`
+- Related fix branch: `fix/graalvm-reflect-config-file-name` (`274e3b039`) — [#814](https://github.com/kora-projects/kora/pull/814)
+
+### Description
+
+micrometer 1.17 добавил метрику `process.cpu.time`, которая читает
+`com.sun.management.OperatingSystemMXBean.getProcessCpuTime()` рефлексией. В списке Kora были
+только `getCpuLoad` и `getProcessCpuLoad`, поэтому эндпоинт метрик отвечает 500 с текстом
+`MissingReflectionRegistrationError` вместо данных.
+
+### Test coverage
+
+См. предыдущую запись: проверка сквозная, на трёх native-модулях.
+
+---
+
+## Issue: Undertow в native-image не находит XNIO-провайдер
+
+- Status: Fixed
+- Severity: Blocker
+- Type: Framework bug
+- Language: Java
+- Runtime: GraalVM native-image
+- Component: `http-server-undertow`, метаданные GraalVM
+- Affected framework module: `http/http-server-undertow`
+- Affected example modules: `examples/graalvm/kora-java-graalvm-crud-jdbc`, `examples/graalvm/kora-java-graalvm-crud-cassandra`, `examples/graalvm/kora-java-graalvm-kafka`
+- Related fix branch: `fix/graalvm-undertow-xnio-metadata` (`587ef109f`) — [#811](https://github.com/kora-projects/kora/pull/811)
+
+### Description
+
+Любое приложение с Undertow, собранное в native-image, не стартует.
+
+### Relevant output
+
+```
+IllegalArgumentException: XNIO001001: No XNIO provider found
+    at org.xnio.Xnio.doGetInstance(Xnio.java:261)
+    at io.koraframework.http.server.undertow.XnioLifecycle.init(XnioLifecycle.java:65)
+```
+
+### Investigation notes
+
+Сообщение вводит в заблуждение: `NioXnioProvider` в образе **есть** (проверено `strings`), и
+ресурс `META-INF/services/org.xnio.XnioProvider` тоже. Отдельный native-пробник показал настоящую
+причину: `ServiceConfigurationError: Provider org.xnio.nio.NioXnioProvider could not be instantiated`
+→ `Invalid logger interface org.xnio.nio.Log (implementation not found)`. jboss-logging грузит
+сгенерированный `<интерфейс>_$logger` рефлексией. `Xnio.doGetInstance` оборачивает итерацию в
+`catch (Throwable)`, поэтому настоящая ошибка теряется.
+
+### Test coverage
+
+Сквозная: `/system/readiness` отвечает `OK` за 886 мс после фикса, до — граф не инициализируется.
+
+---
+
+## Issue: HikariCP не находит micrometer-трекер в native-образе
+
+- Status: Fixed
+- Severity: Blocker
+- Type: Framework bug
+- Language: Java
+- Runtime: GraalVM native-image
+- Component: `database-jdbc`, метаданные GraalVM
+- Affected framework module: `database/database-jdbc`
+- Affected example modules: `examples/graalvm/kora-java-graalvm-crud-jdbc`
+- Related fix branch: `fix/graalvm-jdbc-hikari-micrometer-metadata` (`18aa0fa2d`) — [#812](https://github.com/kora-projects/kora/pull/812)
+
+### Description
+
+`JdbcDataSource` при включённых driver-метриках зовёт `setMetricRegistry`, Hikari создаёт
+`MicrometerMetricsTrackerFactory` по имени — и класса нет в образе.
+
+### Relevant output
+
+```
+RuntimeException: Failed to load class com.zaxxer.hikari.metrics.micrometer.MicrometerMetricsTrackerFactory
+    at com.zaxxer.hikari.pool.HikariPool.setMetricRegistry(HikariPool.java:292)
+    at io.koraframework.database.jdbc.JdbcDataSource.<init>(JdbcDataSource.java:43)
+```
+
+### Test coverage
+
+Сквозная на `kora-java-graalvm-crud-jdbc`: полный CRUD-цикл после фикса, ошибка инициализации до.
+
+---
+
+## Issue: Caffeine-кэш без статистики падает в native-образе
+
+- Status: Fixed
+- Severity: Blocker
+- Type: Framework bug
+- Language: Java
+- Runtime: GraalVM native-image
+- Component: `cache-caffeine`, метаданные GraalVM
+- Affected framework module: `cache/cache-caffeine`
+- Affected example modules: `examples/graalvm/kora-java-graalvm-crud-jdbc`
+- Related fix branch: `fix/graalvm-caffeine-node-metadata` (`28a2b38b2`) — [#813](https://github.com/kora-projects/kora/pull/813)
+
+### Description
+
+Общие метаданные GraalVM регистрируют узел `PSMS` под условием `"typeReached": "SSSMS"` — это класс
+кэша с `recordStats()`. Kora включает статистику только при включённых метриках, а в 2.0 они по
+умолчанию выключены — строится `SSMS`, и условие не срабатывает.
+
+### Investigation notes
+
+Соответствие конфигураций и генерируемых классов снято программой на JVM (8 комбинаций
+`expireAfterAccess` × `expireAfterWrite` × `recordStats`), а не угадано по именам.
+
+### Test coverage
+
+Сквозная на `kora-java-graalvm-crud-jdbc` (кэш Caffeine, метрики выключены).
+
+---
+
+## Issue: сборка native-image с Cassandra-драйвером падает на этапе анализа
+
+- Status: Fixed
+- Severity: Blocker
+- Type: Framework bug
+- Language: Java
+- Runtime: GraalVM native-image
+- Component: `database-cassandra`, метаданные GraalVM
+- Affected framework module: `database/database-cassandra`
+- Affected example modules: `examples/graalvm/kora-java-graalvm-crud-cassandra`
+- Related fix branch: `fix/graalvm-cassandra-guava-comparator-init` (`d2fd730ca`) — [#815](https://github.com/kora-projects/kora/pull/815)
+
+### Description
+
+Объект shaded-компаратора драйвера оказывается в image heap, хотя его тип инициализируется в рантайме;
+сборщик прерывает сборку. Путь достижимости: `HashedWheelTimeout.<clinit>` →
+`AtomicIntegerFieldUpdater.newUpdater` → декодер метаданных → компаратор из `SniEndPoint`.
+
+### Test coverage
+
+Сборка `nativeCompile`: до — падает через ~13 с, после — образ собирается за ~31 с и отдаёт CRUD.
+
+---
+
+## Issue: `ConfigWatcher` читает узел графа до его инициализации
+
+- Status: Open
+- Severity: Minor
+- Type: Framework bug
+- Language: Java
+- Runtime: JVM и GraalVM native-image
+- Component: `config-common`
+- Affected framework module: `config/config-common`
+- Affected example modules: все приложения с файловым конфигом
+- Related fix branch: нет
+
+### Description
+
+При каждом старте приложения в лог падает стектрейс из потока `config-reload`. Приложение при этом
+стартует и работает — но слежение за конфигом молча не работает, потому что поток умирает сразу.
+
+### Relevant output
+
+```
+Exception in thread "config-reload" java.lang.IllegalStateException: Graph node value was not initialized:
+  [#1] interface io.koraframework.config.common.origin.ConfigOrigin (@Tag(ApplicationConfig)) (0 dependencies)
+    at io.koraframework.application.graph.internal.GraphImpl.getImpl(GraphImpl.java:81)
+    at io.koraframework.config.common.ConfigWatcher.watchJob(ConfigWatcher.java:75)
+```
+
+### Steps to reproduce
+
+Запустить любой из `examples/graalvm/*` — как shadowJar на JVM, так и native-бинарь. Воспроизводится
+в 100 % запусков обоих рантаймов.
+
+### Suspected cause
+
+`ConfigWatcher.init()` стартует виртуальный поток, который первым действием дёргает
+`graph.get(applicationConfigNode)`. Компонент держит `Node<…>`, а не значение, поэтому граф не считает
+конфиг его зависимостью и может ещё не инициализировать его к моменту старта потока.
+
+### Почему не исправлен
+
+Исправление — решение о контракте (ждать готовности графа, либо объявить зависимость на значение,
+либо стартовать поток после инициализации), а не однострочная правка. Заглушить исключение было б
+маскировкой — слежение за конфигом осталось бы нерабочим.
+
+### Workaround
+
+`KORA_CONFIG_WATCHER_ENABLED=false` — убирает стектрейс из лога ценой отключения слежения.
+
+---
+
+## Issue: все логи вне запроса теряются — `KoraAsyncAppender` читает непривязанный `ScopedValue`
+
+- Status: Fixed
+- Severity: Blocker
+- Type: Framework bug
+- Language: Java и Kotlin
+- Runtime: JVM и GraalVM native-image
+- Component: `logging-logback`
+- Affected framework module: `logging/logging-logback`
+- Affected example modules: все приложения с `LogbackModule`
+- Related fix branch: `fix/logback-appender-outside-scope` (`5797597c7`) — [#816](https://github.com/kora-projects/kora/pull/816)
+
+### Description
+
+`KoraAsyncAppender.append` читает Kora-MDC через `MDC.get()`, а это `ScopedValue.get()`, который вне
+привязанного скоупа бросает `NoSuchElementException`. `UnsynchronizedAppenderBase.doAppend` это ловит,
+и событие **молча теряется**. Теряется всё, что логируется вне обработки запроса или сообщения:
+старт и остановка приложения, фоновые задачи, пулы соединений, логи драйверов, ошибки инициализации.
+
+Дефект легко не заметить по двум причинам: внутри запроса логирование работает (то есть
+приложение выглядит «логирующим»), а собственная ошибка logback о потере события уходит в
+статус-менеджер, который в примерах глушится `NopStatusListener`.
+
+### Steps to reproduce
+
+1. Запустить `examples/graalvm/kora-java-graalvm-kafka` (логирует почти целиком вне скоупа).
+2. В логе — 591 байт: только стектрейс, пишущийся напрямую в stderr.
+3. Добавить `-Dlogback.statusListenerClass=ch.qos.logback.core.status.OnConsoleStatusListener` —
+   появляется `ERROR in KoraAsyncAppender[ASYNC] - Appender [ASYNC] failed to append.
+   java.util.NoSuchElementException: ScopedValue not bound`.
+
+### Implemented fix
+
+Аппендер берёт MDC только при `MDC.VALUE.isBound()`, иначе подставляет пустую карту.
+
+### Test coverage
+
+Модульного теста нет, и это оговорено в PR: попытка прогнать `AsyncAppenderBase` напрямую из теста
+не доставляет событие до присоединённого `ListAppender` ни с фиксом, ни без — такой тест ничего
+не доказывает. Доказательство сквозное: то же приложение с той же конфигурацией даёт 591 байт лога
+до фикса и 16 001 байт после (XNIO, конфигурация Kafka-продюсера и консьюмера, поиск координатора
+группы, `Application released`).
+
+### Побочное наблюдение
+
+В примерах секция уровней названа `logging.level`, а `LoggingConfig` читает `logging.levels`
+(множественное число). Отдельно это не ломало ничего заметного, потому что `LoggingLevelRefresher.init()`
+всё равно сбрасывает ROOT в `INFO`; в kafka-примере ключ приведён к `levels`.
