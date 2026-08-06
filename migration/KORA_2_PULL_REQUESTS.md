@@ -17,13 +17,13 @@
 | [#798](https://github.com/kora-projects/kora/pull/798) | `fix/zeebe-worker-ksp-exception-throws-bpmn-error` | `aa45fb674` | `experimental/camunda-zeebe-worker-symbol-processor` |
 | [#799](https://github.com/kora-projects/kora/pull/799) | `fix/ksp-submodule-processor-stale-symbols` | `39b5fe87d` | `core/kora-app-symbol-processor` |
 | [#800](https://github.com/kora-projects/kora/pull/800) | `fix/kafka-listener-parameter-unresolved-type` | `5ca20e17a` | `kafka/kafka-symbol-processor` |
-| [#801](https://github.com/kora-projects/kora/pull/801) | `fix/kafka-publisher-observation-unbound-mdc` | `02126424b` | `kafka/kafka` |
+| [#801](https://github.com/kora-projects/kora/pull/801) | `fix/kafka-publisher-observation-unbound-mdc` | `8d1863ed0` | `kafka/kafka` |
 | [#802](https://github.com/kora-projects/kora/pull/802) | `fix/ksp-template-match-star-projection` | `a24c4e97a` | `core/kora-app-symbol-processor` |
 | [#803](https://github.com/kora-projects/kora/pull/803) | `fix/openapi-kotlin-security-config-data-class` | `5359de430` | `openapi/openapi-generator` |
 | [#804](https://github.com/kora-projects/kora/pull/804) | `fix/test-junit5-graph-init-lock-leak` | `561e4d6b4` | `test/test-junit5` |
 | [#805](https://github.com/kora-projects/kora/pull/805) | `fix/openapi-server-multipart-file-unused-converter` | `2bb823858` | `openapi/openapi-generator` |
 | [#806](https://github.com/kora-projects/kora/pull/806) | `fix/cassandra-completable-future-return` | `5f3ba7c17` | `database/database-annotation-processor` |
-| [#807](https://github.com/kora-projects/kora/pull/807) | `fix/grpc-server-keeps-process-alive` | `ddc54cb85` | `grpc/grpc-server` |
+| [#807](https://github.com/kora-projects/kora/pull/807) | `fix/grpc-server-keeps-process-alive` | `f3385b3c6` | `grpc/grpc-server` |
 | [#808](https://github.com/kora-projects/kora/pull/808) | `fix/openapi-java-range-upper-bound` | `13089ab8f` | `openapi/openapi-generator` |
 | [#809](https://github.com/kora-projects/kora/pull/809) | `fix/otel-context-with-loses-kora-wrapper` | `52e95a17f` | `core/common` |
 | [#810](https://github.com/kora-projects/kora/pull/810) | `fix/metrics-scraper-not-bound` | `500975770` | `telemetry/micrometer-module` |
@@ -355,7 +355,7 @@ PR 4 и PR 5 независимы, но затрагивают один тест
 ## PR 6 — `fix(kora-app-symbol-processor): stop template resolution from dying on message rendering`
 
 - **Ветка:** `fix/ksp-unresolved-dependency-message-generic-factory` — [#796](https://github.com/kora-projects/kora/pull/796)
-- **Коммит:** `12b5ef5a4`
+- **Коммит:** `8c336c912`
 - **Модуль фреймворка:** `core/kora-app-symbol-processor`
 
 ### Постановка задачи
@@ -408,7 +408,7 @@ interface ExampleApplication {
 ## PR 7 — `fix(symbol-processor-common): keep generic arguments when unwrapping a Java platform type`
 
 - **Ветка:** `fix/ksp-platform-type-drops-generic-arguments` — [#797](https://github.com/kora-projects/kora/pull/797)
-- **Коммит:** `d140f0a29`
+- **Коммит:** `4d49f7c92`
 - **Модуль фреймворка:** `core/symbol-processor-common`
 
 ### Постановка задачи
@@ -442,7 +442,7 @@ interface ExampleApplication {
 ## PR 8 — `fix(camunda-zeebe-worker): raise a BPMN error for JobWorkerException in the KSP worker too`
 
 - **Ветка:** `fix/zeebe-worker-ksp-exception-throws-bpmn-error` — [#798](https://github.com/kora-projects/kora/pull/798)
-- **Коммит:** `8c792983b`
+- **Коммит:** `aa45fb674`
 - **Модуль фреймворка:** `experimental/camunda-zeebe-worker-symbol-processor`
 
 ### Постановка задачи
@@ -470,7 +470,7 @@ Kotlin-генератор воркера содержит тот же дефек
 ## PR 9 — `fix(kora-app-symbol-processor): resolve submodule symbols again instead of holding them`
 
 - **Ветка:** `fix/ksp-submodule-processor-stale-symbols` — [#799](https://github.com/kora-projects/kora/pull/799)
-- **Коммит:** `e698d0a23`
+- **Коммит:** `39b5fe87d`
 - **Модуль фреймворка:** `core/kora-app-symbol-processor`
 
 ### Постановка задачи
@@ -498,7 +498,7 @@ Kotlin-генератор воркера содержит тот же дефек
 ## PR 10 — `fix(kafka-symbol-processor): report an unresolvable listener parameter instead of dying`
 
 - **Ветка:** `fix/kafka-listener-parameter-unresolved-type` — [#800](https://github.com/kora-projects/kora/pull/800)
-- **Коммит:** `272ecc9c0`
+- **Коммит:** `5ca20e17a`
 - **Модуль фреймворка:** `kafka/kafka-symbol-processor`
 
 ### Постановка задачи
@@ -523,7 +523,7 @@ Kotlin-аналог PR 2. `KafkaUtils` определял тип парамет�
 ## PR 11 — `fix(kafka): publish a record when no MDC scope is bound`
 
 - **Ветка:** `fix/kafka-publisher-observation-unbound-mdc` — [#801](https://github.com/kora-projects/kora/pull/801)
-- **Коммит:** `6599d21bc`
+- **Коммит:** `8d1863ed0`
 - **Модуль фреймворка:** `kafka/kafka`
 
 ### Постановка задачи
@@ -555,7 +555,7 @@ this.mdc = MDC.VALUE.isBound() ? MDC.get().fork() : new MDC();
 ## PR 12 — `fix(kora-app-symbol-processor): treat a star projection as a concrete type, not a template`
 
 - **Ветка:** `fix/ksp-template-match-star-projection` — [#802](https://github.com/kora-projects/kora/pull/802)
-- **Коммит:** `b773f39e4`
+- **Коммит:** `a24c4e97a`
 - **Модуль фреймворка:** `core/kora-app-symbol-processor`
 
 ### Постановка задачи
@@ -583,7 +583,7 @@ KSP видит Java-подстановку `<?>` как star projection, у ко
 ## PR 13 — `fix(openapi-generator): generate the Kotlin basic auth config as a data class`
 
 - **Ветка:** `fix/openapi-kotlin-security-config-data-class` — [#803](https://github.com/kora-projects/kora/pull/803)
-- **Коммит:** `b2238931d`
+- **Коммит:** `5359de430`
 - **Модуль фреймворка:** `openapi/openapi-generator`
 
 ### Постановка задачи
@@ -607,7 +607,7 @@ KSP видит Java-подстановку `<?>` как star projection, у ко
 ## PR 14 — `fix(test-junit5): return the init lock permits when graph initialization fails`
 
 - **Ветка:** `fix/test-junit5-graph-init-lock-leak` — [#804](https://github.com/kora-projects/kora/pull/804)
-- **Коммит:** `aa82d0c3a`
+- **Коммит:** `561e4d6b4`
 - **Модуль фреймворка:** `test/test-junit5`
 
 ### Постановка задачи
@@ -635,7 +635,7 @@ KSP видит Java-подстановку `<?>` как star projection, у ко
 ## PR 15 — `fix(openapi-generator): stop requesting a converter for a multipart file part`
 
 - **Ветка:** `fix/openapi-server-multipart-file-unused-converter` — [#805](https://github.com/kora-projects/kora/pull/805)
-- **Коммит:** `dc32c616e`
+- **Коммит:** `2bb823858`
 - **Модуль фреймворка:** `openapi/openapi-generator` (режимы `java-server` и `kotlin-server`)
 
 ### Постановка задачи
@@ -672,7 +672,7 @@ var multipartBody = multipartForm && !urlEncodedForm;
 ## PR 16 — `fix(database-annotation-processor): support CompletableFuture from a Cassandra repository`
 
 - **Ветка:** `fix/cassandra-completable-future-return` — [#806](https://github.com/kora-projects/kora/pull/806)
-- **Коммит:** `389ad86fb`
+- **Коммит:** `5f3ba7c17`
 - **Модуль фреймворка:** `database/database-annotation-processor`
 
 ### Постановка задачи
@@ -704,11 +704,11 @@ error: incompatible types: inference variable R has incompatible bounds
 
 ---
 
-## PR 17 — `fix(grpc-server): keep the process alive while the server is running`
+## PR 17 — `fix(application-graph): keep the process alive for the whole application`
 
 - **Ветка:** `fix/grpc-server-keeps-process-alive` — [#807](https://github.com/kora-projects/kora/pull/807)
-- **Коммит:** `62be6855b`
-- **Модуль фреймворка:** `grpc/grpc-server`
+- **Коммит:** `f3385b3c6`
+- **Модули фреймворка:** `core/application-graph`, `http/http-server-undertow`
 
 ### Постановка задачи
 
@@ -716,25 +716,54 @@ error: incompatible types: inference variable R has incompatible bounds
 
 `KoraApplication.run` не блокирует: инициализирует граф, вешает shutdown hook и возвращает управление. Процесс живёт ровно столько, сколько какой-нибудь компонент удерживает non-daemon поток. В 2.0 транспорт gRPC — `OkHttpServerBuilder` с `directExecutor()` и `VirtualThreadExecutorTransportFilter`, а виртуальные потоки всегда daemon, поэтому удерживать JVM стало нечему: `GrpcServer.init()` вызывал `server.start()` и выходил, а `awaitTermination()` достигался только из `release()`.
 
-### Почему это не вопрос дизайна
+### Первая версия и почему от неё отказались
 
-Первоначально было записано как «нужен выбор на стороне фреймворка». Это неверно: `XnioLifecycle` в `http-server-undertow` уже заводит выделенный non-daemon поток ровно для этого и прямо это комментирует. То есть контракт «серверный компонент удерживает процесс собственным non-daemon потоком» в фреймворке уже установлен — gRPC-сервер просто перестал его выполнять при смене транспорта.
+Сначала фикс был в `GrpcServer`: свой non-daemon поток на `server.awaitTermination()`. Обоснование
+было такое: `XnioLifecycle` уже держит такой поток, значит контракт «серверный компонент удерживает
+процесс сам» установлен, а gRPC его нарушает.
+
+Мейнтейнер ([комментарий в #807](https://github.com/kora-projects/kora/pull/807)) это отклонил, и справедливо.
+Тот же приём оказался продублирован в пяти модулях — `XnioLifecycle`, `KafkaUtils:23`,
+`ThreadPoolSchedulingJdkExecutor:45`, `KoraThreadPoolJobExecutor:36` и мой новый в `GrpcServer`. То есть
+я принял за контракт то, что на самом деле повторяющийся обход, и чинил симптом в одном из пяти мест.
 
 ### Что сделано
 
-`GrpcServer.init()` заводит non-daemon поток, ожидающий `server.awaitTermination()`. `release()` прерывает его после завершения shutdown-последовательности, чтобы поток не пережил `shutdownNow()` и не подвесил JVM.
+Удержание процесса — свойство не отдельного сервера, а приложения. Non-daemon поток переехал
+в `KoraApplication#run` (класс `ApplicationKeepAlive`) и освобождается из shutdown-хока. Следствия:
+
+- `GrpcServer` не меняется вообще — мой хак оттуда убран;
+- `XnioLifecycle` больше не просит non-daemon потоков; его init-поток остался платформенным только
+  потому, что XNIO при построении воркера делает блокирующую работу, а `init` идёт на виртуальном;
+- `kafka`, `scheduling-jdk` и `camunda-engine-bpmn` не трогал: их non-daemon потоки могут существовать не ради
+  времени жизни процесса, и решение по каждому — отдельный вопрос, заданный в PR.
 
 ### Покрытие тестами
 
-`GrpcServerProcessLifetimeTest#runningServerHoldsANonDaemonThread` поднимает настоящий сервер на порту 0 и проверяет, что живой non-daemon поток есть во время работы и исчезает после `release()`. Без фикса падает на первой проверке.
+`ApplicationKeepAliveTest` проверяет сам механизм: поток non-daemon и жив во время работы, умирает после `stop()`.
+
+Гонять сам `KoraApplication#run` из теста нельзя, и это проверено на практике: `run` отпускает поток
+только из shutdown-хока, поэтому вызов в процессе теста оставляет non-daemon поток и тестовая JVM
+не завершается — первая версия теста повесила Gradle worker. Это ровно то поведение, ради которого
+фикс и сделан.
+
+Сквозная проверка — примеры, запущенные как процессы:
+
+| Пример | Результат |
+|---|---|
+| `kora-java-grpc-server` (без хака в `GrpcServer`) | жив через 12 с; единственный non-daemon поток — `kora-application`; по SIGTERM штатный shutdown |
+| `kora-java-http-server` (без флагов в XNIO) | readiness за 1 с, тот же единственный non-daemon поток, `XnioWorker stopped` по SIGTERM |
+
+До фикса тот же gRPC-бинарь выходил с кодом 0 в первую секунду.
+
+Зелёные: `:core:application-graph:test`, `:http:http-server-undertow:test`, `:grpc:grpc-server:test`,
+а в примерах — gRPC-модули на Java и Kotlin плюс guide.
 
 ### Влияние на совместимость
 
-Чистое исправление: раньше gRPC-приложение просто не жило. Приложения с HTTP-сервером не затронуты — их удерживает XNIO-воркер.
-
-### Остаётся открытым
-
-Должно ли время жизни приложения быть явным контрактом `KoraApplication.run`, а не следствием того, какой транспорт использует конкретный компонент. Этот фикс такому решению не мешает.
+Приложение, у которого non-daemon поток уже был, продолжает работать — просто теперь их два.
+Приложение, встраивающее `KoraApplication#run` в процесс, который должен завершиться сам,
+теперь не завершится — впрочем, для любого приложения с Undertow или Kafka это было верно и раньше.
 
 ### Затронутые модули `kora-examples`
 
@@ -745,7 +774,7 @@ error: incompatible types: inference variable R has incompatible bounds
 ## PR 18 — `fix(openapi-generator): use the schema maximum as the Range upper bound`
 
 - **Ветка:** `fix/openapi-java-range-upper-bound` — [#808](https://github.com/kora-projects/kora/pull/808)
-- **Коммит:** `a1bfe41cb`
+- **Коммит:** `13089ab8f`
 - **Модуль фреймворка:** `openapi/openapi-generator` (java-генератор)
 
 ### Постановка задачи
@@ -778,7 +807,7 @@ Kotlin-генератор считает это правильно, то ест�
 ## PR 19 — `fix(common): keep the Kora wrapper when deriving an OpenTelemetry context`
 
 - **Ветка:** `fix/otel-context-with-loses-kora-wrapper` — [#809](https://github.com/kora-projects/kora/pull/809)
-- **Коммит:** `3f3403fbd`
+- **Коммит:** `52e95a17f`
 - **Модуль фреймворка:** `core/common`
 
 ### Постановка задачи
@@ -816,7 +845,7 @@ Kora хранит контекст OpenTelemetry в `ScopedValue`, поэтом�
 ## PR 20 — `fix(micrometer-module): bind the Prometheus registry as a MetricsScraper`
 
 - **Ветка:** `fix/metrics-scraper-not-bound` — [#810](https://github.com/kora-projects/kora/pull/810)
-- **Коммит:** `013b66db5`
+- **Коммит:** `500975770`
 - **Модуль фреймворка:** `telemetry/micrometer-module`
 
 ### Постановка задачи

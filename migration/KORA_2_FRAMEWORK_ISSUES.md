@@ -1242,11 +1242,11 @@ star-проекцию `<?>` переменной типа: `hasGenericVariable()
 - Type: Regression
 - Language: Java, Kotlin (общий runtime-модуль)
 - Runtime: JVM
-- Component: `grpc-server`
-- Affected framework module: `grpc/grpc-server`
+- Component: `application-graph`
+- Affected framework module: `core/application-graph`, `http/http-server-undertow` (проявлялось на `grpc/grpc-server`)
 - Affected example modules: `examples/java/kora-java-grpc-server`, `examples/kotlin/kora-kotlin-grpc-server`, `guides/kotlin/kora-kotlin-guide-grpc-server-app`, `guides/kotlin/kora-kotlin-guide-grpc-server-advanced-app`
 - Framework commit: `66800169f`
-- Related fix branch: `fix/grpc-server-keeps-process-alive` (`62be6855b`) — [#807](https://github.com/kora-projects/kora/pull/807)
+- Related fix branch: `fix/grpc-server-keeps-process-alive` (`f3385b3c6`) — [#807](https://github.com/kora-projects/kora/pull/807)
 
 ### Description
 
@@ -1286,33 +1286,40 @@ Exception in thread "config-reload" java.lang.IllegalStateException: Graph node 
 
 ### Implemented fix
 
-Первоначальный вывод «нужен выбор дизайна на стороне фреймворка» **оказался неверным**.
-`http-server-undertow` уже решает ровно эту задачу и явно это документирует —
-`XnioLifecycle.init()` заводит выделенный non-daemon поток с комментарием:
+Здесь было два ошибочных вывода подряд, и оба стоит зафиксировать.
 
-```java
-// XnioWorker will be daemon despite flag .setDaemon(false) if the thread it is started from is daemon (virtual thread)
-```
+Первый: «нужен выбор дизайна на стороне фреймворка» — опровергнут тем, что `XnioLifecycle`
+уже держал non-daemon поток ровно для этого.
 
-То есть «серверный компонент удерживает процесс собственным non-daemon потоком» — это уже
-установленный в фреймворке контракт, а не открытый вопрос. gRPC-сервер просто перестал его
-выполнять при смене транспорта на виртуальные потоки.
+Второй, сделанный из первого: раз `XnioLifecycle` так делает — значит это контракт, и gRPC-серверу
+надо его выполнить. Фикс был сделан так и отправлен. Мейнтейнер отклонил, и проверка
+показала, что он прав: тот же приём продублирован в **пяти** местах — `XnioLifecycle`,
+`KafkaUtils:23`, `ThreadPoolSchedulingJdkExecutor:45`, `KoraThreadPoolJobExecutor:36` и новый
+в `GrpcServer`. То, что выглядело контрактом, оказалось повторяющимся обходом.
 
-`GrpcServer.init()` теперь заводит такой поток, ожидающий `server.awaitTermination()`, а
-`release()` прерывает его после завершения shutdown-последовательности — чтобы поток не пережил
-`shutdownNow()` и не подвесил JVM.
+Итоговый фикс: удержание процесса — свойство приложения, а не отдельного сервера.
+Non-daemon поток живёт в `KoraApplication#run` (`ApplicationKeepAlive`) и освобождается из shutdown-хока.
+`GrpcServer` не меняется вовсе, а `XnioLifecycle` больше не просит non-daemon потоков.
 
 ### Test coverage
 
-`GrpcServerProcessLifetimeTest#runningServerHoldsANonDaemonThread` поднимает настоящий сервер
-на порту 0 и проверяет, что живой non-daemon поток есть во время работы и исчезает после
-`release()`. Без фикса падает на первой проверке.
+`ApplicationKeepAliveTest` проверяет механизм: поток non-daemon и жив во время работы,
+умирает после `stop()`.
+
+Сам `KoraApplication#run` модульным тестом не покрывается, и это проверено на практике: он
+отпускает поток только из shutdown-хока, поэтому вызов в тесте оставляет non-daemon поток
+и тестовая JVM не завершается — первая версия теста повесила Gradle worker насмерть.
+Это ровно то поведение, ради которого фикс и сделан.
+
+Сквозная проверка — примеры как процессы: gRPC-приложение без хака в `GrpcServer` живёт
+более 12 с с единственным non-daemon потоком `kora-application` и штатно гаснет по SIGTERM;
+Undertow-приложение без флагов в XNIO отвечает на readiness за 1 с и корректно останавливает воркер.
 
 ### Остаётся открытым
 
-Более широкий вопрос — должно ли время жизни приложения быть явным контрактом
-`KoraApplication.run`, а не следствием того, какой транспорт использует конкретный компонент.
-Этот фикс такому решению не мешает.
+`kafka`, `scheduling-jdk` и `camunda-engine-bpmn` по-прежнему держат свои non-daemon потоки.
+Они могут существовать не ради времени жизни процесса, поэтому решение по каждому —
+за мейнтейнерами; вопрос задан в PR.
 
 ### Workaround
 
