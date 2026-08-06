@@ -1,50 +1,50 @@
-# Готовые к отправке изменения во фреймворк
+# Изменения во фреймворк, отправленные в upstream
 
-Все изменения лежат **локально** в `../kora` и **не отправлены**: ветки не запушены, PR не создавались.
-Каждая ветка отведена от `master` и содержит один логический фикс с регрессионным тестом.
+Все двадцать исправлений отправлены как отдельные pull request'ы в
+[`kora-projects/kora`](https://github.com/kora-projects/kora) из форка `dsudomoin/kora`.
+Каждая ветка отведена от `master`, содержит один логический фикс с регрессионным тестом и
+перебазирована на актуальный `origin/master` перед отправкой.
 
-Для локальной работы обе ветки сведены в `integration/migration-fixes` — именно с неё публикуется
-Maven Local, чтобы фиксы не затирали друг друга. Для отправки использовать исходные ветки, а не интеграционную.
+| PR | Ветка | Коммит | Модуль |
+|---|---|---|---|
+| [#791](https://github.com/kora-projects/kora/pull/791) | `fix/http-client-json-response-entity-mapper-tag` | `93254226e` | `http/http-client-common` |
+| [#792](https://github.com/kora-projects/kora/pull/792) | `fix/kafka-listener-exception-param-type-use` | `d5948efbd` | `kafka/kafka-annotation-processor` |
+| [#793](https://github.com/kora-projects/kora/pull/793) | `fix/openapi-client-api-interface-public` | `307a1ec80` | `openapi/openapi-generator` |
+| [#794](https://github.com/kora-projects/kora/pull/794) | `fix/zeebe-worker-annotations-not-aop` | `8da8bd4f6` | `experimental/camunda-zeebe-worker-annotation-processor` |
+| [#795](https://github.com/kora-projects/kora/pull/795) | `fix/zeebe-worker-exception-throws-bpmn-error` | `006297793` | `experimental/camunda-zeebe-worker-annotation-processor` |
+| [#796](https://github.com/kora-projects/kora/pull/796) | `fix/ksp-unresolved-dependency-message-generic-factory` | `8c336c912` | `core/kora-app-symbol-processor` |
+| [#797](https://github.com/kora-projects/kora/pull/797) | `fix/ksp-platform-type-drops-generic-arguments` | `4d49f7c92` | `core/symbol-processor-common` |
+| [#798](https://github.com/kora-projects/kora/pull/798) | `fix/zeebe-worker-ksp-exception-throws-bpmn-error` | `aa45fb674` | `experimental/camunda-zeebe-worker-symbol-processor` |
+| [#799](https://github.com/kora-projects/kora/pull/799) | `fix/ksp-submodule-processor-stale-symbols` | `39b5fe87d` | `core/kora-app-symbol-processor` |
+| [#800](https://github.com/kora-projects/kora/pull/800) | `fix/kafka-listener-parameter-unresolved-type` | `5ca20e17a` | `kafka/kafka-symbol-processor` |
+| [#801](https://github.com/kora-projects/kora/pull/801) | `fix/kafka-publisher-observation-unbound-mdc` | `02126424b` | `kafka/kafka` |
+| [#802](https://github.com/kora-projects/kora/pull/802) | `fix/ksp-template-match-star-projection` | `a24c4e97a` | `core/kora-app-symbol-processor` |
+| [#803](https://github.com/kora-projects/kora/pull/803) | `fix/openapi-kotlin-security-config-data-class` | `5359de430` | `openapi/openapi-generator` |
+| [#804](https://github.com/kora-projects/kora/pull/804) | `fix/test-junit5-graph-init-lock-leak` | `561e4d6b4` | `test/test-junit5` |
+| [#805](https://github.com/kora-projects/kora/pull/805) | `fix/openapi-server-multipart-file-unused-converter` | `2bb823858` | `openapi/openapi-generator` |
+| [#806](https://github.com/kora-projects/kora/pull/806) | `fix/cassandra-completable-future-return` | `5f3ba7c17` | `database/database-annotation-processor` |
+| [#807](https://github.com/kora-projects/kora/pull/807) | `fix/grpc-server-keeps-process-alive` | `ddc54cb85` | `grpc/grpc-server` |
+| [#808](https://github.com/kora-projects/kora/pull/808) | `fix/openapi-java-range-upper-bound` | `13089ab8f` | `openapi/openapi-generator` |
+| [#809](https://github.com/kora-projects/kora/pull/809) | `fix/otel-context-with-loses-kora-wrapper` | `52e95a17f` | `core/common` |
+| [#810](https://github.com/kora-projects/kora/pull/810) | `fix/metrics-scraper-not-bound` | `500975770` | `telemetry/micrometer-module` |
 
-| PR | Ветка | Коммит | Модуль | Статус |
-|---|---|---|---|---|
-| 1 | `fix/http-client-json-response-entity-mapper-tag` | `3ef4560af` | `http/http-client-common` | готово к PR |
-| 2 | `fix/kafka-listener-exception-param-type-use` | `0c8092194` | `kafka/kafka-annotation-processor` | готово к PR |
-| 3 | `fix/openapi-client-api-interface-public` | `1371e7fb5` | `openapi/openapi-generator` | готово к PR |
-| 4 | `fix/zeebe-worker-annotations-not-aop` | `9873eeb69` | `experimental/camunda-zeebe-worker-annotation-processor` | готово к PR |
-| 5 | `fix/zeebe-worker-exception-throws-bpmn-error` | `b26022694` | `experimental/camunda-zeebe-worker-annotation-processor` | готово к PR |
-| 6 | `fix/ksp-unresolved-dependency-message-generic-factory` | `12b5ef5a4` | `core/kora-app-symbol-processor` | готово к PR |
-| 7 | `fix/ksp-platform-type-drops-generic-arguments` | `2002a57c9` | `core/symbol-processor-common` | готово к PR |
-| 8 | `fix/zeebe-worker-ksp-exception-throws-bpmn-error` | `8c792983b` | `experimental/camunda-zeebe-worker-symbol-processor` | готово к PR |
-| 9 | `fix/ksp-submodule-processor-stale-symbols` | `e698d0a23` | `core/kora-app-symbol-processor` | готово к PR |
-| 10 | `fix/kafka-listener-parameter-unresolved-type` | `272ecc9c0` | `kafka/kafka-symbol-processor` | готово к PR |
-| 11 | `fix/kafka-publisher-observation-unbound-mdc` | `6599d21bc` | `kafka/kafka` | готово к PR |
-| 12 | `fix/ksp-template-match-star-projection` | `b773f39e4` | `core/kora-app-symbol-processor` | готово к PR |
-| 13 | `fix/openapi-kotlin-security-config-data-class` | `b2238931d` | `openapi/openapi-generator` | готово к PR |
-| 14 | `fix/test-junit5-graph-init-lock-leak` | `aa82d0c3a` | `test/test-junit5` | готово к PR |
-| 15 | `fix/openapi-server-multipart-file-unused-converter` | `dc32c616e` | `openapi/openapi-generator` | готово к PR |
-| 16 | `fix/cassandra-completable-future-return` | `389ad86fb` | `database/database-annotation-processor` | готово к PR |
-| 17 | `fix/grpc-server-keeps-process-alive` | `62be6855b` | `grpc/grpc-server` | готово к PR |
-| 18 | `fix/openapi-java-range-upper-bound` | `a1bfe41cb` | `openapi/openapi-generator` | готово к PR |
-| 19 | `fix/otel-context-with-loses-kora-wrapper` | `3f3403fbd` | `core/common` | готово к PR |
-| 20 | `fix/metrics-scraper-not-bound` | `013b66db5` | `telemetry/micrometer-module` | готово к PR |
+> [#805](https://github.com/kora-projects/kora/pull/805) и
+> [#808](https://github.com/kora-projects/kora/pull/808) обе добавляют тест в
+> `HttpServerJavaOpenapiTest`. По отдельности каждая сливается чисто; вторая по порядку слияния
+> потребует тривиального ребейза с сохранением обоих тестов.
 
-> Ветки 15 и 18 обе добавляют тест в `HttpServerJavaOpenapiTest`; при слиянии — тривиальный конфликт,
-> разрешается сохранением обоих тестов.
+> Для локальной работы те же ветки сведены в `integration/migration-fixes` — с неё публиковался
+> Maven Local, чтобы фиксы не затирали друг друга при проверке примеров. Источник истины для
+> upstream — сами ветки, а не интеграционная.
 
-> Ветка 7 (`fix/ksp-platform-type-drops-generic-arguments`) была изменена после слияния, поэтому
-> в `integration/migration-fixes` она присутствует не как предок, а отдельным коммитом
-> `6f2d1afa3 Re-apply … after amending it`. Источник истины для отправки — сама ветка.
-
-> Ветки 8 и 5 трогают один и тот же файл в двух разных процессорах; при отправке порядок значения
-> не имеет, но при локальном слиянии в `integration/migration-fixes` они дают конфликт, который
-> разрешается в пользу обоих (Java и KSP-варианты независимы).
+Ниже — разбор каждого исправления на русском: постановка задачи, причина, что сделано, покрытие
+тестами и влияние на совместимость. Текст самих PR — на английском, по языку проекта.
 
 ---
 
 ## PR 1 — `fix(http-client): tag JSON response entity mapper with @Json`
 
-**Ветка:** `fix/http-client-json-response-entity-mapper-tag`
+**Ветка:** `fix/http-client-json-response-entity-mapper-tag` — [#791](https://github.com/kora-projects/kora/pull/791)
 **Затронутый модуль:** `http/http-client-common`
 
 ### Проблема
@@ -99,7 +99,7 @@ public interface SomeClient {
 
 ## PR 2 — `fix(kafka): detect Exception listener parameter by type element, not by printed type`
 
-**Ветка:** `fix/kafka-listener-exception-param-type-use`
+**Ветка:** `fix/kafka-listener-exception-param-type-use` — [#792](https://github.com/kora-projects/kora/pull/792)
 **Затронутый модуль:** `kafka/kafka-annotation-processor`
 
 ### Проблема
@@ -152,7 +152,7 @@ public void process(@Nullable ConsumerRecord<String, String> record,
 
 ## PR 3 — `fix(openapi-generator): generate public client API interfaces`
 
-- Ветка: `fix/openapi-client-api-interface-public`
+- Ветка: `fix/openapi-client-api-interface-public` — [#793](https://github.com/kora-projects/kora/pull/793)
 - База: `master` @ `66800169f`
 - Коммит: `1371e7fb5`
 - Затронутый модуль: `openapi/openapi-generator`
@@ -198,7 +198,7 @@ JavaPoet ничего не подставляет по умолчанию, и и
 
 ## PR 4 — `fix(camunda-zeebe-worker): stop marking job worker annotations as AOP annotations`
 
-- Ветка: `fix/zeebe-worker-annotations-not-aop`
+- Ветка: `fix/zeebe-worker-annotations-not-aop` — [#794](https://github.com/kora-projects/kora/pull/794)
 - База: `master` @ `66800169f`
 - Коммит: `9873eeb69`
 - Затронутые модули: `experimental/camunda-zeebe-worker`, `experimental/camunda-zeebe-worker-annotation-processor`
@@ -270,7 +270,7 @@ AOP-аннотацию без аспекта.
 
 ## PR 5 — `fix(camunda-zeebe-worker): raise a BPMN error for JobWorkerException again`
 
-- Ветка: `fix/zeebe-worker-exception-throws-bpmn-error`
+- Ветка: `fix/zeebe-worker-exception-throws-bpmn-error` — [#795](https://github.com/kora-projects/kora/pull/795)
 - База: `master` @ `66800169f`
 - Коммит: `b26022694`
 - Затронутый модуль: `experimental/camunda-zeebe-worker-annotation-processor`
@@ -342,7 +342,7 @@ PR 4 и PR 5 независимы, но затрагивают один тест
 
 ## PR 6 — `fix(kora-app-symbol-processor): stop template resolution from dying on message rendering`
 
-- **Ветка:** `fix/ksp-unresolved-dependency-message-generic-factory` (локальная, не отправлена)
+- **Ветка:** `fix/ksp-unresolved-dependency-message-generic-factory` — [#796](https://github.com/kora-projects/kora/pull/796)
 - **Коммит:** `12b5ef5a4`
 - **Модуль фреймворка:** `core/kora-app-symbol-processor`
 
@@ -395,7 +395,7 @@ interface ExampleApplication {
 
 ## PR 7 — `fix(symbol-processor-common): keep generic arguments when unwrapping a Java platform type`
 
-- **Ветка:** `fix/ksp-platform-type-drops-generic-arguments` (локальная, не отправлена)
+- **Ветка:** `fix/ksp-platform-type-drops-generic-arguments` — [#797](https://github.com/kora-projects/kora/pull/797)
 - **Коммит:** `d140f0a29`
 - **Модуль фреймворка:** `core/symbol-processor-common`
 
@@ -429,7 +429,7 @@ interface ExampleApplication {
 
 ## PR 8 — `fix(camunda-zeebe-worker): raise a BPMN error for JobWorkerException in the KSP worker too`
 
-- **Ветка:** `fix/zeebe-worker-ksp-exception-throws-bpmn-error` (локальная, не отправлена)
+- **Ветка:** `fix/zeebe-worker-ksp-exception-throws-bpmn-error` — [#798](https://github.com/kora-projects/kora/pull/798)
 - **Коммит:** `8c792983b`
 - **Модуль фреймворка:** `experimental/camunda-zeebe-worker-symbol-processor`
 
@@ -457,7 +457,7 @@ Kotlin-генератор воркера содержит тот же дефек
 
 ## PR 9 — `fix(kora-app-symbol-processor): resolve submodule symbols again instead of holding them`
 
-- **Ветка:** `fix/ksp-submodule-processor-stale-symbols` (локальная, не отправлена)
+- **Ветка:** `fix/ksp-submodule-processor-stale-symbols` — [#799](https://github.com/kora-projects/kora/pull/799)
 - **Коммит:** `e698d0a23`
 - **Модуль фреймворка:** `core/kora-app-symbol-processor`
 
@@ -485,7 +485,7 @@ Kotlin-генератор воркера содержит тот же дефек
 
 ## PR 10 — `fix(kafka-symbol-processor): report an unresolvable listener parameter instead of dying`
 
-- **Ветка:** `fix/kafka-listener-parameter-unresolved-type` (локальная, не отправлена)
+- **Ветка:** `fix/kafka-listener-parameter-unresolved-type` — [#800](https://github.com/kora-projects/kora/pull/800)
 - **Коммит:** `272ecc9c0`
 - **Модуль фреймворка:** `kafka/kafka-symbol-processor`
 
@@ -510,7 +510,7 @@ Kotlin-аналог PR 2. `KafkaUtils` определял тип парамет�
 
 ## PR 11 — `fix(kafka): publish a record when no MDC scope is bound`
 
-- **Ветка:** `fix/kafka-publisher-observation-unbound-mdc` (локальная, не отправлена)
+- **Ветка:** `fix/kafka-publisher-observation-unbound-mdc` — [#801](https://github.com/kora-projects/kora/pull/801)
 - **Коммит:** `6599d21bc`
 - **Модуль фреймворка:** `kafka/kafka`
 
@@ -542,7 +542,7 @@ this.mdc = MDC.VALUE.isBound() ? MDC.get().fork() : new MDC();
 
 ## PR 12 — `fix(kora-app-symbol-processor): treat a star projection as a concrete type, not a template`
 
-- **Ветка:** `fix/ksp-template-match-star-projection` (локальная, не отправлена)
+- **Ветка:** `fix/ksp-template-match-star-projection` — [#802](https://github.com/kora-projects/kora/pull/802)
 - **Коммит:** `b773f39e4`
 - **Модуль фреймворка:** `core/kora-app-symbol-processor`
 
@@ -570,7 +570,7 @@ KSP видит Java-подстановку `<?>` как star projection, у ко
 
 ## PR 13 — `fix(openapi-generator): generate the Kotlin basic auth config as a data class`
 
-- **Ветка:** `fix/openapi-kotlin-security-config-data-class` (локальная, не отправлена)
+- **Ветка:** `fix/openapi-kotlin-security-config-data-class` — [#803](https://github.com/kora-projects/kora/pull/803)
 - **Коммит:** `b2238931d`
 - **Модуль фреймворка:** `openapi/openapi-generator`
 
@@ -594,7 +594,7 @@ KSP видит Java-подстановку `<?>` как star projection, у ко
 
 ## PR 14 — `fix(test-junit5): return the init lock permits when graph initialization fails`
 
-- **Ветка:** `fix/test-junit5-graph-init-lock-leak` (локальная, не отправлена)
+- **Ветка:** `fix/test-junit5-graph-init-lock-leak` — [#804](https://github.com/kora-projects/kora/pull/804)
 - **Коммит:** `aa82d0c3a`
 - **Модуль фреймворка:** `test/test-junit5`
 
@@ -622,7 +622,7 @@ KSP видит Java-подстановку `<?>` как star projection, у ко
 
 ## PR 15 — `fix(openapi-generator): stop requesting a converter for a multipart file part`
 
-- **Ветка:** `fix/openapi-server-multipart-file-unused-converter` (локальная, не отправлена)
+- **Ветка:** `fix/openapi-server-multipart-file-unused-converter` — [#805](https://github.com/kora-projects/kora/pull/805)
 - **Коммит:** `dc32c616e`
 - **Модуль фреймворка:** `openapi/openapi-generator` (режимы `java-server` и `kotlin-server`)
 
@@ -659,7 +659,7 @@ var multipartBody = multipartForm && !urlEncodedForm;
 
 ## PR 16 — `fix(database-annotation-processor): support CompletableFuture from a Cassandra repository`
 
-- **Ветка:** `fix/cassandra-completable-future-return` (локальная, не отправлена)
+- **Ветка:** `fix/cassandra-completable-future-return` — [#806](https://github.com/kora-projects/kora/pull/806)
 - **Коммит:** `389ad86fb`
 - **Модуль фреймворка:** `database/database-annotation-processor`
 
@@ -694,7 +694,7 @@ error: incompatible types: inference variable R has incompatible bounds
 
 ## PR 17 — `fix(grpc-server): keep the process alive while the server is running`
 
-- **Ветка:** `fix/grpc-server-keeps-process-alive` (локальная, не отправлена)
+- **Ветка:** `fix/grpc-server-keeps-process-alive` — [#807](https://github.com/kora-projects/kora/pull/807)
 - **Коммит:** `62be6855b`
 - **Модуль фреймворка:** `grpc/grpc-server`
 
@@ -732,7 +732,7 @@ error: incompatible types: inference variable R has incompatible bounds
 
 ## PR 18 — `fix(openapi-generator): use the schema maximum as the Range upper bound`
 
-- **Ветка:** `fix/openapi-java-range-upper-bound` (локальная, не отправлена)
+- **Ветка:** `fix/openapi-java-range-upper-bound` — [#808](https://github.com/kora-projects/kora/pull/808)
 - **Коммит:** `a1bfe41cb`
 - **Модуль фреймворка:** `openapi/openapi-generator` (java-генератор)
 
@@ -765,7 +765,7 @@ Kotlin-генератор считает это правильно, то ест�
 
 ## PR 19 — `fix(common): keep the Kora wrapper when deriving an OpenTelemetry context`
 
-- **Ветка:** `fix/otel-context-with-loses-kora-wrapper` (локальная, не отправлена)
+- **Ветка:** `fix/otel-context-with-loses-kora-wrapper` — [#809](https://github.com/kora-projects/kora/pull/809)
 - **Коммит:** `3f3403fbd`
 - **Модуль фреймворка:** `core/common`
 
@@ -803,7 +803,7 @@ Kora хранит контекст OpenTelemetry в `ScopedValue`, поэтом�
 
 ## PR 20 — `fix(micrometer-module): bind the Prometheus registry as a MetricsScraper`
 
-- **Ветка:** `fix/metrics-scraper-not-bound` (локальная, не отправлена)
+- **Ветка:** `fix/metrics-scraper-not-bound` — [#810](https://github.com/kora-projects/kora/pull/810)
 - **Коммит:** `013b66db5`
 - **Модуль фреймворка:** `telemetry/micrometer-module`
 

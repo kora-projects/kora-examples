@@ -18,7 +18,7 @@
 - Affected framework module: `database/database-annotation-processor`
 - Affected example modules: `examples/java/kora-java-database-cassandra`, `examples/graalvm/kora-java-graalvm-crud-cassandra`
 - Framework commit: `66800169f`
-- Related fix branch: `fix/cassandra-completable-future-return` (`389ad86fb`)
+- Related fix branch: `fix/cassandra-completable-future-return` (`389ad86fb`) — [#806](https://github.com/kora-projects/kora/pull/806)
 
 ### Description
 
@@ -108,7 +108,7 @@ if (((DeclaredType) returnType).asElement().toString().equals(CompletableFuture.
 
 ## Issue: JSON-фабрика `httpClientResponseJsonEntityResponseMapper` не помечена `@Json`
 
-- Status: **Fixed** (локально, готово к PR)
+- Status: **Fixed**
 - Severity: Major
 - Type: Framework bug
 - Language: Java, Kotlin (общий runtime-модуль)
@@ -117,8 +117,7 @@ if (((DeclaredType) returnType).asElement().toString().equals(CompletableFuture.
 - Affected framework module: `http/http-client-common`
 - Affected example modules: `examples/java/kora-java-http-client` (и любой клиент с `HttpResponseEntity<T>` в приложении с JSON)
 - Framework commit: база `66800169f`, фикс `3ef4560af`
-- Related fix branch: `fix/http-client-json-response-entity-mapper-tag` (локальная, **не отправлена**)
-- Related PR: не создавался
+- Related fix branch: `fix/http-client-json-response-entity-mapper-tag` — [#791](https://github.com/kora-projects/kora/pull/791)
 
 ### Description
 
@@ -158,7 +157,7 @@ error: Multiple components match dependency:
 
 ## Issue: `@Component` job worker с `public`-методом молча исчезает из графа
 
-- Status: **Fixed** (локально, готово к PR)
+- Status: **Fixed**
 - Severity: Blocker
 - Type: Framework bug
 - Language: Java (Kotlin/KSP не проверялся — модуль не мигрирован)
@@ -167,8 +166,7 @@ error: Multiple components match dependency:
 - Affected framework module: `experimental/camunda-zeebe-worker`
 - Affected example modules: `examples/java/kora-java-camunda-zeebe-worker`
 - Framework commit: база `66800169f`, фикс `9873eeb69`
-- Related fix branch: `fix/zeebe-worker-annotations-not-aop` (локальная, **не отправлена**)
-- Related PR: не создавался
+- Related fix branch: `fix/zeebe-worker-annotations-not-aop` — [#794](https://github.com/kora-projects/kora/pull/794)
 
 ### Description
 
@@ -254,7 +252,7 @@ AOP-процессор включён в тест намеренно — ина�
 
 ## Issue: `JobWorkerException` больше не поднимает BPMN-ошибку
 
-- Status: **Fixed** (локально, готово к PR)
+- Status: **Fixed**
 - Severity: Major
 - Type: Framework bug (регрессия 2.0)
 - Language: Java (Kotlin/KSP-генератор не проверялся)
@@ -263,8 +261,7 @@ AOP-процессор включён в тест намеренно — ина�
 - Affected framework module: `experimental/camunda-zeebe-worker-annotation-processor`
 - Affected example modules: `examples/java/kora-java-camunda-zeebe-worker`
 - Framework commit: база `66800169f`, фикс `b26022694`
-- Related fix branch: `fix/zeebe-worker-exception-throws-bpmn-error` (локальная, **не отправлена**)
-- Related PR: не создавался
+- Related fix branch: `fix/zeebe-worker-exception-throws-bpmn-error` — [#795](https://github.com/kora-projects/kora/pull/795)
 
 ### Description
 
@@ -473,7 +470,7 @@ OpenAPI (запись ниже), исправлена в ветке `fix/openapi
 - Affected framework module: `openapi/openapi-generator`
 - Affected example modules: `guides/java/kora-java-guide-openapi-http-server-advanced-app`, `guides/kotlin/kora-kotlin-guide-openapi-http-server-advanced-app`
 - Framework commit: `66800169f`
-- Related fix branch: `fix/openapi-server-multipart-file-unused-converter`
+- Related fix branch: `fix/openapi-server-multipart-file-unused-converter` — [#805](https://github.com/kora-projects/kora/pull/805)
 
 ### Description
 
@@ -587,7 +584,7 @@ if (multipartBody && formParam.isFile) {
 - Affected framework module: `openapi/openapi-generator`
 - Affected example modules: `examples/java/kora-java-crud`, `examples/java/kora-java-crud-submodule`, `examples/java/kora-java-openapi-generator-http-server`, оба openapi-гайда
 - Framework commit: `66800169f`
-- Related fix branch: `fix/openapi-java-range-upper-bound` (`a1bfe41cb`)
+- Related fix branch: `fix/openapi-java-range-upper-bound` (`a1bfe41cb`) — [#808](https://github.com/kora-projects/kora/pull/808)
 
 ### Description
 
@@ -635,7 +632,7 @@ java-клиент отправил `size=100` java-серверу, собран�
 - Affected framework module: `core/common`
 - Affected example modules: `examples/java/kora-java-telemetry`, `examples/kotlin/kora-kotlin-telemetry`
 - Framework commit: `66800169f`
-- Related fix branch: `fix/otel-context-with-loses-kora-wrapper` (`3f3403fbd`)
+- Related fix branch: `fix/otel-context-with-loses-kora-wrapper` (`3f3403fbd`) — [#809](https://github.com/kora-projects/kora/pull/809)
 
 ### Description
 
@@ -692,7 +689,7 @@ Kora хранит контекст OpenTelemetry в `ScopedValue`, поэтом�
 - Component: `telemetry/micrometer-module`, `http-server-common` (`MetricsHandler`)
 - Affected example modules: `guides/java/kora-java-guide-observability-app`, `guides/kotlin/kora-kotlin-guide-observability-app`
 - Framework commit: `66800169f`
-- Related fix branch: `fix/metrics-scraper-not-bound` (`013b66db5`)
+- Related fix branch: `fix/metrics-scraper-not-bound` (`013b66db5`) — [#810](https://github.com/kora-projects/kora/pull/810)
 
 ### Description
 
@@ -887,7 +884,7 @@ default <T> HttpServerResponseMapper<T>                     jsonHttpServerRespon
 
 ## Issue: сгенерированные OpenAPI-интерфейсы клиента недоступны вне своего пакета
 
-- Status: **Fixed** (локально, готово к PR)
+- Status: **Fixed**
 - Severity: Major
 - Type: Framework bug | Migration blocker
 - Language: Java (в Kotlin-режимах генератора проявления не проверялись)
@@ -896,8 +893,7 @@ default <T> HttpServerResponseMapper<T>                     jsonHttpServerRespon
 - Affected framework module: `openapi/openapi-generator`
 - Affected example modules: `examples/java/kora-java-openapi-generator-http-client`, `guides/java/kora-java-guide-openapi-http-client-app`
 - Framework commit: база `66800169f`, фикс `a5e7694e6`
-- Related fix branch: `fix/openapi-client-api-interface-public` (локальная, **не отправлена**)
-- Related PR: не создавался
+- Related fix branch: `fix/openapi-client-api-interface-public` — [#793](https://github.com/kora-projects/kora/pull/793)
 
 ### Description
 
@@ -998,8 +994,8 @@ No component found for dependency:
 - Affected example modules: `examples/kotlin/kora-kotlin-helloworld`, `guides/kotlin/kora-kotlin-guide-cache-app` и ещё ~8 модулей, падавших с `No TypeParameter found for index T`
 - Framework commit: `66800169f`
 - Related migration guide: `KORA_2_KOTLIN_MIGRATION_GUIDE.md`
-- Related fix branch: `fix/ksp-unresolved-dependency-message-generic-factory` (локально, коммит `12b5ef5a4`)
-- Related PR: подготовлен, не отправлен — PR 6 в `KORA_2_PULL_REQUESTS.md`
+- Related fix branch: `fix/ksp-unresolved-dependency-message-generic-factory` (локально, коммит `12b5ef5a4`) — [#796](https://github.com/kora-projects/kora/pull/796)
+- Related PR: [#796](https://github.com/kora-projects/kora/pull/796)
 
 ### Description
 
@@ -1066,8 +1062,8 @@ e: [ksp] java.util.NoSuchElementException: No TypeParameter found for index T
 - Affected example modules: `examples/kotlin/kora-kotlin-camunda-zeebe-worker` и все Kotlin-модули, тянущие Java-определённые модули с коллекциями в конфигурации
 - Framework commit: `66800169f`
 - Related migration guide: `KORA_2_KOTLIN_MIGRATION_GUIDE.md`
-- Related fix branch: `fix/ksp-platform-type-drops-generic-arguments` (локально, коммит `d140f0a29`)
-- Related PR: подготовлен, не отправлен — PR 7 в `KORA_2_PULL_REQUESTS.md`
+- Related fix branch: `fix/ksp-platform-type-drops-generic-arguments` (локально, коммит `d140f0a29`) — [#797](https://github.com/kora-projects/kora/pull/797)
+- Related PR: [#797](https://github.com/kora-projects/kora/pull/797)
 
 ### Description
 
@@ -1117,8 +1113,8 @@ e: [ksp] java.util.NoSuchElementException: No TypeParameter found for index E
 - Affected example modules: `examples/kotlin/kora-kotlin-camunda-zeebe-worker`
 - Framework commit: `66800169f`
 - Related migration guide: `KORA_2_KOTLIN_MIGRATION_GUIDE.md`
-- Related fix branch: `fix/zeebe-worker-ksp-exception-throws-bpmn-error` (локально, коммит `8c792983b`)
-- Related PR: подготовлен, не отправлен — PR 8 в `KORA_2_PULL_REQUESTS.md`
+- Related fix branch: `fix/zeebe-worker-ksp-exception-throws-bpmn-error` (локально, коммит `8c792983b`) — [#798](https://github.com/kora-projects/kora/pull/798)
+- Related PR: [#798](https://github.com/kora-projects/kora/pull/798)
 
 ### Description
 
@@ -1250,7 +1246,7 @@ star-проекцию `<?>` переменной типа: `hasGenericVariable()
 - Affected framework module: `grpc/grpc-server`
 - Affected example modules: `examples/java/kora-java-grpc-server`, `examples/kotlin/kora-kotlin-grpc-server`, `guides/kotlin/kora-kotlin-guide-grpc-server-app`, `guides/kotlin/kora-kotlin-guide-grpc-server-advanced-app`
 - Framework commit: `66800169f`
-- Related fix branch: `fix/grpc-server-keeps-process-alive` (`62be6855b`)
+- Related fix branch: `fix/grpc-server-keeps-process-alive` (`62be6855b`) — [#807](https://github.com/kora-projects/kora/pull/807)
 
 ### Description
 
