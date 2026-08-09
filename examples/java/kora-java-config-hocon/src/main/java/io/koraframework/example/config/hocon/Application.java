@@ -11,6 +11,6 @@ public interface Application extends
         LogbackModule {
 
     static void main(String[] args) {
-        KoraApplication.run(ApplicationGraph::graph);
+        KoraApplication.run(ApplicationGraph::graph, true);
     }
 }
