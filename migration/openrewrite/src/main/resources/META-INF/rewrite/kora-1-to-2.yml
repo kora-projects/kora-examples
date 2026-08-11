@@ -4,7 +4,7 @@
 # Focused recipes that can be activated one by one; Kora1To2 composes all of them.
 # Only deterministic, AST-safe changes live here. Semantic changes (resilient specs,
 # suspend removal, JSpecify placement, S3 client) are out of scope on purpose and are
-# described in KORA_MIGRATION_NEURO.md.
+# described in KORA_2_MIGRATION_NEURO.md.
 ########################################################################################
 type: specs.openrewrite.org/v1beta/recipe
 name: io.koraframework.migration.Kora1To2
