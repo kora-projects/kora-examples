@@ -11,6 +11,9 @@ plugins {
 }
 
 def isCiBuild = providers.environmentVariable("CI").map { it.toBoolean() }.orElse(false).get()
+if (isCiBuild) {
+    URLConnection.setDefaultUseCaches("jar", false)
+}
 if (!isCiBuild) {
     apply plugin: "com.asarkar.gradle.build-time-tracker"
 }

@@ -30,6 +30,7 @@ jobs:
     env:
       GRADLE_TASK_SUFFIX: ${{ matrix.type }}${{ matrix.lang }}${{ matrix.feature }}
       MAX_PARALLEL_WORKERS: 1
+      GRADLE_ACTIONS_SKIP_BUILD_RESULT_CAPTURE: true
     steps:
       - uses: actions/checkout@v4
         with:
@@ -46,4 +47,4 @@ jobs:
           cache-read-only: true
 
       - name: Gradle run tests
-        run: "./gradlew test${{ env.GRADLE_TASK_SUFFIX }} --no-daemon --no-parallel --console=plain"
+        run: "./gradlew test${{ env.GRADLE_TASK_SUFFIX }} --no-daemon --no-parallel --console=plain --warning-mode=none --no-problems-report"
