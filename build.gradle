@@ -93,4 +93,21 @@ subprojects {
     tasks.register("allDeps", DependencyReportTask)
 }
 
+if (providers.environmentVariable("CI").map { it.toBoolean() }.orElse(false).get()) {
+    subprojects {
+        afterEvaluate {
+            tasks.withType(Test).configureEach {
+                testLogging {
+                    showStandardStreams = false
+                    events = [org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED]
+                    exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+                    showExceptions = true
+                    showCauses = true
+                    showStackTraces = true
+                }
+            }
+        }
+    }
+}
+
 apply from: "${project.rootDir}/grouping.gradle"

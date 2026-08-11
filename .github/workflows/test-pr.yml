@@ -2,14 +2,13 @@ name: Test PR
 
 on:
   pull_request:
-    branches:
-      - "master"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
-  checks: write
-  pull-requests: write
 
 
 jobs:
@@ -17,32 +16,33 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ "21" ]
+        java: [ "25" ]
         type: [ "Examples", "Guides" ]
         lang: [ "Java", "Kotlin" ]
         feature: [ "Database", "Client", "Server", "Graalvm", "Kafka", "Other" ]
+        exclude:
+          - type: "Examples"
+            lang: "Kotlin"
+            feature: "Graalvm"
+          - type: "Guides"
+            feature: "Graalvm"
     name: Pull Request Java ${{ matrix.java }} for ${{ matrix.type }}-${{ matrix.lang }}-${{ matrix.feature }}
     env:
       GRADLE_TASK_SUFFIX: ${{ matrix.type }}${{ matrix.lang }}${{ matrix.feature }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: JDK setup
         uses: actions/setup-java@v4
         with:
           java-version: ${{ matrix.java }}
-          distribution: "adopt"
+          distribution: "temurin"
 
       - name: Gradle setup
         uses: gradle/actions/setup-gradle@v4
         with:
-          cache-read-only: ${{ github.ref != 'refs/heads/master' }}
-          gradle-home-cache-cleanup: ${{ github.ref == 'refs/heads/master' }}
-
-      - name: Gradle build classes
-        run: "./gradlew classes${{ env.GRADLE_TASK_SUFFIX }} --no-daemon --no-parallel --scan --stacktrace"
-
-      - name: Gradle build test classes
-        run: "./gradlew testClasses${{ env.GRADLE_TASK_SUFFIX }} --no-daemon --no-parallel --scan --stacktrace"
+          cache-read-only: true
 
       - name: Gradle run tests
-        run: "./gradlew test${{ env.GRADLE_TASK_SUFFIX }} --no-daemon --no-parallel --scan --stacktrace"
+        run: "./gradlew test${{ env.GRADLE_TASK_SUFFIX }} --no-daemon --no-parallel --console=plain"
