@@ -4,7 +4,6 @@ import io.goodforgod.testcontainers.extensions.ContainerMode;
 import io.goodforgod.testcontainers.extensions.mockserver.ConnectionMockServer;
 import io.goodforgod.testcontainers.extensions.mockserver.MockServerConnection;
 import io.goodforgod.testcontainers.extensions.mockserver.TestcontainersMockServer;
-import java.time.Duration;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import io.koraframework.test.extension.junit5.KoraAppTest;
@@ -27,21 +26,6 @@ class VoidHttpClientTests implements KoraAppTestConfigModifier {
 
     @TestComponent
     private VoidHttpClient httpClient;
-
-    @Test
-    void voidPostReactorRequestSuccess() {
-        // given
-        mockserverConnection.client().when(
-                org.mockserver.model.HttpRequest.request()
-                        .withMethod("POST")
-                        .withPath("/void"))
-                .respond(
-                        org.mockserver.model.HttpResponse.response()
-                                .withBody("OK"));
-
-        // then
-        httpClient.reactor().block(Duration.ofSeconds(15));
-    }
 
     @Test
     void voidPostSyncRequestSuccess() {

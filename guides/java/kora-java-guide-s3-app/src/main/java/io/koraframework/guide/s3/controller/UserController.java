@@ -39,6 +39,7 @@ public final class UserController {
 
     public record RequestContext(String requestId, String userAgent, String sessionId) {}
 
+    @Component
     public static final class RequestContextMapper implements HttpServerRequestMapper<RequestContext> {
 
         @Override

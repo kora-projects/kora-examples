@@ -3,10 +3,9 @@ package io.koraframework.guide.httpclient.client;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.concurrent.CompletionStage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.koraframework.common.Context;
+import io.koraframework.common.annotation.Component;
 import io.koraframework.common.annotation.Mapping;
 import io.koraframework.guide.httpclient.client.DataApiClient.MappedResponse.Error;
 import io.koraframework.guide.httpclient.client.DataApiClient.MappedResponse.Payload;
@@ -32,7 +31,7 @@ import io.koraframework.json.common.annotation.Json;
 import static io.koraframework.guide.httpclient.client.DataApiClient.MappedResponse.*;
 
 @InterceptWith(ApiKeyAuthInterceptor.class)
-@HttpClient(configPath = "httpClient.dataApi")
+@HttpClient("httpClient.dataApi")
 public interface DataApiClient {
 
     @HttpRoute(method = HttpMethod.POST, path = "/data/form")
@@ -62,10 +61,11 @@ public interface DataApiClient {
 
     record PlainTextGreetingBody(String name) {}
 
+    @Component
     final class GreetingRequestMapper implements HttpClientRequestMapper<PlainTextGreetingBody> {
 
         @Override
-        public HttpBodyOutput apply(Context ctx, PlainTextGreetingBody value) {
+        public HttpBodyOutput apply(PlainTextGreetingBody value) {
             return HttpBody.plaintext("Hello " + value.name());
         }
     }
@@ -82,6 +82,7 @@ public interface DataApiClient {
         record ErrorPayload(String message) {}
     }
 
+    @Component
     final class MappedResponseSuccessMapper implements HttpClientResponseMapper<MappedResponse> {
 
         private final JsonReader<Payload> jsonReader;
@@ -98,6 +99,7 @@ public interface DataApiClient {
         }
     }
 
+    @Component
     final class MappedResponseErrorMapper implements HttpClientResponseMapper<MappedResponse> {
 
         private final JsonReader<ErrorPayload> jsonReader;
@@ -115,15 +117,15 @@ public interface DataApiClient {
         }
     }
 
+    @Component
     final class MethodLoggingInterceptor implements HttpClientInterceptor {
 
         private static final Logger logger = LoggerFactory.getLogger(MethodLoggingInterceptor.class);
 
         @Override
-        public CompletionStage<HttpClientResponse> processRequest(Context ctx, InterceptChain chain, HttpClientRequest request)
-            throws Exception {
+        public HttpClientResponse processRequest(InterceptChain chain, HttpClientRequest request) throws Exception {
             logger.info("Advanced HTTP client interceptor invoked");
-            return chain.process(ctx, request);
+            return chain.process(request);
         }
     }
 }

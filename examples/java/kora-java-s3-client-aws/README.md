@@ -3,7 +3,12 @@
 Пример модуля S3 AWS в Kora.
 
 В примере использовались модули:
-- [S3 AWS](https://kora-projects.github.io/kora-docs/ru/documentation/s3-client/#aws)
+- `io.koraframework:s3-client-aws`
+
+> В Kora 2.0 модуль отдаёт в контейнер сам `software.amazon.awssdk.services.s3.S3Client`,
+> работа с S3 идёт напрямую через API AWS SDK. Декларативные контракты `@S3.Client`
+> в этот артефакт больше не входят — они переехали в `s3-client-kora`,
+> см. `kora-java-s3-client-minio`.
 
 ## Build
 

@@ -16,3 +16,9 @@ target/
 .settings/
 *.iml
 out/
+
+### Local reference checkouts used during the Kora 2.0 migration
+agents-md/
+
+### Local working artifacts (never commit)
+docs/superpowers/

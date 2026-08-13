@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+    annotationProcessor "io.koraframework:annotation-processors"
+
     api project(":guides:java:kora-java-guide-dependency-injection:kora-java-guide-dependency-injection-common")
 
     implementation "io.koraframework:config-common"

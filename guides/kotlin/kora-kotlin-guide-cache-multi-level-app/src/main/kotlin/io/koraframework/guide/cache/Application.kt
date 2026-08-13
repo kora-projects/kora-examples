@@ -16,7 +16,7 @@ interface Application :
     LogbackModule,
     UndertowPublicHttpServerModule,
     CaffeineCacheModule,
-    RedisCacheModule
+    LettuceRedisCacheModule
 
 fun main() {
     KoraApplication.run(ApplicationGraph::graph)

@@ -31,7 +31,7 @@ interface JdbcJsonbMapperModule {
             } else {
                 val jsonb = PGobject()
                 jsonb.type = "jsonb"
-                jsonb.value = writer.toStringUnchecked(value)
+                jsonb.value = writer.toString(value)
                 stmt.setObject(index, jsonb)
             }
         }
@@ -41,7 +41,7 @@ interface JdbcJsonbMapperModule {
     fun <T> jdbcJsonResultColumnMapper(reader: JsonReader<T>): JdbcResultColumnMapper<T> {
         return JdbcResultColumnMapper { row, index ->
             val value = row.getString(index)
-            if (value == null) null else reader.readUnchecked(value)
+            if (value == null) null else reader.read(value)
         }
     }
 }

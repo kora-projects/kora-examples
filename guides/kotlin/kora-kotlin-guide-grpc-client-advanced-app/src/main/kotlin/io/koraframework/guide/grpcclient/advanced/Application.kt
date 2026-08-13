@@ -1,6 +1,6 @@
 package io.koraframework.guide.grpcclient.advanced
 
-import ru.tinkoff.grpc.client.GrpcClientModule
+import io.koraframework.grpc.client.GrpcClientModule
 import io.koraframework.application.graph.KoraApplication
 import io.koraframework.common.annotation.KoraApp
 import io.koraframework.config.hocon.HoconConfigModule

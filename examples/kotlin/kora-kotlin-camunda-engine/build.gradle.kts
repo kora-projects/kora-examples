@@ -7,17 +7,9 @@ plugins {
     id("com.google.devtools.ksp") version ("2.3.11")
 }
 
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom); compileOnly.get().extendsFrom(koraBom)
-    api.get().extendsFrom(koraBom); implementation.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom); kspTest.get().extendsFrom(koraBom)
-}
-
 dependencies {
-    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
-    ksp("io.koraframework:symbol-processors")
-    kspTest("io.koraframework:symbol-processors")
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
 
     implementation("io.koraframework:http-server-undertow")
     implementation("io.koraframework.experimental:camunda-engine-bpmn")
@@ -28,9 +20,11 @@ dependencies {
     implementation("io.koraframework:logging-logback")
     implementation("io.koraframework:config-hocon")
 
+    // mockito-kotlin 5.4.0 pins an older mockito-core whose Byte Buddy rejects Java 25 class files
+    testImplementation("org.mockito:mockito-core:5.18.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     testImplementation("io.koraframework:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.15.0")
     testRuntimeOnly("com.h2database:h2:2.2.224")
     testImplementation("org.camunda.bpm:camunda-bpm-assert:7.21.0")
     testImplementation("org.assertj:assertj-core:3.26.0")

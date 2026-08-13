@@ -2,6 +2,7 @@ package io.koraframework.example.cassandra;
 
 import com.datastax.oss.driver.api.core.cql.Row;
 import java.util.List;
+import io.koraframework.common.annotation.Component;
 import io.koraframework.common.annotation.Mapping;
 import io.koraframework.database.cassandra.CassandraRepository;
 import io.koraframework.database.cassandra.mapper.result.CassandraRowMapper;
@@ -12,6 +13,8 @@ import io.koraframework.database.common.annotation.Repository;
 public interface CassandraMapperRowRepository extends CassandraRepository {
 
     record EntityPart(String id, int field1) {}
+
+    @Component
 
     final class EntityPartRowMapper implements CassandraRowMapper<EntityPart> {
 

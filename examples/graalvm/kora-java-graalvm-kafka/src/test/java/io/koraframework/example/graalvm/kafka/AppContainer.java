@@ -32,9 +32,14 @@ public final class AppContainer extends GenericContainer<AppContainer> {
     protected void configure() {
         super.configure();
         withExposedPorts(8080, 8085);
-        withStartupTimeout(Duration.ofSeconds(20));
+        withStartupTimeout(Duration.ofSeconds(60));
         withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(AppContainer.class)));
-        waitingFor(Wait.forLogMessage(".*Kafka Consumer '.*' first poll.*", 1).withStartupTimeout(Duration.ofSeconds(20)));
+        // wait on the readiness probe rather than on a log line: the wording of Kora's startup
+        // messages is not part of its contract, and this example only exposes the system server
+        waitingFor(Wait.forHttp("/system/readiness")
+                .forPort(8085)
+                .forStatusCode(200)
+                .withStartupTimeout(Duration.ofSeconds(60)));
     }
 
     public int getPort() {

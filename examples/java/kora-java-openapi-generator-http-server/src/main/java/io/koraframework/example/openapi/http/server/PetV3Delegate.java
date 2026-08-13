@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import reactor.core.publisher.Mono;
 import io.koraframework.common.annotation.Component;
 import io.koraframework.example.openapi.petV3.api.PetApiDelegate;
 import io.koraframework.example.openapi.petV3.api.PetApiResponses;
@@ -19,33 +18,39 @@ public final class PetV3Delegate implements PetApiDelegate {
     private final Map<Long, Pet> petMap = new ConcurrentHashMap<>();
 
     @Override
-    public Mono<PetApiResponses.AddPetApiResponse> addPet(Pet body) {
+    public PetApiResponses.AddPetApiResponse addPet(Pet body) {
         petMap.put(body.id(), body);
-        return Mono.just(new PetApiResponses.AddPetApiResponse.AddPet200ApiResponse(body));
+        return new PetApiResponses.AddPetApiResponse.AddPet200ApiResponse(body);
     }
 
     @Override
-    public Mono<PetApiResponses.DeletePetApiResponse> deletePet(long petId, @Nullable String apiKey) {
+    public PetApiResponses.DeletePetApiResponse deletePet(long petId, @Nullable String apiKey) {
         petMap.remove(petId);
-        return Mono.just(new PetApiResponses.DeletePetApiResponse.DeletePet200ApiResponse(new Message("OK")));
+        return new PetApiResponses.DeletePetApiResponse.DeletePet200ApiResponse(new Message("OK"));
     }
 
     @Override
-    public Mono<PetApiResponses.FindPetsByStatusApiResponse> findPetsByStatus(@Nullable String status) {
+    public PetApiResponses.FindPetsByStatusApiResponse findPetsByStatus(@Nullable String status) {
         if (status == null) {
-            return Mono.just(new PetApiResponses.FindPetsByStatusApiResponse.FindPetsByStatus400ApiResponse());
+            return new PetApiResponses.FindPetsByStatusApiResponse.FindPetsByStatus400ApiResponse();
         }
 
-        final Pet.StatusEnum statusEnum = Pet.StatusEnum.valueOf(status);
+        final Pet.StatusEnum statusEnum;
+        try {
+            statusEnum = Pet.StatusEnum.fromValue(status);
+        } catch (IllegalArgumentException e) {
+            return new PetApiResponses.FindPetsByStatusApiResponse.FindPetsByStatus400ApiResponse();
+        }
+
         final List<Pet> pets = petMap.values().stream()
                 .filter(p -> statusEnum.equals(p.status()))
                 .toList();
 
-        return Mono.just(new PetApiResponses.FindPetsByStatusApiResponse.FindPetsByStatus200ApiResponse(pets));
+        return new PetApiResponses.FindPetsByStatusApiResponse.FindPetsByStatus200ApiResponse(pets);
     }
 
     @Override
-    public Mono<PetApiResponses.FindPetsByTagsApiResponse> findPetsByTags(List<String> tags) {
+    public PetApiResponses.FindPetsByTagsApiResponse findPetsByTags(List<String> tags) {
         final Set<String> petTags = new HashSet<>(tags);
         final List<Pet> pets = petMap.values().stream()
                 .filter(p -> p.tags() != null)
@@ -53,42 +58,42 @@ public final class PetV3Delegate implements PetApiDelegate {
                 .toList();
 
         if (pets.isEmpty()) {
-            return Mono.just(new PetApiResponses.FindPetsByTagsApiResponse.FindPetsByTags400ApiResponse());
+            return new PetApiResponses.FindPetsByTagsApiResponse.FindPetsByTags400ApiResponse();
         } else {
-            return Mono.just(new PetApiResponses.FindPetsByTagsApiResponse.FindPetsByTags200ApiResponse(pets));
+            return new PetApiResponses.FindPetsByTagsApiResponse.FindPetsByTags200ApiResponse(pets);
         }
     }
 
     @Override
-    public Mono<PetApiResponses.GetPetByIdApiResponse> getPetById(long petId) {
+    public PetApiResponses.GetPetByIdApiResponse getPetById(long petId) {
         if (petId < 0) {
-            return Mono.just(new PetApiResponses.GetPetByIdApiResponse.GetPetById400ApiResponse());
+            return new PetApiResponses.GetPetByIdApiResponse.GetPetById400ApiResponse();
         }
 
         final Pet pet = petMap.get(petId);
         if (pet == null) {
-            return Mono.just(new PetApiResponses.GetPetByIdApiResponse.GetPetById404ApiResponse());
+            return new PetApiResponses.GetPetByIdApiResponse.GetPetById404ApiResponse();
         } else {
-            return Mono.just(new PetApiResponses.GetPetByIdApiResponse.GetPetById200ApiResponse(pet));
+            return new PetApiResponses.GetPetByIdApiResponse.GetPetById200ApiResponse(pet);
         }
     }
 
     @Override
-    public Mono<PetApiResponses.UpdatePetApiResponse> updatePet(Pet body) {
+    public PetApiResponses.UpdatePetApiResponse updatePet(Pet body) {
         if (!petMap.containsKey(body.id())) {
-            return Mono.just(new PetApiResponses.UpdatePetApiResponse.UpdatePet404ApiResponse());
+            return new PetApiResponses.UpdatePetApiResponse.UpdatePet404ApiResponse();
         }
 
         petMap.put(body.id(), body);
-        return Mono.just(new PetApiResponses.UpdatePetApiResponse.UpdatePet200ApiResponse(body));
+        return new PetApiResponses.UpdatePetApiResponse.UpdatePet200ApiResponse(body);
     }
 
     @Override
-    public Mono<PetApiResponses.UpdatePetWithFormApiResponse>
+    public PetApiResponses.UpdatePetWithFormApiResponse
             updatePetWithForm(long petId, @Nullable String name, @Nullable String status) {
         final Pet pet = petMap.get(petId);
         if (pet == null) {
-            return Mono.just(new PetApiResponses.UpdatePetWithFormApiResponse.UpdatePetWithForm404ApiResponse());
+            return new PetApiResponses.UpdatePetWithFormApiResponse.UpdatePetWithForm404ApiResponse();
         }
 
         Pet updated = pet;
@@ -96,10 +101,10 @@ public final class PetV3Delegate implements PetApiDelegate {
             updated = pet.withName(name);
         }
         if (status != null) {
-            updated = pet.withStatus(Pet.StatusEnum.valueOf(status));
+            updated = pet.withStatus(Pet.StatusEnum.fromValue(status));
         }
 
         petMap.put(updated.id(), updated);
-        return Mono.just(new PetApiResponses.UpdatePetWithFormApiResponse.UpdatePetWithForm200ApiResponse(new Message("OK")));
+        return new PetApiResponses.UpdatePetWithFormApiResponse.UpdatePetWithForm200ApiResponse(new Message("OK"));
     }
 }

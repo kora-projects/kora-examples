@@ -11,8 +11,8 @@ import io.koraframework.kotlin.example.crud.model.PetCategory
 import io.koraframework.kotlin.example.crud.model.PetWithCategory
 import io.koraframework.kotlin.example.crud.repository.CategoryRepository
 import io.koraframework.kotlin.example.crud.repository.PetRepository
-import io.koraframework.resilient.circuitbreaker.annotation.CircuitBreaker
-import io.koraframework.resilient.retry.annotation.Retry
+import io.koraframework.resilient.circuitbreaker.annotation.CircuitBreakable
+import io.koraframework.resilient.retry.annotation.Retryable
 import io.koraframework.resilient.timeout.annotation.Timeout
 
 @Component
@@ -22,15 +22,15 @@ open class PetService(
 ) {
 
     @Cacheable(PetCache::class)
-    @CircuitBreaker("pet")
-    @Retry("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker::class)
+    @Retryable(PetRetry::class)
+    @Timeout(PetTimeouter::class)
     open fun findByID(petId: Long): PetWithCategory? {
         return petRepository.findById(petId)
     }
 
-    @CircuitBreaker("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker::class)
+    @Timeout(PetTimeouter::class)
     open fun add(createTO: PetCreateTO): PetWithCategory {
         val petCategoryId = categoryRepository.findByName(createTO.category.name)?.id
             ?: categoryRepository.insert(createTO.category.name)
@@ -44,8 +44,8 @@ open class PetService(
         )
     }
 
-    @CircuitBreaker("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker::class)
+    @Timeout(PetTimeouter::class)
     @CachePut(value = PetCache::class, args = ["id"])
     open fun update(id: Long, updateTO: PetUpdateTO): PetWithCategory? {
         val existing = petRepository.findById(id) ?: return null
@@ -62,8 +62,8 @@ open class PetService(
         return result
     }
 
-    @CircuitBreaker("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker::class)
+    @Timeout(PetTimeouter::class)
     @CacheInvalidate(PetCache::class)
     open fun delete(petId: Long): Boolean {
         return petRepository.deleteById(petId).value() == 1L

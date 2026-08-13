@@ -21,7 +21,7 @@ class AutoCommitRecordMapperListener : AbstractListener<AutoCommitRecordMapperLi
     @Component
     class MyDeserializer(private val reader: JsonReader<MyEvent>) : Deserializer<MyEvent> {
         override fun deserialize(topic: String, data: ByteArray): MyEvent {
-            return reader.read(data)
+            return requireNotNull(reader.read(data)) { "Empty payload in topic $topic" }
         }
     }
 

@@ -5,7 +5,7 @@ import io.koraframework.http.common.HttpMethod;
 import io.koraframework.http.common.annotation.HttpRoute;
 import io.koraframework.json.common.annotation.Json;
 
-@HttpClient(configPath = "httpClient.default")
+@HttpClient("httpClient.default")
 public interface JsonHttpClient {
 
     @Json

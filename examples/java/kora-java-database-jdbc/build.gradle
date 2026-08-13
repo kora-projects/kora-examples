@@ -18,18 +18,17 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("io.koraframework:kora-parent:$koraVersion")
+    koraBom platform("io.koraframework:kora-bom:$koraVersion")
     annotationProcessor "io.koraframework:annotation-processors"
 
     implementation "org.postgresql:postgresql:42.7.7"
     implementation "io.koraframework:database-jdbc"
-    implementation "io.projectreactor:reactor-core:3.6.18" // For reactive examples (optional)
 
     implementation "io.koraframework:logging-logback"
     implementation "io.koraframework:config-hocon"
 
     testImplementation "io.koraframework:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.13.1"
+    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.15.0"
 }
 
 application {
@@ -58,10 +57,6 @@ test {
             "-XX:+TieredCompilation",
             "-XX:TieredStopAtLevel=1",
     ]
-
-    environment([
-            "": ""
-    ])
 
     useJUnitPlatform()
     testLogging {

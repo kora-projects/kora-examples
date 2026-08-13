@@ -23,11 +23,9 @@ import io.koraframework.database.common.annotation.Repository
 @Component
 class RootService(
     private val crudSyncRepository: CassandraCrudSyncRepository,
-    private val crudSuspendRepository: CassandraCrudSuspendRepository,
     private val cassandraUdtRepository: CassandraUdtRepository,
     private val mapperRowColumnRepository: CassandraMapperRowColumnRepository,
     private val mapperParameterRepository: CassandraMapperParameterRepository,
     private val mapperRowRepository: CassandraMapperRowRepository,
     private val mapperResultSetRepository: CassandraMapperResultSetRepository
 )
-

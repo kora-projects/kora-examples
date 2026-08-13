@@ -8,6 +8,7 @@ import io.koraframework.http.server.undertow.UndertowPublicHttpServerModule;
 import io.koraframework.json.common.JsonModule;
 import io.koraframework.logging.logback.LogbackModule;
 import io.koraframework.s3.client.aws.AwsS3ClientModule;
+import io.koraframework.s3.client.kora.KoraS3ClientModule;
 
 @KoraApp
 public interface Application extends
@@ -16,6 +17,7 @@ public interface Application extends
         LogbackModule,
         OkHttpClientModule,
         AwsS3ClientModule,
+        KoraS3ClientModule,
         UndertowPublicHttpServerModule {
 
     static void main(String[] args) {

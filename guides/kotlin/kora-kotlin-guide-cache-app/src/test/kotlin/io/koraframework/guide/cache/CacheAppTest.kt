@@ -41,7 +41,7 @@ class CacheAppTest {
 
         assertNotNull(first)
         assertEquals(created.id, first!!.id)
-        assertEquals(created.id, userCache.get(created.id).id)
+        assertEquals(created.id, userCache.get(created.id)!!.id)
     }
 
     @Test

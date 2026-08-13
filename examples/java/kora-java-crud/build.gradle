@@ -34,7 +34,7 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("io.koraframework:kora-parent:$koraVersion")
+    koraBom platform("io.koraframework:kora-bom:$koraVersion")
     annotationProcessor "org.mapstruct:mapstruct-processor:1.5.5.Final"
     annotationProcessor "io.koraframework:annotation-processors"
 
@@ -59,7 +59,7 @@ dependencies {
 
     testImplementation "org.mockito:mockito-core:5.18.0"
     testImplementation "io.koraframework:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.13.1"
+    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.15.0"
     testImplementation "org.testcontainers:junit-jupiter:1.21.4"
 }
 
@@ -106,10 +106,6 @@ test {
             "-XX:+TieredCompilation",
             "-XX:TieredStopAtLevel=1",
     ]
-
-    environment([
-            "": ""
-    ])
 
     useJUnitPlatform()
     testLogging {

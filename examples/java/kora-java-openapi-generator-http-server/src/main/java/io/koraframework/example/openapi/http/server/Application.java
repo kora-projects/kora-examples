@@ -33,22 +33,22 @@ public interface Application extends
     }
 
     @Tag(ApiSecurity.BearerAuth.class)
-    default HttpServerPrincipalExtractor<Principal> bearerHttpServerPrincipalExtractor() {
-        return (request, value) -> CompletableFuture.completedFuture(new UserPrincipal("name"));
+    default HttpServerPrincipalExtractor<String, Principal> bearerHttpServerPrincipalExtractor() {
+        return (request, value) -> new UserPrincipal("name");
     }
 
     @Tag(ApiSecurity.BasicAuth.class)
-    default HttpServerPrincipalExtractor<Principal> basicHttpServerPrincipalExtractor() {
-        return (request, value) -> CompletableFuture.completedFuture(new UserPrincipal("name"));
+    default HttpServerPrincipalExtractor<String, Principal> basicHttpServerPrincipalExtractor() {
+        return (request, value) -> new UserPrincipal("name");
     }
 
     @Tag(ApiSecurity.ApiKeyAuth.class)
-    default HttpServerPrincipalExtractor<Principal> apiKeyHttpServerPrincipalExtractor() {
-        return (request, value) -> CompletableFuture.completedFuture(new UserPrincipal("name"));
+    default HttpServerPrincipalExtractor<String, Principal> apiKeyHttpServerPrincipalExtractor() {
+        return (request, value) -> new UserPrincipal("name");
     }
 
     @Tag(ApiSecurity.OAuth.class)
-    default HttpServerPrincipalExtractor<PrincipalWithScopes> oauthHttpServerPrincipalExtractor() {
-        return (request, value) -> CompletableFuture.completedFuture(new UserPrincipal("name"));
+    default HttpServerPrincipalExtractor<String, PrincipalWithScopes> oauthHttpServerPrincipalExtractor() {
+        return (request, value) -> new UserPrincipal("name");
     }
 }

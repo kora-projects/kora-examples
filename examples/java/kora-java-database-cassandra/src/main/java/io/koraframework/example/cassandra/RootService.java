@@ -9,9 +9,7 @@ public final class RootService {
 
     private final CassandraCrudSyncRepository crudSyncRepository;
     private final CassandraCrudAsyncRepository crudAsyncRepository;
-    private final CassandraCrudReactorRepository crudReactorRepository;
     private final CassandraMapperResultSetRepository mapperResultSetRepository;
-    private final CassandraMapperResultSetReactiveRepository mapperResultSetReactiveRepository;
     private final CassandraMapperRowRepository mapperRowRepository;
     private final CassandraMapperRowColumnRepository mapperRowColumnRepository;
     private final CassandraMapperParameterRepository mapperParameterRepository;
@@ -19,18 +17,14 @@ public final class RootService {
 
     public RootService(CassandraCrudSyncRepository crudSyncRepository,
                        CassandraCrudAsyncRepository crudAsyncRepository,
-                       CassandraCrudReactorRepository crudReactorRepository,
                        CassandraMapperResultSetRepository mapperResultSetRepository,
-                       CassandraMapperResultSetReactiveRepository mapperResultSetReactiveRepository,
                        CassandraMapperRowRepository mapperRowRepository,
                        CassandraMapperRowColumnRepository mapperRowColumnRepository,
                        CassandraMapperParameterRepository mapperParameterRepository,
                        CassandraUdtRepository cassandraUdtRepository) {
         this.crudSyncRepository = crudSyncRepository;
         this.crudAsyncRepository = crudAsyncRepository;
-        this.crudReactorRepository = crudReactorRepository;
         this.mapperResultSetRepository = mapperResultSetRepository;
-        this.mapperResultSetReactiveRepository = mapperResultSetReactiveRepository;
         this.mapperRowRepository = mapperRowRepository;
         this.mapperRowColumnRepository = mapperRowColumnRepository;
         this.mapperParameterRepository = mapperParameterRepository;

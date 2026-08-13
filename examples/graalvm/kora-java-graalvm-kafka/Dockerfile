@@ -1,4 +1,4 @@
-FROM ghcr.io/graalvm/native-image-community:21 as builder
+FROM ghcr.io/graalvm/native-image-community:25 as builder
 
 ARG TARGET_DIR=/opt/app
 ARG SOURCE_DIR=build/libs

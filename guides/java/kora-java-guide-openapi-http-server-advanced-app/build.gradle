@@ -33,7 +33,7 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("io.koraframework:kora-parent:$koraVersion")
+    koraBom platform("io.koraframework:kora-bom:$koraVersion")
 
     annotationProcessor "io.koraframework:annotation-processors"
 
@@ -108,5 +108,3 @@ test {
         exceptionFormat("full")
     }
 }
-
-
