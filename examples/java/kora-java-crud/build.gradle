@@ -34,7 +34,7 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("io.koraframework:kora-parent:$koraVersion")
+    koraBom platform("io.koraframework:kora-bom:$koraVersion")
     annotationProcessor "org.mapstruct:mapstruct-processor:1.5.5.Final"
     annotationProcessor "io.koraframework:annotation-processors"
 

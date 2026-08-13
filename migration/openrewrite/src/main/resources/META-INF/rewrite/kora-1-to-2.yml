@@ -19,6 +19,7 @@ recipeList:
   - io.koraframework.migration.RenameKoraTypes
   - io.koraframework.migration.MigrateNullabilityAnnotations
   - io.koraframework.migration.UpdateKoraDependencies
+  - io.koraframework.migration.NormalizeKotlinDependencies
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -103,14 +104,26 @@ type: specs.openrewrite.org/v1beta/recipe
 name: io.koraframework.migration.UpdateKoraDependencies
 displayName: Update Kora build coordinates
 description: >-
-  Kora 2.0 publishes under the `io.koraframework` group; two artifacts were also renamed.
+  Kora 2.0 publishes under the `io.koraframework` group; the BOM and other artifacts were also renamed.
   Versions are left untouched -- the Kora version is normally driven by the
-  `io.koraframework:kora-parent` BOM.
+  `io.koraframework:kora-bom` BOM.
 recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: ru.tinkoff.kora
+      oldArtifactId: kora-parent
+      newGroupId: io.koraframework
+      newArtifactId: kora-bom
+      overrideManagedVersion: false
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: ru.tinkoff.kora
       oldArtifactId: "*"
       newGroupId: io.koraframework
+      overrideManagedVersion: false
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: io.koraframework
+      oldArtifactId: kora-parent
+      newGroupId: io.koraframework
+      newArtifactId: kora-bom
       overrideManagedVersion: false
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: io.koraframework
@@ -124,3 +137,35 @@ recipeList:
       newGroupId: io.koraframework
       newArtifactId: cache-redis-lettuce
       overrideManagedVersion: false
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.NormalizeKotlinDependencies
+displayName: Normalize Kora dependencies in Kotlin Gradle builds
+description: >-
+  Use the BOM directly on implementation, version KSP explicitly, and remove obsolete processor wiring.
+  kspTest is semantic and is removed mechanically; add it back only for tests that generate a graph.
+recipeList:
+  - org.openrewrite.text.FindAndReplace:
+      find: '(?ms)^[ \t]*val koraBom: Configuration by configurations\.creating\r?\n[ \t]*configurations \{\r?\n.*?extendsFrom\(koraBom\).*?^[ \t]*\}\r?\n(?:\r?\n)?'
+      replace: ''
+      regex: true
+      filePattern: '**/*.gradle.kts'
+  - org.openrewrite.text.FindAndReplace:
+      find: 'koraBom(platform("io.koraframework:kora-bom:${property("koraVersion")}"))'
+      replace: 'implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))'
+      filePattern: '**/*.gradle.kts'
+  - org.openrewrite.text.FindAndReplace:
+      find: 'ksp("io.koraframework:symbol-processors")'
+      replace: 'ksp("io.koraframework:symbol-processors:${property("koraVersion")}")'
+      filePattern: '**/*.gradle.kts'
+  - org.openrewrite.text.FindAndReplace:
+      find: '(?m)^[ \t]*kspTest\("io\.koraframework:symbol-processors(?::[^\"]+)?"\)[ \t]*\r?\n'
+      replace: ''
+      regex: true
+      filePattern: '**/*.gradle.kts;!examples/kotlin/kora-kotlin-crud/build.gradle.kts'
+  - org.openrewrite.text.FindAndReplace:
+      find: '(?mi)^.*ka(?i:pt).*\r?\n'
+      replace: ''
+      regex: true
+      filePattern: '**/*.gradle.kts'

@@ -7,22 +7,10 @@ plugins {
     id("application")
 }
 
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom)
-    compileOnly.get().extendsFrom(koraBom)
-    runtimeOnly.get().extendsFrom(koraBom)
-    implementation.get().extendsFrom(koraBom)
-    testCompileOnly.get().extendsFrom(koraBom)
-    kspTest.get().extendsFrom(koraBom)
-    testRuntimeOnly.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom)
-}
-
 dependencies {
-    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
 
-    ksp("io.koraframework:symbol-processors")
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
     implementation("io.koraframework:config-hocon")
     implementation("io.koraframework:http-client-ok")
     implementation("io.koraframework:http-server-undertow")
@@ -30,7 +18,6 @@ dependencies {
     implementation("io.koraframework:logging-logback")
     implementation("io.koraframework:s3-client-aws")
     implementation("io.koraframework.experimental:s3-client-kora")
-    kspTest("io.koraframework:symbol-processors")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")

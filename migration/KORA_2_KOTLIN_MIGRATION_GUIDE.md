@@ -44,7 +44,6 @@ Dependency requires at least JVM runtime version 25. This build uses a Java 21 J
 |---|---|
 | Kotlin `1.9.25` | `2.4.10` |
 | KSP `1.9.25-1.0.20` | `2.3.11` |
-| `kapt` `1.9.25` | `2.4.10` (там, где kapt ещё нужен — например, MapStruct) |
 
 Эти версии совпадают с теми, на которых собран сам фреймворк (`../kora/gradle/libs.versions.toml`) — расхождение версий приведёт к трудноотлаживаемым падениям процессоров.
 
@@ -71,7 +70,7 @@ tasks.matching { it.name.startsWith("ksp") }.configureEach { … }
 | Было | Стало |
 |---|---|
 | `ru.tinkoff.kora` (groupId) | `io.koraframework` |
-| BOM `ru.tinkoff.kora:kora-parent` | `io.koraframework:kora-parent` |
+| BOM `ru.tinkoff.kora:kora-parent` | `io.koraframework:kora-bom` |
 | `ru.tinkoff.kora:symbol-processors` | `io.koraframework:symbol-processors` |
 | `json-module` | `json-common` |
 | `cache-redis` | `cache-redis-lettuce` |
@@ -565,20 +564,20 @@ return PetTO(status = status, id = pet.id, name = pet.name, category = asDTO(pet
 // неверно: падает на любом значении, не совпадающем с именем константы
 val status = PetTO.StatusEnum.valueOf(raw)
 
-// верно
-val status = PetTO.StatusEnum.entries.first { it.value == raw }
+// верно: используем метод, сгенерированный Kora OpenAPI 2.0
+val status = PetTO.StatusEnum.fromValue(raw)
 ```
 
 Проявляется только на данных, компиляция чистая.
 
-### 10.4 Теги требований безопасности нумеруются по порядку в спецификации
+### 10.4 Теги требований безопасности называются по security-схеме
 
-Экстракторы принципала подключаются по тегу `ApiSecurity.SecurityRequirementTagN`, где `N` —
-**индекс требования в списке `security` спецификации**, а не имя схемы. Переименование схемы тег
-не меняет; перестановка требований — меняет.
+В Kora OpenAPI 2.0 генератор создаёт вложенный tag-класс из имени схемы в
+`components.securitySchemes`, приводя его к PascalCase. Старые порядковые
+`ApiSecurity.SecurityRequirementTagN` и варианты с маленькой буквы больше не подходят.
 
 ```kotlin
-@Tag(ApiSecurity.SecurityRequirementTag0::class)
+@Tag(ApiSecurity.ApiKeyAuth::class)
 fun apiKeyExtractor(config: DataApiAuthConfig): HttpServerPrincipalExtractor<String, Principal> =
     HttpServerPrincipalExtractor { _, value -> … }
 ```
@@ -618,25 +617,27 @@ suspend fun findPet(id: Long): PetTO = withContext(Dispatchers.IO) { petApi.getP
 
 ## 11. Тестирование
 
-Артефакт `io.koraframework:test-junit5`, KSP-процессор `ksp("io.koraframework:symbol-processors")` также для test-конфигурации.
+Артефакт тестирования — `io.koraframework:test-junit5`. Основной процессор подключается как
+`ksp("io.koraframework:symbol-processors:${property("koraVersion")}")`; test-конфигурация процессора
+нужна только тестам, которые сами генерируют Kora graph.
 
 Пакет расширения: `io.koraframework.test.extension.junit5.*` — `@KoraAppTest`, `@TestComponent`, `KoraAppTestConfigModifier`, `KoraConfigModification`.
 
 Тесты, написанные на `runTest` вокруг `suspend`-репозиториев, после перехода на синхронные контракты упрощаются до обычных тестов. MockK-моки `coEvery` заменяются на `every`.
 
-**BOM нужно распространить и на `kspTest`.** Конфигурация тестового процессора не наследует
-платформу автоматически, и версии артефактов Kora расходятся между `ksp` и `kspTest`:
+В Kotlin-модулях не создавайте отдельную конфигурацию `koraBom` и не связывайте её через
+`extendsFrom`. BOM подключается прямо к `implementation`, а версия процессора указывается явно:
 
 ```kotlin
-val koraBom = configurations.create("koraBom")
-dependencies { koraBom(platform("io.koraframework:kora-parent:$koraVersion")) }
-
-configurations.ksp.get().extendsFrom(koraBom)
-configurations.kspTest.get().extendsFrom(koraBom)
+dependencies {
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
+}
 ```
 
-Симптом при пропуске: тестовый исходник обрабатывается процессором другой версии, и ошибки
-выглядят как несуществующие методы сгенерированного кода.
+`kspTest("io.koraframework:symbol-processors:${property("koraVersion")}")` добавляется только
+когда тестовые исходники действительно требуют генерации графа, например содержат отдельный
+`@KoraApp`. В текущих примерах это требуется только `examples/kotlin/kora-kotlin-crud`.
 
 ---
 

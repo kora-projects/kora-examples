@@ -21,7 +21,7 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("io.koraframework:kora-parent:$koraVersion")
+    koraBom platform("io.koraframework:kora-bom:$koraVersion")
     annotationProcessor "io.koraframework:annotation-processors"
     annotationProcessor "io.goodforgod:graalvm-hint-processor:1.2.0"
     compileOnly "io.goodforgod:graalvm-hint-annotations:1.2.0"

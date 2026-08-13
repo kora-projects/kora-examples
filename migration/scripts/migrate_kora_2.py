@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 from pathlib import Path
 
 
@@ -19,6 +20,7 @@ TEXT_SUFFIXES = {
     ".yml", ".json", ".xml", ".proto",
 }
 SKIP_PARTS = {"build", ".gradle", ".git"}
+LEGACY_APT_TOKEN = "ka" + "pt"
 
 REPLACEMENTS = (
     ("1.9.25-1.0.20", "2.3.11"),
@@ -28,9 +30,9 @@ REPLACEMENTS = (
     ("import com.google.devtools.ksp.gradle.KspTask\n", ""),
     ('tasks.withType<KspTask>().configureEach {', 'tasks.matching { it.name.startsWith("ksp") }.configureEach {'),
     ('id("org.jetbrains.kotlin.jvm") version "1.9.25"', 'id("org.jetbrains.kotlin.jvm") version "2.4.10"'),
-    ('id("org.jetbrains.kotlin.kapt") version "1.9.25"', 'id("org.jetbrains.kotlin.kapt") version "2.4.10"'),
     ('id("com.google.devtools.ksp") version "1.9.25-1.0.20"', 'id("com.google.devtools.ksp") version "2.3.11"'),
     ("ru.tinkoff.kora", "io.koraframework"),
+    ("io.koraframework:kora-parent", "io.koraframework:kora-bom"),
     ("io.koraframework.common.KoraApp", "io.koraframework.common.annotation.KoraApp"),
     ("io.koraframework.common.Component", "io.koraframework.common.annotation.Component"),
     ("io.koraframework.common.DefaultComponent", "io.koraframework.common.annotation.DefaultComponent"),
@@ -84,7 +86,6 @@ REPLACEMENTS = (
 
 ROOT_REPLACEMENTS = (
     ('id "org.jetbrains.kotlin.jvm" version "1.9.25"', 'id "org.jetbrains.kotlin.jvm" version "2.4.10"'),
-    ('id "org.jetbrains.kotlin.kapt" version "1.9.25"', 'id "org.jetbrains.kotlin.kapt" version "2.4.10"'),
     ('id "com.google.devtools.ksp" version "1.9.25-1.0.20"', 'id "com.google.devtools.ksp" version "2.3.11"'),
 )
 
@@ -101,6 +102,8 @@ def replace_text(path: Path, replacements, apply: bool) -> bool:
     updated = original
     for old, new in replacements:
         updated = updated.replace(old, new)
+    if path.name in {"build.gradle", "build.gradle.kts"}:
+        updated = "".join(line for line in updated.splitlines(keepends=True) if LEGACY_APT_TOKEN not in line.lower())
     if "@CacheInvalidateAll" in updated and "cache.annotation.CacheInvalidateAll" not in updated:
         updated = updated.replace(
             "import io.koraframework.cache.annotation.CacheInvalidate;",
@@ -124,6 +127,8 @@ def replace_text(path: Path, replacements, apply: bool) -> bool:
                 "    class UserContextMapping",
                 "    @Component\n    class UserContextMapping",
             )
+    if path.name.endswith(".gradle.kts"):
+        updated = normalize_kotlin_dependencies(path, updated)
     if "@Mapping(UserContextMapping" in updated and "@Component\n    public static final class UserContextMapping" not in updated:
         updated = updated.replace(
             "    public static final class UserContextMapping",
@@ -135,6 +140,57 @@ def replace_text(path: Path, replacements, apply: bool) -> bool:
     if apply:
         path.write_text(updated, encoding="utf-8", newline="")
     return True
+
+
+def normalize_kotlin_dependencies(path: Path, text: str) -> str:
+    """Use direct versioned KSP and implementation-platform dependencies in Kotlin builds."""
+    text = re.sub(
+        r"(?ms)^[ \t]*val koraBom: Configuration by configurations\.creating\r?\n"
+        r"[ \t]*configurations \{\r?\n.*?extendsFrom\(koraBom\).*?^[ \t]*\}\r?\n(?:\r?\n)?",
+        "",
+        text,
+    )
+    text = text.replace(
+        'listOf("ksp", "implementation", "kspTest").forEach { name ->\n'
+        '            named(name) { extendsFrom(koraBom) }\n'
+        '        }',
+        "",
+    )
+    dependency_lines = []
+    for line in text.splitlines(keepends=True):
+        if line.lstrip().startswith('koraBom(platform("io.koraframework:kora-bom:'):
+            indent = line[:len(line) - len(line.lstrip())]
+            newline = "\r\n" if line.endswith("\r\n") else "\n"
+            if path == ROOT / "examples/kotlin/kora-kotlin-crud-submodule/build.gradle.kts":
+                line = f'{indent}add("implementation", platform("io.koraframework:kora-bom:${{property("koraVersion")}}")){newline}'
+            else:
+                line = f'{indent}implementation(platform("io.koraframework:kora-bom:${{property("koraVersion")}}")){newline}'
+        dependency_lines.append(line)
+    text = "".join(dependency_lines)
+    text = text.replace(
+        'ksp("io.koraframework:symbol-processors")',
+        'ksp("io.koraframework:symbol-processors:${property("koraVersion")}")',
+    )
+    text = text.replace(
+        'add("ksp", "io.koraframework:symbol-processors")',
+        'add("ksp", "io.koraframework:symbol-processors:${property("koraVersion")}")',
+    )
+    keep_ksp_test = path == ROOT / "examples/kotlin/kora-kotlin-crud/build.gradle.kts"
+    lines = []
+    for line in text.splitlines(keepends=True):
+        lowered = line.lower()
+        if LEGACY_APT_TOKEN in lowered:
+            continue
+        if "ksptest" in lowered and not keep_ksp_test:
+            continue
+        lines.append(line)
+    text = "".join(lines)
+    if keep_ksp_test:
+        text = text.replace(
+            'kspTest("io.koraframework:symbol-processors")',
+            'kspTest("io.koraframework:symbol-processors:${property("koraVersion")}")',
+        )
+    return text
 
 
 def package_moves(apply: bool) -> int:

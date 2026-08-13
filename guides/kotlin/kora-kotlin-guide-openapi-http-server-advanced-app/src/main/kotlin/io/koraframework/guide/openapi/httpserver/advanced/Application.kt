@@ -43,9 +43,7 @@ interface Application :
         }
     }
 
-    // В Kora 2.0 генератор именует теги по порядку security requirement в спецификации,
-    // а не по имени схемы
-    @Tag(ApiSecurity.SecurityRequirementTag0::class)
+    @Tag(ApiSecurity.ApiKeyAuth::class)
     fun apiKeyHttpServerPrincipalExtractor(config: DataApiAuthConfig): HttpServerPrincipalExtractor<String, Principal> {
         return HttpServerPrincipalExtractor { _, value ->
             if (value == null || config.value() != value) {

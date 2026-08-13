@@ -9,17 +9,9 @@ plugins {
     id("com.google.protobuf") version ("0.10.0")
 }
 
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom); compileOnly.get().extendsFrom(koraBom)
-    api.get().extendsFrom(koraBom); implementation.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom); kspTest.get().extendsFrom(koraBom)
-}
-
 dependencies {
-    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
-    ksp("io.koraframework:symbol-processors")
-    kspTest("io.koraframework:symbol-processors")
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
 
     implementation("io.koraframework:grpc-server")
     implementation("io.grpc:grpc-protobuf:1.83.1")

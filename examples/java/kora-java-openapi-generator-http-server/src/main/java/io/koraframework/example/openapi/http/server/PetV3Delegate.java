@@ -35,8 +35,10 @@ public final class PetV3Delegate implements PetApiDelegate {
             return new PetApiResponses.FindPetsByStatusApiResponse.FindPetsByStatus400ApiResponse();
         }
 
-        final Pet.StatusEnum statusEnum = statusOf(status);
-        if (statusEnum == null) {
+        final Pet.StatusEnum statusEnum;
+        try {
+            statusEnum = Pet.StatusEnum.fromValue(status);
+        } catch (IllegalArgumentException e) {
             return new PetApiResponses.FindPetsByStatusApiResponse.FindPetsByStatus400ApiResponse();
         }
 
@@ -99,21 +101,10 @@ public final class PetV3Delegate implements PetApiDelegate {
             updated = pet.withName(name);
         }
         if (status != null) {
-            updated = pet.withStatus(statusOf(status));
+            updated = pet.withStatus(Pet.StatusEnum.fromValue(status));
         }
 
         petMap.put(updated.id(), updated);
         return new PetApiResponses.UpdatePetWithFormApiResponse.UpdatePetWithForm200ApiResponse(new Message("OK"));
-    }
-
-    // The 2.0 generator dropped StatusEnum.fromValue and upper-cases the constants, so the wire
-    // value ("available") no longer matches the constant name and has to be looked up by getValue().
-    private static Pet.@Nullable StatusEnum statusOf(String value) {
-        for (var status : Pet.StatusEnum.values()) {
-            if (status.getValue().equals(value)) {
-                return status;
-            }
-        }
-        return null;
     }
 }

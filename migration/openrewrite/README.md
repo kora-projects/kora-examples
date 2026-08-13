@@ -13,7 +13,8 @@
 | `io.koraframework.migration.RenameKoraTypes` | типы, сменившие имя или модуль |
 | `io.koraframework.migration.MigrateNullabilityAnnotations` | `jakarta.annotation.Nullable` → JSpecify |
 | `io.koraframework.migration.UpdateKoraDependencies` | координаты сборки |
-| `io.koraframework.migration.Kora1To2` | агрегат всех пяти |
+| `io.koraframework.migration.NormalizeKotlinDependencies` | прямые `implementation(platform(...))`, versioned `ksp`, удаление лишнего `kspTest` и устаревшего processor wiring |
+| `io.koraframework.migration.Kora1To2` | агрегат всех шести |
 
 Каждый применим отдельно — например, если координаты в проекте уже поменяны руками.
 

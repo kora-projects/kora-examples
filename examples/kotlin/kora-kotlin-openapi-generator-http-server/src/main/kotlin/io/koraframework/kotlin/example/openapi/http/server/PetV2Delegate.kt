@@ -23,7 +23,7 @@ class PetV2Delegate : PetApiDelegate {
     }
 
     override fun findPetsByStatus(status: List<String>): PetApiResponses.FindPetsByStatusApiResponse {
-        val petStatuses = status.mapNotNull(::statusOf).toSet()
+        val petStatuses = status.map(Pet.StatusEnum::fromValue).toSet()
         val pets = petMap.values.filter { petStatuses.contains(it.status) }
         return PetApiResponses.FindPetsByStatusApiResponse.FindPetsByStatus200ApiResponse(pets)
     }
@@ -69,13 +69,8 @@ class PetV2Delegate : PetApiDelegate {
         form: PetApiController.UpdatePetWithFormFormParam,
     ): PetApiResponses.UpdatePetWithFormApiResponse {
         val pet = petMap[petId] ?: return PetApiResponses.UpdatePetWithFormApiResponse.UpdatePetWithForm404ApiResponse()
-        val updated = pet.copy(name = form.name, status = form.status?.let(::statusOf))
+        val updated = pet.copy(name = form.name, status = form.status?.let(Pet.StatusEnum::fromValue))
         petMap[updated.id] = updated
         return PetApiResponses.UpdatePetWithFormApiResponse.UpdatePetWithForm200ApiResponse(Message("OK"))
     }
-
-    // The 2.0 generator dropped StatusEnum.fromValue and upper-cases the constants, so the wire
-    // value ("available") no longer matches the constant name and has to be looked up by `value`.
-    private fun statusOf(value: String): Pet.StatusEnum? =
-        Pet.StatusEnum.entries.firstOrNull { it.value == value }
 }

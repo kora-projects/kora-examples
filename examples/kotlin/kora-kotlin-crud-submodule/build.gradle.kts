@@ -22,19 +22,9 @@ subprojects {
         }
     }
 
-    val koraBom: Configuration by configurations.creating
-    configurations {
-        listOf("ksp", "kspTest", "compileOnly", "api", "implementation", "testImplementation").forEach { name ->
-            named(name) { extendsFrom(koraBom) }
-        }
-    }
-
     dependencies {
-        koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
-        add("ksp", "io.koraframework:symbol-processors")
-        // в pet-api и vet-api тестовые исходники объявляют свой @KoraApp, и без процессора в kspTest
-        // граф для них не генерируется; Java-двойники объявляют testAnnotationProcessor в каждом модуле
-        add("kspTest", "io.koraframework:symbol-processors")
+        add("implementation", platform("io.koraframework:kora-bom:${property("koraVersion")}"))
+        add("ksp", "io.koraframework:symbol-processors:${property("koraVersion")}")
 
         add("testImplementation", "org.json:json:20231013")
         add("testImplementation", "org.skyscreamer:jsonassert:1.5.1")

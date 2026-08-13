@@ -27,12 +27,12 @@ public interface Application extends
     // приложение её не использует. Перехватчик перебирает схемы по порядку и берёт первую, чей
     // провайдер вернул токен, поэтому неиспользуемая схема обязана вернуть null: иначе она перебьёт
     // apiKeyAuth, и запрос уйдёт с чужим заголовком.
-    @Tag(ApiSecurity.bearerAuth.class)
+    @Tag(ApiSecurity.BearerAuth.class)
     default HttpClientTokenProvider bearerAuthTokenProvider() {
         return request -> null;
     }
 
-    @Tag(ApiSecurity.oAuth.class)
+    @Tag(ApiSecurity.OAuth.class)
     default HttpClientTokenProvider oAuthTokenProvider() {
         return request -> null;
     }

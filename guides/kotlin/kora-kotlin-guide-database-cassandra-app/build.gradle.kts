@@ -7,28 +7,15 @@ plugins {
     id("application")
 }
 
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom)
-    compileOnly.get().extendsFrom(koraBom)
-    runtimeOnly.get().extendsFrom(koraBom)
-    implementation.get().extendsFrom(koraBom)
-    testCompileOnly.get().extendsFrom(koraBom)
-    kspTest.get().extendsFrom(koraBom)
-    testRuntimeOnly.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom)
-}
-
 dependencies {
-    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
 
-    ksp("io.koraframework:symbol-processors")
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
     implementation("io.koraframework:config-hocon")
     implementation("io.koraframework:database-cassandra")
     implementation("io.koraframework:http-server-undertow")
     implementation("io.koraframework:json-common")
     implementation("io.koraframework:logging-logback")
-    kspTest("io.koraframework:symbol-processors")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.goodforgod:testcontainers-extensions-scylla:0.13.1")

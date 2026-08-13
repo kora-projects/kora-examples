@@ -56,7 +56,7 @@ Dependency requires at least JVM runtime version 25. This build uses a Java 21 J
 | Было | Стало |
 |---|---|
 | `ru.tinkoff.kora` (groupId) | `io.koraframework` |
-| BOM `ru.tinkoff.kora:kora-parent` | `io.koraframework:kora-parent` (имя BOM сохранилось) |
+| BOM `ru.tinkoff.kora:kora-parent` | `io.koraframework:kora-bom` |
 | `ru.tinkoff.kora:annotation-processors` | `io.koraframework:annotation-processors` |
 | `json-module` | `json-common` |
 | `cache-redis` | `cache-redis-lettuce` |
@@ -73,7 +73,7 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("io.koraframework:kora-parent:$koraVersion")
+    koraBom platform("io.koraframework:kora-bom:$koraVersion")
     annotationProcessor "io.koraframework:annotation-processors"
     implementation "io.koraframework:http-server-undertow"
     testAnnotationProcessor "io.koraframework:annotation-processors"
@@ -697,6 +697,28 @@ Quartz: `@ScheduleWithTrigger` принимает класс-тег напрям
 | `java-reactive-server` | `java-server` |
 
 Смена режима необходима, но недостаточна: сгенерированный код нужно адаптировать к синхронным API. Известные проблемы на текущий момент: package-private интерфейсы API и рассогласование сигнатур делегатов (`method does not override or implement a method from a supertype`), `JsonNullable`. Разбирается в `KORA_2_FRAMEWORK_ISSUES.md`.
+
+---
+
+### 10.1. Сгенерированные enum: используйте `fromValue`
+
+Wire-значение из OpenAPI (`available`) может не совпадать с именем Java-константы
+(`AVAILABLE`). Не добавляйте ручной `statusOf`, поиск по `values()` или `Enum.valueOf`:
+
+```java
+var status = Pet.StatusEnum.fromValue(rawStatus);
+```
+
+`fromValue` генерируется Kora OpenAPI 2.0. Неизвестное значение приводит к
+`IllegalArgumentException`; server delegate при необходимости преобразует его в
+предусмотренный контрактом ответ `400`.
+
+### 10.2. Security tags называются по security-схеме
+
+Используйте вложенный тип, сгенерированный из имени в `components.securitySchemes`,
+например `@Tag(ApiSecurity.ApiKeyAuth.class)` или
+`@Tag(ApiSecurity.BearerAuth.class)`. Порядковые `SecurityRequirementTagN` и старые
+варианты с маленькой буквы не соответствуют сгенерированному API 2.0.
 
 ---
 

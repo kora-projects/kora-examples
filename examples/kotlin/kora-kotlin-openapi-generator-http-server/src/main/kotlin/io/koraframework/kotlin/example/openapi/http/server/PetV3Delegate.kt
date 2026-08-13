@@ -22,8 +22,11 @@ class PetV3Delegate : PetApiDelegate {
     }
 
     override fun findPetsByStatus(status: String?): PetApiResponses.FindPetsByStatusApiResponse {
-        val statusEnum = status?.let(::statusOf)
-            ?: return PetApiResponses.FindPetsByStatusApiResponse.FindPetsByStatus400ApiResponse()
+        val statusEnum = try {
+            status?.let(Pet.StatusEnum::fromValue)
+        } catch (_: IllegalArgumentException) {
+            null
+        } ?: return PetApiResponses.FindPetsByStatusApiResponse.FindPetsByStatus400ApiResponse()
         val pets = petMap.values.filter { statusEnum == it.status }
         return PetApiResponses.FindPetsByStatusApiResponse.FindPetsByStatus200ApiResponse(pets)
     }
@@ -71,14 +74,9 @@ class PetV3Delegate : PetApiDelegate {
         val pet = petMap[petId] ?: return PetApiResponses.UpdatePetWithFormApiResponse.UpdatePetWithForm404ApiResponse()
         val updated = pet.copy(
             name = name ?: pet.name,
-            status = status?.let(::statusOf) ?: pet.status,
+            status = status?.let(Pet.StatusEnum::fromValue) ?: pet.status,
         )
         petMap[updated.id] = updated
         return PetApiResponses.UpdatePetWithFormApiResponse.UpdatePetWithForm200ApiResponse(Message("OK"))
     }
-
-    // The 2.0 generator dropped StatusEnum.fromValue and upper-cases the constants, so the wire
-    // value ("available") no longer matches the constant name and has to be looked up by `value`.
-    private fun statusOf(value: String): Pet.StatusEnum? =
-        Pet.StatusEnum.entries.firstOrNull { it.value == value }
 }

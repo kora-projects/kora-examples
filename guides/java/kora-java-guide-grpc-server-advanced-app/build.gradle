@@ -22,7 +22,7 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("io.koraframework:kora-parent:$koraVersion")
+    koraBom platform("io.koraframework:kora-bom:$koraVersion")
 
     compileOnly "javax.annotation:javax.annotation-api:1.3.2"
     annotationProcessor "io.koraframework:annotation-processors"

@@ -49,7 +49,7 @@ public interface Application extends
         };
     }
 
-    @Tag(ApiSecurity.SecurityRequirementTag0.class)
+    @Tag(ApiSecurity.ApiKeyAuth.class)
     default HttpServerPrincipalExtractor<String, Principal> apiKeyHttpServerPrincipalExtractor(DataApiAuthConfig config) {
         return (request, value) -> {
             if (value == null || !config.value().equals(value)) {
@@ -59,4 +59,3 @@ public interface Application extends
         };
     }
 }
-
