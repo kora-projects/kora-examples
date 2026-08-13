@@ -43,7 +43,7 @@ class IntegrationTests : KoraAppTestConfigModifier {
     override fun config(): KoraConfigModification {
         return KoraConfigModification.ofString(
             """
-            db {
+            jdbc {
               jdbcUrl = ${'$'}{POSTGRES_JDBC_URL}
               username = ${'$'}{POSTGRES_USER}
               password = ${'$'}{POSTGRES_PASS}
@@ -52,7 +52,8 @@ class IntegrationTests : KoraAppTestConfigModifier {
             pet-cache.maximumSize = 0
             resilient {
                circuitbreaker.pet {
-                 slidingWindowSize = 2
+                 type = FIXED_WINDOW
+                 countBased.windowSize = 2
                  minimumRequiredCalls = 2
                  failureRateThreshold = 100
                  permittedCallsInHalfOpenState = 1

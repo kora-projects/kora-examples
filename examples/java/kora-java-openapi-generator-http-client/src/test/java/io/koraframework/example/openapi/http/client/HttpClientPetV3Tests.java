@@ -69,7 +69,7 @@ class HttpClientPetV3Tests implements KoraAppTestConfigModifier {
 
         // when
         // then
-        var response = petApi.getPetById(1L).block();
+        var response = petApi.getPetById(1L);
         if (response instanceof PetApiResponses.GetPetByIdApiResponse.GetPetById200ApiResponse r) {
             assertEquals(responseBody.getLong("id"), r.content().id());
             assertEquals(responseBody.getString("name"), r.content().name());
@@ -110,7 +110,7 @@ class HttpClientPetV3Tests implements KoraAppTestConfigModifier {
                 new Category(1L, "category"),
                 List.of(new Tag(1L, "tag")),
                 Pet.StatusEnum.AVAILABLE);
-        var response = petApi.addPet(request).block();
+        var response = petApi.addPet(request);
         if (response instanceof PetApiResponses.AddPetApiResponse.AddPet200ApiResponse r) {
             assertEquals(request, r.content());
         } else {

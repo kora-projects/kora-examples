@@ -41,7 +41,8 @@ class ComponentTests : KoraAppTestConfigModifier {
         """
            resilient {
               circuitbreaker.pet {
-                slidingWindowSize = 2
+                type = FIXED_WINDOW
+                countBased.windowSize = 2
                 minimumRequiredCalls = 2
                 failureRateThreshold = 100
                 permittedCallsInHalfOpenState = 1
@@ -74,7 +75,7 @@ class ComponentTests : KoraAppTestConfigModifier {
         every { petRepository.findById(any()) } returns added
         val updated = petService.update(
             added.id,
-            PetUpdateTO("cat", PetUpdateTO.StatusEnum.PENDING, CategoryCreateTO("cat"))
+            PetUpdateTO(status = PetUpdateTO.StatusEnum.PENDING, name = "cat", category = CategoryCreateTO("cat"))
         )
         assertNotNull(updated)
         assertEquals(1, updated!!.id)
@@ -102,7 +103,7 @@ class ComponentTests : KoraAppTestConfigModifier {
         every { categoryRepository.findByName(any()) } returns added.category
         val updated = petService.update(
             added.id,
-            PetUpdateTO("cat", PetUpdateTO.StatusEnum.PENDING, CategoryCreateTO("dog"))
+            PetUpdateTO(status = PetUpdateTO.StatusEnum.PENDING, name = "cat", category = CategoryCreateTO("dog"))
         )
         assertNotNull(updated)
         assertEquals(1, updated!!.id)

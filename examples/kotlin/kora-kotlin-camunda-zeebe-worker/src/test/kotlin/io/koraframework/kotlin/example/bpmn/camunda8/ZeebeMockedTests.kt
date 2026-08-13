@@ -12,7 +12,6 @@ import io.koraframework.kotlin.example.camunda.zeebe.Application
 import io.koraframework.test.extension.junit5.KoraAppTest
 import io.koraframework.test.extension.junit5.KoraAppTestConfigModifier
 import io.koraframework.test.extension.junit5.KoraConfigModification
-import io.koraframework.test.extension.junit5.TestComponent
 import java.time.Duration
 import java.util.Date
 import java.util.UUID
@@ -21,14 +20,19 @@ import java.util.UUID
 @KoraAppTest(value = Application::class, components = [KoraZeebeJobWorkerEngine::class])
 class ZeebeMockedTests : KoraAppTestConfigModifier {
 
+    // Is injected by ZeebeProcessTest. zeebe-process-test still exposes the legacy ZeebeClient
+    // and its assertions accept only its response types; the application itself runs on CamundaClient,
+    // so this must not be declared as a @TestComponent — it is not a component of the graph.
     @Spy
-    @TestComponent
     lateinit var client: ZeebeClient
 
+    // Is injected by ZeebeProcessTest
     lateinit var engine: ZeebeTestEngine
 
     override fun config(): KoraConfigModification =
-        KoraConfigModification.ofSystemProperty("ZEEBE_GRPC_URL", client.configuration.grpcAddress.toString())
+        KoraConfigModification
+            .ofSystemProperty("ZEEBE_GRPC_URL", client.configuration.grpcAddress.toString())
+            .withSystemProperty("ZEEBE_REST_URL", client.configuration.restAddress.toString())
 
     @Test
     fun processDemoSuccess() {

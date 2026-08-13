@@ -18,7 +18,7 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("io.koraframework:kora-parent:$koraVersion")
+    koraBom platform("io.koraframework:kora-bom:$koraVersion")
     annotationProcessor "io.koraframework:annotation-processors"
 
     implementation "io.koraframework:cache-redis-lettuce"
@@ -27,7 +27,7 @@ dependencies {
     implementation "io.koraframework:config-hocon"
 
     testImplementation "io.koraframework:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-redis:0.13.1"
+    testImplementation "io.goodforgod:testcontainers-extensions-redis:0.15.0"
     testImplementation "redis.clients:jedis:4.4.3"
 }
 
@@ -39,9 +39,6 @@ application {
 
 //noinspection GroovyAssignabilityCheck
 run {
-    environment([
-            "": ""
-    ])
 }
 
 distTar {
@@ -55,10 +52,6 @@ test {
             "-XX:+TieredCompilation",
             "-XX:TieredStopAtLevel=1",
     ]
-
-    environment([
-            "": ""
-    ])
 
     useJUnitPlatform()
     testLogging {

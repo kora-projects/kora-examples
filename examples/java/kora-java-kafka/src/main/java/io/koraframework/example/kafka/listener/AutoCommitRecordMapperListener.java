@@ -1,6 +1,5 @@
 package io.koraframework.example.kafka.listener;
 
-import java.io.IOException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.Deserializer;
 import io.koraframework.common.annotation.Component;
@@ -27,11 +26,7 @@ public final class AutoCommitRecordMapperListener extends AbstractListener<AutoC
 
         @Override
         public MyEvent deserialize(String topic, byte[] data) {
-            try {
-                return reader.read(data);
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
+            return reader.read(data);
         }
     }
 

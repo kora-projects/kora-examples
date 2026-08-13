@@ -4,7 +4,7 @@ import io.goodforgod.graalvm.hint.annotation.NativeImageHint;
 import io.koraframework.application.graph.KoraApplication;
 import io.koraframework.common.annotation.KoraApp;
 import io.koraframework.config.yaml.YamlConfigModule;
-import io.koraframework.http.server.undertow.UndertowModule;
+import io.koraframework.http.server.undertow.UndertowSystemHttpServerModule;
 import io.koraframework.json.common.JsonModule;
 import io.koraframework.kafka.common.KafkaModule;
 import io.koraframework.logging.logback.LogbackModule;
@@ -16,7 +16,7 @@ public interface Application extends
         YamlConfigModule,
         LogbackModule,
         JsonModule,
-        UndertowModule,
+        UndertowSystemHttpServerModule,
         KafkaModule,
         MetricsModule {
 

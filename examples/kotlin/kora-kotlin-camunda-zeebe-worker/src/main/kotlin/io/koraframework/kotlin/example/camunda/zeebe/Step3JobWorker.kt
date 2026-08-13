@@ -2,7 +2,7 @@ package io.koraframework.kotlin.example.camunda.zeebe
 
 import org.slf4j.LoggerFactory
 import io.koraframework.camunda.zeebe.worker.JobContext
-import io.koraframework.camunda.zeebe.worker.JobWorkerException
+import io.koraframework.camunda.zeebe.worker.exception.JobWorkerException
 import io.koraframework.camunda.zeebe.worker.annotation.JobVariable
 import io.koraframework.camunda.zeebe.worker.annotation.JobWorker
 import io.koraframework.common.annotation.Component

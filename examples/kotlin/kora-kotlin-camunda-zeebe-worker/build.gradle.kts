@@ -7,17 +7,9 @@ plugins {
     id("com.google.devtools.ksp") version ("2.3.11")
 }
 
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom); compileOnly.get().extendsFrom(koraBom)
-    api.get().extendsFrom(koraBom); implementation.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom); kspTest.get().extendsFrom(koraBom)
-}
-
 dependencies {
-    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
-    ksp("io.koraframework:symbol-processors")
-    kspTest("io.koraframework:symbol-processors")
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
 
     implementation("io.koraframework.experimental:camunda-zeebe-worker")
     implementation("io.koraframework:scheduling-jdk")
@@ -25,6 +17,8 @@ dependencies {
     implementation("io.koraframework:config-hocon")
     implementation("io.koraframework:json-common")
 
+    // mockito-kotlin 5.4.0 pins an older mockito-core whose Byte Buddy rejects Java 25 class files
+    testImplementation("org.mockito:mockito-core:5.18.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     testImplementation("io.koraframework:test-junit5")
     testImplementation("io.camunda:zeebe-process-test-extension-testcontainer:8.8.24")

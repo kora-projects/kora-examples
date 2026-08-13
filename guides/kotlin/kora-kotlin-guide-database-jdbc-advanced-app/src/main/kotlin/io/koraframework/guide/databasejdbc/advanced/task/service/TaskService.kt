@@ -1,7 +1,7 @@
 package io.koraframework.guide.databasejdbc.advanced.task.service
 
 import io.koraframework.common.annotation.Component
-import io.koraframework.database.jdbc.JdbcHelper.SqlFunction1
+import io.koraframework.database.jdbc.JdbcExecutor
 import io.koraframework.guide.databasejdbc.advanced.dto.UserRequest
 import io.koraframework.guide.databasejdbc.advanced.task.dto.TaskRequest
 import io.koraframework.guide.databasejdbc.advanced.task.dto.TaskResponse
@@ -17,7 +17,7 @@ class TaskService(
 ) {
 
     fun createTasks(taskCreates: List<TaskRequest.TaskCreate>): List<TaskResponse.TaskCreated> {
-        return taskRepository.jdbcConnectionFactory.inTx(SqlFunction1 {
+        return taskRepository.executor().inTx(JdbcExecutor.SqlSupplier {
             val assigneeIds = taskCreates
                 .mapNotNull { it.userAssigneeId }
                 .distinct()
@@ -62,7 +62,7 @@ class TaskService(
     }
 
     fun assignTask(taskId: Long, userId: Long) {
-        taskRepository.jdbcConnectionFactory.inTx(SqlFunction1 {
+        taskRepository.executor().inTx(JdbcExecutor.SqlRunnable {
             val updated = taskRepository.updateAssignee(taskId, userId)
             if (updated.value() < 1) {
                 throw HttpServerResponseException.of(404, "Task not found")

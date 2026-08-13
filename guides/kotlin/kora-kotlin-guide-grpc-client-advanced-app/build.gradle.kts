@@ -9,33 +9,21 @@ plugins {
     id("com.google.protobuf") version "0.9.4"
 }
 
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom)
-    compileOnly.get().extendsFrom(koraBom)
-    runtimeOnly.get().extendsFrom(koraBom)
-    implementation.get().extendsFrom(koraBom)
-    testCompileOnly.get().extendsFrom(koraBom)
-    kspTest.get().extendsFrom(koraBom)
-    testRuntimeOnly.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom)
-}
-
 dependencies {
-    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
 
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
-    ksp("io.koraframework:symbol-processors")
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
     implementation("io.koraframework:config-hocon")
     implementation("io.koraframework:grpc-client")
     implementation("io.koraframework:http-server-undertow")
     implementation("io.koraframework:json-common")
     implementation("io.koraframework:logging-logback")
-    implementation("io.grpc:grpc-protobuf:1.74.0")
+    implementation("io.grpc:grpc-protobuf:1.83.1")
     testRuntimeOnly(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
-    testImplementation("io.grpc:grpc-inprocess:1.74.0")
+    testImplementation("io.grpc:grpc-inprocess:1.83.1")
     testImplementation("org.junit.jupiter:junit-jupiter")
 }
 
@@ -58,7 +46,7 @@ java {
 protobuf {
     protoc { artifact = "com.google.protobuf:protoc:3.25.3" }
     plugins {
-        id("grpc") { artifact = "io.grpc:protoc-gen-grpc-java:1.74.0" }
+        id("grpc") { artifact = "io.grpc:protoc-gen-grpc-java:1.83.1" }
     }
     generateProtoTasks {
         all().forEach { task ->

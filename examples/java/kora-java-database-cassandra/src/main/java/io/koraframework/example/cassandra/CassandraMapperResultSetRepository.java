@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import io.koraframework.common.annotation.Component;
 import io.koraframework.common.annotation.Mapping;
 import io.koraframework.database.cassandra.CassandraRepository;
 import io.koraframework.database.cassandra.mapper.result.CassandraResultSetMapper;
@@ -16,6 +17,8 @@ import io.koraframework.database.common.annotation.Repository;
 public interface CassandraMapperResultSetRepository extends CassandraRepository {
 
     record EntityPart(String id, int field1) {}
+
+    @Component
 
     final class EntityPartResultSetMapper implements CassandraResultSetMapper<Map<Integer, List<EntityPart>>> {
 

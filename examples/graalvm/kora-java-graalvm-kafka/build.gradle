@@ -21,7 +21,7 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("io.koraframework:kora-parent:$koraVersion")
+    koraBom platform("io.koraframework:kora-bom:$koraVersion")
     annotationProcessor "io.koraframework:annotation-processors"
     annotationProcessor "io.goodforgod:graalvm-hint-processor:1.2.0"
     compileOnly "io.goodforgod:graalvm-hint-annotations:1.2.0"
@@ -36,7 +36,7 @@ dependencies {
     testImplementation "org.json:json:20231013"
     testImplementation "org.mockito:mockito-core:5.18.0"
     testImplementation "io.koraframework:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-kafka:0.13.1"
+    testImplementation "io.goodforgod:testcontainers-extensions-kafka:0.15.0"
     testImplementation "org.testcontainers:junit-jupiter:1.21.4"
 }
 
@@ -47,8 +47,8 @@ application {
 graalvmNative {
     binaries {
         main {
-            imageName = "$project.name"
-            mainClass = "$application.mainClass"
+            imageName = project.name
+            mainClass = application.mainClass
             javaLauncher = javaToolchains.launcherFor {
                 languageVersion = JavaLanguageVersion.of(25)
                 vendor = JvmVendorSpec.matching("GraalVM Community")
@@ -70,7 +70,7 @@ run {
     ])
 }
 
-jar.enabled = false
+// nativeCompile takes the project's own artifact as its classpath entry, so the plain jar must stay enabled
 shadowJar {
     mergeServiceFiles()
     manifest {
@@ -88,10 +88,6 @@ test {
             "-XX:+TieredCompilation",
             "-XX:TieredStopAtLevel=1",
     ]
-
-    environment([
-            "": ""
-    ])
 
     useJUnitPlatform()
     testLogging {

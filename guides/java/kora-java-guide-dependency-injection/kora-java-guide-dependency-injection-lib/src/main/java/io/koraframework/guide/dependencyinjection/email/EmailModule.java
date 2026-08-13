@@ -4,7 +4,7 @@ import java.util.function.Supplier;
 import io.koraframework.common.annotation.DefaultComponent;
 import io.koraframework.common.annotation.Tag;
 import io.koraframework.config.common.Config;
-import io.koraframework.config.common.extractor.ConfigMapper;
+import io.koraframework.config.common.mapper.ConfigValueMapper;
 import io.koraframework.guide.dependencyinjection.common.Notifier;
 
 public interface EmailModule {
@@ -13,8 +13,8 @@ public interface EmailModule {
         private EmailTag() {}
     }
 
-    default EmailConfig config(Config config, ConfigMapper<EmailConfig> extractor) {
-        return extractor.extract(config.get("notifier.email"));
+    default EmailConfig config(Config config, ConfigValueMapper<EmailConfig> extractor) {
+        return extractor.mapOrThrow(config.get("notifier.email"));
     }
 
     @Tag(EmailTag.class)

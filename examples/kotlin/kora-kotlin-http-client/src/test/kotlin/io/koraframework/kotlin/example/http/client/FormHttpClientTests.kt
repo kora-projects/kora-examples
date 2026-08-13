@@ -57,7 +57,7 @@ class FormHttpClientTests : KoraAppTestConfigModifier {
         val requestBody = """
             --blob:.*\r
             content-disposition: form-data; name="field1"\r
-            content-type: text/plain; charset=utf-8\r
+            content-type: text/plain;charset=utf-8\r
             \r
             some data content\r
             --blob:.*\r

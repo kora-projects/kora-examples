@@ -8,6 +8,7 @@ import io.koraframework.http.server.undertow.UndertowPublicHttpServerModule
 import io.koraframework.json.common.JsonModule
 import io.koraframework.logging.logback.LogbackModule
 import io.koraframework.s3.client.aws.AwsS3ClientModule
+import io.koraframework.s3.client.kora.KoraS3ClientModule
 
 @KoraApp
 interface Application :
@@ -16,6 +17,7 @@ interface Application :
     LogbackModule,
     OkHttpClientModule,
     AwsS3ClientModule,
+    KoraS3ClientModule,
     UndertowPublicHttpServerModule
 
 fun main() {

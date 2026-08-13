@@ -7,7 +7,7 @@ import io.koraframework.config.hocon.HoconConfigModule
 import io.koraframework.guide.validation.dto.ValidationErrorDetails
 import io.koraframework.guide.validation.dto.ValidationErrorResponse
 import io.koraframework.http.common.body.HttpBody
-import io.koraframework.http.server.common.HttpServerModule
+import io.koraframework.http.server.common.HttpServer
 import io.koraframework.http.server.common.response.HttpServerResponse
 import io.koraframework.http.server.undertow.UndertowPublicHttpServerModule
 import io.koraframework.json.common.JsonWriter
@@ -33,7 +33,7 @@ interface Application :
             HttpServerResponse.of(
                 400,
                 HttpBody.json(
-                    errorResponseJsonWriter.toByteArrayUnchecked(
+                    errorResponseJsonWriter.toByteArray(
                         ValidationErrorResponse.of(toValidationErrors(exception.violations))
                     )
                 )
@@ -41,9 +41,11 @@ interface Application :
         }
     }
 
-    @Tag(HttpServerModule::class)
+    // the module default is untagged, so it is overridden only to bind the interceptor to the server;
+    // 2.0 declares the mapper parameter as @Nullable, which Kotlin enforces on the override
+    @Tag(HttpServer::class)
     override fun validationHttpServerInterceptor(
-        violationExceptionHttpServerResponseMapper: ViolationExceptionHttpServerResponseMapper
+        violationExceptionHttpServerResponseMapper: ViolationExceptionHttpServerResponseMapper?
     ): ValidationHttpServerInterceptor {
         return ValidationHttpServerInterceptor(violationExceptionHttpServerResponseMapper)
     }

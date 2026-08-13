@@ -6,7 +6,6 @@ import io.koraframework.kotlin.example.submodule.openapi.http.server.api.VetApiD
 import io.koraframework.kotlin.example.submodule.openapi.http.server.api.VetApiResponses
 import io.koraframework.kotlin.example.submodule.openapi.http.server.model.MessageTO
 import io.koraframework.kotlin.example.submodule.openapi.http.server.model.VetCreateTO
-import io.koraframework.kotlin.example.submodule.openapi.http.server.model.VetUpdateTO
 import io.koraframework.kotlin.example.submodule.vet.service.VetService
 
 @Component
@@ -37,7 +36,7 @@ class VetDelegate(
         return VetApiResponses.AddVetApiResponse.AddVet200ApiResponse(vetMapper.asDTO(vet))
     }
 
-    override fun updateVet(vetId: Long, vetUpdateTO: VetUpdateTO): VetApiResponses.UpdateVetApiResponse {
+    override fun updateVet(vetId: Long, vetUpdateTO: VetCreateTO): VetApiResponses.UpdateVetApiResponse {
         if (vetId < 0) {
             return VetApiResponses.UpdateVetApiResponse.UpdateVet400ApiResponse(malformedId(vetId))
         }

@@ -66,7 +66,7 @@ class FormHttpClientTests implements KoraAppTestConfigModifier {
         var requestBody = """
                 --blob:.*\\r
                 content-disposition: form-data; name="field1"\\r
-                content-type: text/plain; charset=utf-8\\r
+                content-type: text/plain;charset=utf-8\\r
                 \\r
                 some data content\\r
                 --blob:.*\\r
@@ -93,7 +93,7 @@ class FormHttpClientTests implements KoraAppTestConfigModifier {
                         "some file content".getBytes(StandardCharsets.UTF_8)))));
 
         HttpClientRequest request = new HttpClientRequestBuilderImpl("POST", "http://localhost:8090/pets/{petId}")
-                .templateParam("petId", "1")
+                .pathParam("petId", "1")
                 .queryParam("page", 1)
                 .header("token", "12345")
                 .body(HttpBody.plaintext("refresh"))

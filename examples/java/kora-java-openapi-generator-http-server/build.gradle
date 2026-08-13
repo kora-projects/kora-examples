@@ -32,7 +32,7 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("io.koraframework:kora-parent:$koraVersion")
+    koraBom platform("io.koraframework:kora-bom:$koraVersion")
     annotationProcessor "io.koraframework:annotation-processors"
 
     implementation "io.koraframework:validation-module"
@@ -53,13 +53,6 @@ application {
     applicationName = "application"
     mainClass = "io.koraframework.example.openapi.http.server.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
-}
-
-//noinspection GroovyAssignabilityCheck
-run {
-    environment([
-            "": ""
-    ])
 }
 
 // OpenAPI for V2
@@ -109,10 +102,6 @@ test {
             "-XX:+TieredCompilation",
             "-XX:TieredStopAtLevel=1",
     ]
-
-    environment([
-            "": ""
-    ])
 
     useJUnitPlatform()
     testLogging {

@@ -21,10 +21,7 @@ public final class ManualDataHttpClient {
     public String pingManualHandler() {
         var request = HttpClientRequest.of("GET", this.dataApiConfig.url() + "/manual/data/ping")
                 .build();
-        var response = this.httpClient.with(this.apiKeyAuthInterceptor)
-                .execute(request)
-                .toCompletableFuture()
-                .join();
+        var response = this.httpClient.with(this.apiKeyAuthInterceptor).execute(request);
         if (response.code() != 200) {
             throw new IllegalStateException("Manual HTTP call failed with status " + response.code());
         }

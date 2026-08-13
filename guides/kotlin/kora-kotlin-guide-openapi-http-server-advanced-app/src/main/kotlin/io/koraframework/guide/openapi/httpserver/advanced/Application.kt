@@ -13,13 +13,13 @@ import io.koraframework.http.common.body.HttpBody
 import io.koraframework.http.server.common.response.HttpServerResponse
 import io.koraframework.http.server.common.auth.HttpServerPrincipalExtractor
 import io.koraframework.http.server.undertow.UndertowPublicHttpServerModule
+import io.koraframework.json.common.JsonNullable
 import io.koraframework.json.common.JsonWriter
 import io.koraframework.json.common.JsonModule
 import io.koraframework.logging.logback.LogbackModule
 import io.koraframework.openapi.management.OpenApiManagementModule
 import io.koraframework.validation.module.ValidationModule
 import io.koraframework.validation.module.http.server.ViolationExceptionHttpServerResponseMapper
-import java.util.concurrent.CompletableFuture
 
 @KoraApp
 interface Application :
@@ -37,21 +37,21 @@ interface Application :
             val details = exception.violations.map { violation ->
                 "Path ${violation.path()} violated: ${violation.message()}"
             }
-            val response = ErrorResponseTO("Encountered '${details.size}' validation violations", details)
-            HttpServerResponse.of(400, HttpBody.json(errorResponseJsonWriter.toByteArrayUnchecked(response)))
+            // an optional array of the specification becomes JsonNullable<T> in 2.0
+            val response = ErrorResponseTO("Encountered '${details.size}' validation violations", JsonNullable.of(details))
+            HttpServerResponse.of(400, HttpBody.json(errorResponseJsonWriter.toByteArray(response)))
         }
     }
 
     @Tag(ApiSecurity.ApiKeyAuth::class)
-    fun apiKeyHttpServerPrincipalExtractor(config: DataApiAuthConfig): HttpServerPrincipalExtractor<Principal> {
+    fun apiKeyHttpServerPrincipalExtractor(config: DataApiAuthConfig): HttpServerPrincipalExtractor<String, Principal> {
         return HttpServerPrincipalExtractor { _, value ->
             if (value == null || config.value() != value) {
                 throw SecurityException("Invalid API key")
             }
-            CompletableFuture.completedFuture(DataApiPrincipal("data-api-client"))
+            DataApiPrincipal("data-api-client")
         }
     }
-
 }
 
 fun main() {

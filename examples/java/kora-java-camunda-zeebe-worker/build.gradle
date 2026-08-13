@@ -24,7 +24,7 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("io.koraframework:kora-parent:$koraVersion")
+    koraBom platform("io.koraframework:kora-bom:$koraVersion")
     annotationProcessor "io.koraframework:annotation-processors"
 
     implementation "io.koraframework.experimental:camunda-zeebe-worker"
@@ -34,7 +34,7 @@ dependencies {
 
     testImplementation "org.mockito:mockito-core:5.18.0"
     testImplementation "io.koraframework:test-junit5"
-    testImplementation "io.camunda:zeebe-process-test-extension-testcontainer:8.8.24"
+    testImplementation "io.camunda:zeebe-process-test-extension-testcontainer:8.9.14"
     testImplementation "org.testcontainers:junit-jupiter:1.21.4"
 }
 
@@ -48,6 +48,7 @@ application {
 run {
     environment([
             "ZEEBE_GRPC_URL": "http://$zeebeHost:$zeebePort",
+            "ZEEBE_REST_URL": "http://$zeebeHost:$zeebeRestPort",
     ])
 }
 
@@ -62,10 +63,6 @@ test {
             "-XX:+TieredCompilation",
             "-XX:TieredStopAtLevel=1",
     ]
-
-    environment([
-            "": ""
-    ])
 
     useJUnitPlatform()
     testLogging {

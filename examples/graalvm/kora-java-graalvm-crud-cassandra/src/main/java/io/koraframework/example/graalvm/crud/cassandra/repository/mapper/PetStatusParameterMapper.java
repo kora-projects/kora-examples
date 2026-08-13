@@ -10,7 +10,7 @@ import io.koraframework.example.graalvm.crud.cassandra.model.dao.Pet;
 public final class PetStatusParameterMapper implements CassandraParameterColumnMapper<Pet.Status> {
 
     @Override
-    public void apply(SettableByName<?> stmt, int index, @Nullable Pet.Status value) {
+    public void apply(SettableByName<?> stmt, int index, Pet.@Nullable Status value) {
         if (value == null) {
             stmt.setToNull(index);
         } else {

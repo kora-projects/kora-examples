@@ -32,12 +32,10 @@ class RootService(
     private val jdbcCrudExtendedRepository: JdbcCrudExtendedRepository,
     private val jdbcCrudExtendedCompositeRepository: JdbcCrudExtendedCompositeRepository,
     private val jdbcCrudMacrosIdCompositeRepository: JdbcCrudMacrosIdCompositeRepository,
-    private val jdbcCrudSuspendRepository: JdbcCrudSuspendRepository,
     private val jdbcMapperColumnRepository: JdbcMapperColumnRepository,
     private val jdbcMapperParameterRepository: JdbcMapperParameterRepository,
     private val jdbcMapperRowRepository: JdbcMapperRowRepository,
     private val jdbcMapperResultSetRepository: JdbcMapperResultSetRepository,
     private val jdbcJsonbRepository: JdbcJsonbRepository,
 )
-
 
