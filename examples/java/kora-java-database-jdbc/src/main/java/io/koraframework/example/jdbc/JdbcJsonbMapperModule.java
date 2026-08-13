@@ -18,7 +18,7 @@ public interface JdbcJsonbMapperModule {
             if (value != null) {
                 PGobject jsonb = new PGobject();
                 jsonb.setType("jsonb");
-                jsonb.setValue(writer.toStringUnchecked(value));
+                jsonb.setValue(writer.toString(value));
                 stmt.setObject(index, jsonb);
             } else {
                 stmt.setNull(index, Types.NULL);
@@ -33,7 +33,7 @@ public interface JdbcJsonbMapperModule {
             if (value == null) {
                 return null;
             } else {
-                return reader.readUnchecked(value);
+                return reader.read(value);
             }
         };
     }

@@ -53,6 +53,7 @@ interface JdbcCrudMacrosRepository : JdbcRepository {
     fun deleteAll(): UpdateCount
 }
 
+@EntityJdbc
 @Table("entities")
 data class JdbcMacrosEntity(
     @field:Id val id: String,

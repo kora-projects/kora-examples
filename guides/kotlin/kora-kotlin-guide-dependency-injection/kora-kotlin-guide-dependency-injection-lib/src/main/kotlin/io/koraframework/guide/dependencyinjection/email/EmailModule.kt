@@ -4,15 +4,15 @@ import java.util.function.Supplier
 import io.koraframework.common.annotation.DefaultComponent
 import io.koraframework.common.annotation.Tag
 import io.koraframework.config.common.Config
-import io.koraframework.config.common.extractor.ConfigMapper
+import io.koraframework.config.common.mapper.ConfigValueMapper
 import io.koraframework.guide.dependencyinjection.common.Notifier
 
 interface EmailModule {
 
     class EmailTag private constructor()
 
-    fun config(config: Config, extractor: ConfigMapper<EmailConfig>): EmailConfig {
-        return extractor.extract(config["notifier.email"])
+    fun config(config: Config, extractor: ConfigValueMapper<EmailConfig>): EmailConfig {
+        return extractor.mapOrThrow(config["notifier.email"])
     }
 
     @Tag(EmailTag::class)

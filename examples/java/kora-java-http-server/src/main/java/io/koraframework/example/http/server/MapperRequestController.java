@@ -16,6 +16,7 @@ public final class MapperRequestController {
 
     public record UserContext(String userId, String traceId) {}
 
+    @Component
     public static final class UserContextRequestMapper implements HttpServerRequestMapper<UserContext> {
 
         @Override

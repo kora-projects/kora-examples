@@ -17,6 +17,7 @@ plugins {
 }
 
 dependencies {
+    kspTest("io.koraframework:symbol-processors:${property("koraVersion")}")
     implementation(project(":examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-pet-api"))
     implementation(project(":examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-vet-api"))
     implementation("io.koraframework:http-server-undertow")
@@ -28,10 +29,8 @@ dependencies {
     implementation("io.koraframework:openapi-management")
     implementation("org.postgresql:postgresql:42.7.7")
 
-    kspTest("io.koraframework:symbol-processors")
-
     testRuntimeOnly(project(":examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-common"))
-    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.15.0")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
 }
 

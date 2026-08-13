@@ -14,24 +14,16 @@ buildscript {
 plugins {
     id("application")
     id("jacoco")
-//    kotlin("kapt") version ("2.4.10") // KAPT & KSP broken since 1.9.11
     kotlin("jvm") version ("2.4.10")
     id("com.google.devtools.ksp") version ("2.3.11")
     id("org.openapi.generator") version ("7.24.0")
     id("org.flywaydb.flyway") version ("8.4.2")
 }
 
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom); compileOnly.get().extendsFrom(koraBom)
-    api.get().extendsFrom(koraBom); implementation.get().extendsFrom(koraBom)
-}
-
 dependencies {
-    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
 
-//    kapt("org.mapstruct:mapstruct-processor:1.5.5.Final") // KAPT & KSP broken since 1.9.11
-    ksp("io.koraframework:symbol-processors")
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
 
     implementation("io.koraframework:http-server-undertow")
     implementation("io.koraframework:http-client-ok")
@@ -46,16 +38,14 @@ dependencies {
     implementation("io.koraframework:logging-logback")
 
     implementation("org.postgresql:postgresql:42.7.7")
-//    implementation("org.mapstruct:mapstruct:1.5.5.Final") // KAPT & KSP broken since 1.9.11
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.1")
 
-    kspTest("io.koraframework:symbol-processors")
+    kspTest("io.koraframework:symbol-processors:${property("koraVersion")}")
     testImplementation("org.json:json:20231013")
     testImplementation("org.skyscreamer:jsonassert:1.5.1")
 
-    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("io.mockk:mockk:1.14.11")
     testImplementation("io.koraframework:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.15.0")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
 }
 
@@ -64,7 +54,6 @@ kotlin {
         languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
-//    sourceSets.main { kotlin.srcDir("build/generated/source/kapt/main") } // KAPT & KSP broken since 1.9.11
 }
 
 
@@ -110,11 +99,7 @@ ksp {
     arg("kora.app.submodule.enabled", "true") // Only for integration tests
 }
 
-// Run KAPT before KSP for MapStruct broken since 1.9.11 cause its Kotlin
 //tasks.withType<KspTask> {
-//    dependsOn.removeIf { (it as Named).name.contains("kapt", true) }
-//    dependsOn(tasks.named("kaptGenerateStubsKotlin").get())
-//    dependsOn(tasks.named("kaptKotlin").get())
 //}
 
 tasks.distTar {

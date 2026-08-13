@@ -15,10 +15,7 @@ class ManualDataHttpClient(
     fun pingManualHandler(): String {
         val request = HttpClientRequest.of("GET", dataApiConfig.url() + "/manual/data/ping")
             .build()
-        val response = httpClient.with(apiKeyAuthInterceptor)
-            .execute(request)
-            .toCompletableFuture()
-            .join()
+        val response = httpClient.with(apiKeyAuthInterceptor).execute(request)
         if (response.code() != 200) {
             throw IllegalStateException("Manual HTTP call failed with status ${response.code()}")
         }

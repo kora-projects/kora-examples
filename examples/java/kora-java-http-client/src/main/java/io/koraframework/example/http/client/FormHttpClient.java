@@ -7,7 +7,7 @@ import io.koraframework.http.common.annotation.HttpRoute;
 import io.koraframework.http.common.form.FormMultipart;
 import io.koraframework.http.common.form.FormUrlEncoded;
 
-@HttpClient(configPath = "httpClient.default")
+@HttpClient("httpClient.default")
 public interface FormHttpClient {
 
     @HttpRoute(method = HttpMethod.POST, path = "/form/encoded")

@@ -9,7 +9,7 @@ import io.koraframework.http.common.annotation.HttpRoute;
 import io.koraframework.http.common.annotation.InterceptWith;
 import io.koraframework.http.common.body.HttpBody;
 import io.koraframework.http.server.common.interceptor.HttpServerInterceptor;
-import io.koraframework.http.server.common.HttpServerModule;
+import io.koraframework.http.server.common.HttpServer;
 import io.koraframework.http.server.common.request.HttpServerRequest;
 import io.koraframework.http.server.common.response.HttpServerResponse;
 import io.koraframework.http.server.common.annotation.HttpController;
@@ -48,7 +48,7 @@ public final class InterceptedController {
         }
     }
 
-    @Tag(HttpServerModule.class)
+    @Tag(HttpServer.class)
     @Component
     public static final class ServerInterceptor implements HttpServerInterceptor {
 

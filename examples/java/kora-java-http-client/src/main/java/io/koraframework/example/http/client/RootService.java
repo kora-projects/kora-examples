@@ -12,7 +12,6 @@ public final class RootService {
     private final MapperRequestHttpClient mapperRequestHttpClient;
     private final MapperResponseHttpClient mapperResponseHttpClient;
     private final ParametersHttpClient parametersHttpClient;
-    private final ReactorHttpClient reactorHttpClient;
     private final VoidHttpClient voidHttpClient;
     private final FormHttpClient formHttpClient;
 
@@ -21,7 +20,6 @@ public final class RootService {
                        MapperRequestHttpClient mapperRequestHttpClient,
                        MapperResponseHttpClient mapperResponseHttpClient,
                        ParametersHttpClient parametersHttpClient,
-                       ReactorHttpClient reactorHttpClient,
                        VoidHttpClient voidHttpClient,
                        FormHttpClient formHttpClient) {
         this.interceptedHttpClient = interceptedHttpClient;
@@ -29,7 +27,6 @@ public final class RootService {
         this.mapperRequestHttpClient = mapperRequestHttpClient;
         this.mapperResponseHttpClient = mapperResponseHttpClient;
         this.parametersHttpClient = parametersHttpClient;
-        this.reactorHttpClient = reactorHttpClient;
         this.voidHttpClient = voidHttpClient;
         this.formHttpClient = formHttpClient;
     }

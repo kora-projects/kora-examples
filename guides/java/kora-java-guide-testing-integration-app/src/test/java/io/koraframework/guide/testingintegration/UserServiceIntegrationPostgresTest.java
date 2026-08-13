@@ -41,7 +41,7 @@ class UserServiceIntegrationPostgresTest implements KoraAppTestConfigModifier {
     @Override
     public KoraConfigModification config() {
         return KoraConfigModification.ofString("""
-                db {
+                jdbc {
                   jdbcUrl = ${POSTGRES_JDBC_URL}
                   username = ${POSTGRES_USER}
                   password = ${POSTGRES_PASS}

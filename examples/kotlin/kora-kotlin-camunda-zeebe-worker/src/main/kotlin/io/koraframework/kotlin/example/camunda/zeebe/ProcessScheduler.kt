@@ -1,6 +1,6 @@
-﻿package io.koraframework.kotlin.example.camunda.zeebe
+package io.koraframework.kotlin.example.camunda.zeebe
 
-import io.camunda.zeebe.client.ZeebeClient
+import io.camunda.client.CamundaClient
 import org.slf4j.LoggerFactory
 import io.koraframework.common.annotation.Component
 import io.koraframework.scheduling.jdk.annotation.ScheduleAtFixedRate
@@ -8,7 +8,7 @@ import java.util.Date
 import java.util.UUID
 
 @Component
-class ProcessScheduler(private val client: ZeebeClient) {
+class ProcessScheduler(private val client: CamundaClient) {
     private val logger = LoggerFactory.getLogger(ProcessScheduler::class.java)
 
     @ScheduleAtFixedRate(period = 5000L, initialDelay = 500L)
@@ -34,4 +34,3 @@ class ProcessScheduler(private val client: ZeebeClient) {
         )
     }
 }
-

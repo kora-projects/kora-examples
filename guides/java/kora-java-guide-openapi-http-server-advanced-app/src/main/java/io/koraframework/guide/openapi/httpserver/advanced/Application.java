@@ -13,6 +13,7 @@ import io.koraframework.http.common.body.HttpBody;
 import io.koraframework.http.server.common.response.HttpServerResponse;
 import io.koraframework.http.server.common.auth.HttpServerPrincipalExtractor;
 import io.koraframework.http.server.undertow.UndertowPublicHttpServerModule;
+import io.koraframework.json.common.JsonNullable;
 import io.koraframework.json.common.JsonWriter;
 import io.koraframework.json.common.JsonModule;
 import io.koraframework.logging.logback.LogbackModule;
@@ -20,7 +21,6 @@ import io.koraframework.openapi.management.OpenApiManagementModule;
 import io.koraframework.validation.module.ValidationModule;
 import io.koraframework.validation.module.http.server.ViolationExceptionHttpServerResponseMapper;
 
-import java.util.concurrent.CompletableFuture;
 
 @KoraApp
 public interface Application extends
@@ -42,21 +42,20 @@ public interface Application extends
                     .map(v -> "Path " + v.path() + " violated: " + v.message())
                     .toList();
 
-            var response = new ErrorResponseTO("Encountered '%s' validation violations".formatted(details.size()), details);
+            var response = new ErrorResponseTO("Encountered '%s' validation violations".formatted(details.size()), JsonNullable.of(details));
             return HttpServerResponse.of(
                     400,
-                    HttpBody.json(errorResponseJsonWriter.toByteArrayUnchecked(response)));
+                    HttpBody.json(errorResponseJsonWriter.toByteArray(response)));
         };
     }
 
     @Tag(ApiSecurity.ApiKeyAuth.class)
-    default HttpServerPrincipalExtractor<Principal> apiKeyHttpServerPrincipalExtractor(DataApiAuthConfig config) {
+    default HttpServerPrincipalExtractor<String, Principal> apiKeyHttpServerPrincipalExtractor(DataApiAuthConfig config) {
         return (request, value) -> {
             if (value == null || !config.value().equals(value)) {
                 throw new SecurityException("Invalid API key");
             }
-            return CompletableFuture.completedFuture(new DataApiPrincipal("data-api-client"));
+            return new DataApiPrincipal("data-api-client");
         };
     }
 }
-

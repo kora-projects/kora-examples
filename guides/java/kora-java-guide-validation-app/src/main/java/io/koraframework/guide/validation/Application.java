@@ -8,7 +8,7 @@ import io.koraframework.common.annotation.Tag;
 import io.koraframework.guide.validation.dto.ValidationErrorDetails;
 import io.koraframework.guide.validation.dto.ValidationErrorResponse;
 import io.koraframework.http.common.body.HttpBody;
-import io.koraframework.http.server.common.HttpServerModule;
+import io.koraframework.http.server.common.HttpServer;
 import io.koraframework.http.server.common.response.HttpServerResponse;
 import io.koraframework.http.server.undertow.UndertowPublicHttpServerModule;
 import io.koraframework.json.common.JsonWriter;
@@ -36,11 +36,11 @@ public interface Application extends
             JsonWriter<ValidationErrorResponse> errorResponseJsonWriter) {
         return (request, exception) -> HttpServerResponse.of(
                 400,
-                HttpBody.json(errorResponseJsonWriter.toByteArrayUnchecked(
+                HttpBody.json(errorResponseJsonWriter.toByteArray(
                         ValidationErrorResponse.of(toValidationErrors(exception.getViolations())))));
     }
 
-    @Tag(HttpServerModule.class)
+    @Tag(HttpServer.class)
     default ValidationHttpServerInterceptor validationHttpServerInterceptor(
             ViolationExceptionHttpServerResponseMapper violationExceptionHttpServerResponseMapper) {
         return new ValidationHttpServerInterceptor(violationExceptionHttpServerResponseMapper);

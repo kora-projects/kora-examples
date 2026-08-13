@@ -13,7 +13,7 @@ import io.koraframework.http.common.HttpMethod;
 import io.koraframework.http.common.annotation.HttpRoute;
 import io.koraframework.http.common.annotation.Path;
 
-@HttpClient(configPath = "httpClient.default")
+@HttpClient("httpClient.default")
 public interface MapperResponseHttpClient {
 
     final class ResponseSuccessMapper implements HttpClientResponseMapper<UserResponse> {

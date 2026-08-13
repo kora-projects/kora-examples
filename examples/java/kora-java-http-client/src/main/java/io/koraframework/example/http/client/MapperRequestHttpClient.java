@@ -1,6 +1,6 @@
 package io.koraframework.example.http.client;
 
-import io.koraframework.common.Context;
+import io.koraframework.common.annotation.Component;
 import io.koraframework.common.annotation.Mapping;
 import io.koraframework.http.client.common.annotation.HttpClient;
 import io.koraframework.http.client.common.request.HttpClientRequestMapper;
@@ -10,15 +10,16 @@ import io.koraframework.http.common.annotation.HttpRoute;
 import io.koraframework.http.common.body.HttpBody;
 import io.koraframework.http.common.body.HttpBodyOutput;
 
-@HttpClient(configPath = "httpClient.default")
+@HttpClient("httpClient.default")
 public interface MapperRequestHttpClient {
 
     record UserBody(String id) {}
 
+    @Component
     final class UserRequestMapper implements HttpClientRequestMapper<UserBody> {
 
         @Override
-        public HttpBodyOutput apply(Context ctx, UserBody value) {
+        public HttpBodyOutput apply(UserBody value) {
             return HttpBody.plaintext(value.id());
         }
     }

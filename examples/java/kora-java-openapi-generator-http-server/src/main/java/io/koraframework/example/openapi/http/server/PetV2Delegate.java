@@ -34,7 +34,7 @@ public final class PetV2Delegate implements PetApiDelegate {
     @Override
     public PetApiResponses.FindPetsByStatusApiResponse findPetsByStatus(List<String> status) {
         final Set<Pet.StatusEnum> petStatuses = status.stream()
-                .map(Pet.StatusEnum::valueOf)
+                .map(Pet.StatusEnum::fromValue)
                 .collect(Collectors.toSet());
 
         final List<Pet> pets = petMap.values().stream()
@@ -93,7 +93,7 @@ public final class PetV2Delegate implements PetApiDelegate {
 
         final Pet updated = pet
                 .withName(form.name())
-                .withStatus(Pet.StatusEnum.valueOf(form.status()));
+                .withStatus(form.status() == null ? null : Pet.StatusEnum.fromValue(form.status()));
         petMap.put(updated.id(), updated);
 
         return new PetApiResponses.UpdatePetWithFormApiResponse.UpdatePetWithForm200ApiResponse(new Message("OK"));

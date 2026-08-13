@@ -20,7 +20,7 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("io.koraframework:kora-parent:$koraVersion")
+    koraBom platform("io.koraframework:kora-bom:$koraVersion")
 
     annotationProcessor "io.koraframework:annotation-processors"
 
@@ -28,6 +28,9 @@ dependencies {
 
     implementation "io.koraframework:config-hocon"
     implementation "io.koraframework:database-flyway"
+    // с Flyway 10 поддержка конкретных СУБД вынесена в отдельные артефакты;
+    // без этого приложение падает на старте: "Unsupported Database: PostgreSQL"
+    implementation "org.flywaydb:flyway-database-postgresql:13.1.0"
     implementation "io.koraframework:database-jdbc"
     implementation "io.koraframework:http-server-undertow"
     implementation "io.koraframework:json-common"
@@ -36,7 +39,7 @@ dependencies {
     testAnnotationProcessor "io.koraframework:annotation-processors"
 
     testImplementation platform("org.junit:junit-bom:$junitVersion")
-    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.13.1"
+    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.15.0"
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "io.koraframework:test-junit5"
 }

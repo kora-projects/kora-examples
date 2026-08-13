@@ -20,15 +20,14 @@ import io.koraframework.example.camunda.zeebe.Application;
 import io.koraframework.test.extension.junit5.KoraAppTest;
 import io.koraframework.test.extension.junit5.KoraAppTestConfigModifier;
 import io.koraframework.test.extension.junit5.KoraConfigModification;
-import io.koraframework.test.extension.junit5.TestComponent;
 
 @ZeebeProcessTest
 @KoraAppTest(value = Application.class, components = KoraZeebeJobWorkerEngine.class)
 class ZeebeMockedTests implements KoraAppTestConfigModifier {
 
-    // Is injected by ZeebeProcessTest
+    // Is injected by ZeebeProcessTest. zeebe-process-test still exposes the legacy ZeebeClient
+    // and its assertions accept only its response types; the application itself runs on CamundaClient.
     @Spy
-    @TestComponent
     private ZeebeClient client;
 
     // Is injected by ZeebeProcessTest
@@ -37,7 +36,9 @@ class ZeebeMockedTests implements KoraAppTestConfigModifier {
     @NotNull
     @Override
     public KoraConfigModification config() {
-        return KoraConfigModification.ofSystemProperty("ZEEBE_GRPC_URL", client.getConfiguration().getGrpcAddress().toString());
+        return KoraConfigModification
+                .ofSystemProperty("ZEEBE_GRPC_URL", client.getConfiguration().getGrpcAddress().toString())
+                .withSystemProperty("ZEEBE_REST_URL", client.getConfiguration().getRestAddress().toString());
     }
 
     @Test

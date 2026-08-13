@@ -37,7 +37,7 @@ public interface JdbcMapperColumnRepository extends JdbcRepository {
     final class EntityFieldTypeParameterMapper implements JdbcParameterColumnMapper<Entity.FieldType> {
 
         @Override
-        public void set(PreparedStatement stmt, int index, @Nullable Entity.FieldType value) throws SQLException {
+        public void set(PreparedStatement stmt, int index, Entity.@Nullable FieldType value) throws SQLException {
             if (value != null) {
                 stmt.setInt(index, value.code());
             }

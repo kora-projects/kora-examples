@@ -4,7 +4,6 @@ import io.goodforgod.testcontainers.extensions.ContainerMode
 import io.goodforgod.testcontainers.extensions.mockserver.ConnectionMockServer
 import io.goodforgod.testcontainers.extensions.mockserver.MockServerConnection
 import io.goodforgod.testcontainers.extensions.mockserver.TestcontainersMockServer
-import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse.response
@@ -25,17 +24,6 @@ class VoidHttpClientTests : KoraAppTestConfigModifier {
 
     override fun config(): KoraConfigModification =
         KoraConfigModification.ofSystemProperty("HTTP_CLIENT_URL", mockserverConnection.params().uri().toString())
-
-    @Test
-    fun voidPostSuspendRequestSuccess() = runBlocking {
-        mockserverConnection.client().`when`(
-            request()
-                .withMethod("POST")
-                .withPath("/void")
-        ).respond(response().withBody("OK"))
-
-        httpClient.suspendRequest()
-    }
 
     @Test
     fun voidPostSyncRequestSuccess() {

@@ -1,7 +1,7 @@
 package io.koraframework.example.camunda.zeebe;
 
-import io.camunda.zeebe.client.ZeebeClient;
-import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
+import io.camunda.client.CamundaClient;
+import io.camunda.client.api.response.ProcessInstanceEvent;
 import java.util.Date;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -14,9 +14,9 @@ public final class ProcessScheduler {
 
     private static final Logger logger = LoggerFactory.getLogger(ProcessScheduler.class);
 
-    private final ZeebeClient client;
+    private final CamundaClient client;
 
-    public ProcessScheduler(ZeebeClient client) {
+    public ProcessScheduler(CamundaClient client) {
         this.client = client;
     }
 

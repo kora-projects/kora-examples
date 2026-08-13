@@ -19,29 +19,20 @@ plugins {
     id("org.openapi.generator") version ("7.24.0")
 }
 
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom); compileOnly.get().extendsFrom(koraBom)
-    api.get().extendsFrom(koraBom); implementation.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom); kspTest.get().extendsFrom(koraBom)
-}
-
 dependencies {
-    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
-    ksp("io.koraframework:symbol-processors")
-    kspTest("io.koraframework:symbol-processors")
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
 
     implementation("io.koraframework:validation-module")
     implementation("io.koraframework:http-client-jdk")
     implementation("io.koraframework:json-common")
     implementation("io.koraframework:logging-logback")
     implementation("io.koraframework:config-hocon")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.1")
 
     testImplementation("org.json:json:20231013")
     testImplementation("org.skyscreamer:jsonassert:1.5.1")
     testImplementation("io.koraframework:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-mockserver:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-mockserver:0.15.0")
 }
 
 kotlin {

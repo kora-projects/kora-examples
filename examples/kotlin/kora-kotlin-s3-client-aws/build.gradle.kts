@@ -7,28 +7,18 @@ plugins {
     id("com.google.devtools.ksp") version ("2.3.11")
 }
 
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom); compileOnly.get().extendsFrom(koraBom)
-    api.get().extendsFrom(koraBom); implementation.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom); kspTest.get().extendsFrom(koraBom)
-}
-
 dependencies {
-    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
-    ksp("io.koraframework:symbol-processors")
-    kspTest("io.koraframework:symbol-processors")
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
 
     implementation("io.koraframework:s3-client-aws")
     implementation("io.koraframework:http-client-jdk")
-    implementation("io.projectreactor:reactor-core:3.6.18")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.1")
     implementation("io.koraframework:logging-logback")
     implementation("io.koraframework:config-hocon")
 
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
     testImplementation("org.testcontainers:minio:1.21.4")
-    testImplementation("io.goodforgod:testcontainers-extensions-minio:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-minio:0.15.0")
     testImplementation("io.koraframework:test-junit5")
 }
 

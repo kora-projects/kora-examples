@@ -1,6 +1,5 @@
 package io.koraframework.example.kafka.listener;
 
-import java.io.IOException;
 import org.apache.kafka.common.serialization.Deserializer;
 import io.koraframework.common.annotation.Component;
 import io.koraframework.common.annotation.Tag;
@@ -26,11 +25,7 @@ public final class AutoCommitValueMapperListener extends AbstractListener<AutoCo
 
         @Override
         public MyEvent deserialize(String topic, byte[] data) {
-            try {
-                return reader.read(data);
-            } catch (IOException e) {
-                throw new IllegalArgumentException(e);
-            }
+            return reader.read(data);
         }
     }
 

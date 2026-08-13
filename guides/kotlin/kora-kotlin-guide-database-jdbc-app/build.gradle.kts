@@ -7,30 +7,20 @@ plugins {
     id("application")
 }
 
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom)
-    compileOnly.get().extendsFrom(koraBom)
-    runtimeOnly.get().extendsFrom(koraBom)
-    implementation.get().extendsFrom(koraBom)
-    testCompileOnly.get().extendsFrom(koraBom)
-    kspTest.get().extendsFrom(koraBom)
-    testRuntimeOnly.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom)
-}
-
 dependencies {
-    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
 
-    ksp("io.koraframework:symbol-processors")
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
     runtimeOnly("org.postgresql:postgresql:42.7.3")
     implementation("io.koraframework:config-hocon")
     implementation("io.koraframework:database-flyway")
+    // с Flyway 10 поддержка конкретных СУБД вынесена в отдельные артефакты;
+    // без этого приложение падает на старте: "Unsupported Database: PostgreSQL"
+    implementation("org.flywaydb:flyway-database-postgresql:13.1.0")
     implementation("io.koraframework:database-jdbc")
     implementation("io.koraframework:http-server-undertow")
     implementation("io.koraframework:json-common")
     implementation("io.koraframework:logging-logback")
-    kspTest("io.koraframework:symbol-processors")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.koraframework:test-junit5")

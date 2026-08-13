@@ -40,7 +40,7 @@ class TaskServicePostgresAdvancedTest : KoraAppTestConfigModifier {
     override fun config(): KoraConfigModification =
         KoraConfigModification.ofString(
             """
-            db {
+            jdbc {
               jdbcUrl = ${'$'}{POSTGRES_JDBC_URL}
               username = ${'$'}{POSTGRES_USER}
               password = ${'$'}{POSTGRES_PASS}

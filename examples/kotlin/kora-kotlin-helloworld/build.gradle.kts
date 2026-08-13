@@ -7,17 +7,10 @@ plugins {
     id("com.google.devtools.ksp") version ("2.3.11")
 }
 
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom); compileOnly.get().extendsFrom(koraBom)
-    api.get().extendsFrom(koraBom); implementation.get().extendsFrom(koraBom)
-}
-
 val koraVersion: String by project
 dependencies {
-    koraBom(platform("io.koraframework:kora-parent:$koraVersion"))
-
-    ksp("io.koraframework:symbol-processors")
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
 
     implementation("io.koraframework:http-server-undertow")
     implementation("io.koraframework:json-common")

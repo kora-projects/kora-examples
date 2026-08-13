@@ -11,18 +11,17 @@ import io.koraframework.http.server.common.request.HttpServerRequestHandlerImpl
 import io.koraframework.http.server.undertow.UndertowPublicHttpServerModule
 import io.koraframework.json.common.JsonModule
 import io.koraframework.logging.logback.LogbackModule
-import java.util.concurrent.CompletableFuture
 
 @KoraApp
 interface Application : HoconConfigModule, JsonModule, LogbackModule, UndertowPublicHttpServerModule {
 
     fun manualDataPingHandler(authConfig: DataApiAuthConfig): HttpServerRequestHandler {
-        return HttpServerRequestHandlerImpl.get("/manual/data/ping") { _, request ->
+        return HttpServerRequestHandlerImpl.get("/manual/data/ping") { request ->
             val authorization = request.headers().getFirst("authorization")
             if (authConfig.value() != authorization) {
-                CompletableFuture.completedFuture(HttpServerResponse.of(403, HttpBody.plaintext("Invalid API key")))
+                HttpServerResponse.of(403, HttpBody.plaintext("Invalid API key"))
             } else {
-                CompletableFuture.completedFuture(HttpServerResponse.of(200, HttpBody.plaintext("manual-data-pong")))
+                HttpServerResponse.of(200, HttpBody.plaintext("manual-data-pong"))
             }
         }
     }
@@ -31,4 +30,3 @@ interface Application : HoconConfigModule, JsonModule, LogbackModule, UndertowPu
 fun main() {
     KoraApplication.run(ApplicationGraph::graph)
 }
-

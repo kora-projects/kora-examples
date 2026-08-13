@@ -6,29 +6,20 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom)
-    compileOnly.get().extendsFrom(koraBom)
-    runtimeOnly.get().extendsFrom(koraBom)
-    implementation.get().extendsFrom(koraBom)
-    testCompileOnly.get().extendsFrom(koraBom)
-    kspTest.get().extendsFrom(koraBom)
-    testRuntimeOnly.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom)
-}
-
 dependencies {
-    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
 
-    ksp("io.koraframework:symbol-processors")
-    kspTest("io.koraframework:symbol-processors")
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
+    kspTest("io.koraframework:symbol-processors:${property("koraVersion")}")
     testRuntimeOnly("org.postgresql:postgresql:42.7.3")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation(project(":guides:kotlin:kora-kotlin-guide-database-jdbc-app"))
     testImplementation("io.koraframework:config-hocon")
     testImplementation("io.koraframework:database-flyway")
+    // flyway-core 13 не содержит поддержки конкретных СУБД, иначе Flyway падает
+    // с "Unsupported Database: PostgreSQL"
+    testImplementation("org.flywaydb:flyway-database-postgresql:13.1.0")
     testImplementation("io.koraframework:database-jdbc")
     testImplementation("io.koraframework:http-client-common")
     testImplementation("io.koraframework:http-server-undertow")

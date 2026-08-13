@@ -9,8 +9,8 @@ import io.koraframework.kotlin.example.submodule.pet.model.dao.PetCategory
 import io.koraframework.kotlin.example.submodule.pet.model.dao.PetWithCategory
 import io.koraframework.kotlin.example.submodule.pet.repository.CategoryRepository
 import io.koraframework.kotlin.example.submodule.pet.repository.PetRepository
-import io.koraframework.resilient.circuitbreaker.annotation.CircuitBreaker
-import io.koraframework.resilient.retry.annotation.Retry
+import io.koraframework.resilient.circuitbreaker.annotation.CircuitBreakable
+import io.koraframework.resilient.retry.annotation.Retryable
 import io.koraframework.resilient.timeout.annotation.Timeout
 
 @Component
@@ -19,13 +19,13 @@ open class PetService(
     private val categoryRepository: CategoryRepository,
 ) {
     @Cacheable(PetCache::class)
-    @CircuitBreaker("pet")
-    @Retry("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker::class)
+    @Retryable(PetRetry::class)
+    @Timeout(PetTimeouter::class)
     open fun findByID(petId: Long): PetWithCategory? = petRepository.findById(petId)
 
-    @CircuitBreaker("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker::class)
+    @Timeout(PetTimeouter::class)
     open fun add(petName: String, categoryName: String): PetWithCategory {
         val petCategoryId = categoryRepository.findByName(categoryName)?.id
             ?: categoryRepository.insert(categoryName)
@@ -34,8 +34,8 @@ open class PetService(
         return PetWithCategory(petId, pet.name, pet.status, PetCategory(petCategoryId, categoryName))
     }
 
-    @CircuitBreaker("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker::class)
+    @Timeout(PetTimeouter::class)
     @CachePut(value = PetCache::class, args = ["petId"])
     open fun update(
         petId: Long,
@@ -57,8 +57,8 @@ open class PetService(
         return result
     }
 
-    @CircuitBreaker("pet")
-    @Timeout("pet")
+    @CircuitBreakable(PetCircuitBreaker::class)
+    @Timeout(PetTimeouter::class)
     @CacheInvalidate(PetCache::class)
     open fun delete(petId: Long): Boolean = petRepository.deleteById(petId).value() == 1L
 }

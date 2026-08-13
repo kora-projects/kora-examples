@@ -16,7 +16,7 @@ interface TestApplication : Application, JdkHttpClientModule {
 
     @Root
     @Component
-    @HttpClient(configPath = "testHttpClient")
+    @HttpClient("testHttpClient")
     interface JsonHttpClient {
 
         @HttpRoute(method = HttpMethod.POST, path = "/json")

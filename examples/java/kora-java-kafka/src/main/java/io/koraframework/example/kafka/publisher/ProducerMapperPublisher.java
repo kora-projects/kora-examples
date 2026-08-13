@@ -2,7 +2,6 @@ package io.koraframework.example.kafka.publisher;
 
 import static io.koraframework.example.kafka.publisher.ProducerMapperPublisher.MyEvent;
 
-import java.io.IOException;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serializer;
 import io.koraframework.common.annotation.Component;
@@ -29,11 +28,7 @@ public interface ProducerMapperPublisher {
 
         @Override
         public byte[] serialize(String topic, MyEvent data) {
-            try {
-                return writer.toByteArray(data);
-            } catch (IOException e) {
-                throw new IllegalArgumentException(e);
-            }
+            return writer.toByteArray(data);
         }
     }
 

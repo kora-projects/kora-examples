@@ -7,22 +7,14 @@ plugins {
     id("com.google.devtools.ksp") version ("2.3.11")
 }
 
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom); compileOnly.get().extendsFrom(koraBom)
-    api.get().extendsFrom(koraBom); implementation.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom); kspTest.get().extendsFrom(koraBom)
-}
-
 dependencies {
-    koraBom(platform("io.koraframework:kora-parent:${property("koraVersion")}"))
-    ksp("io.koraframework:symbol-processors")
-    kspTest("io.koraframework:symbol-processors")
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
     implementation("io.koraframework:cache-redis-lettuce")
     implementation("io.koraframework:config-hocon")
     implementation("io.koraframework:logging-logback")
     testImplementation("io.koraframework:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-redis:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-redis:0.15.0")
     testImplementation("redis.clients:jedis:4.4.3")
 }
 

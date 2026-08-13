@@ -24,7 +24,7 @@ public final class TaskService {
     }
 
     public List<TaskResponse.TaskCreated> createTasks(List<TaskRequest.TaskCreate> taskCreates) {
-        return taskRepository.getJdbcConnectionFactory().inTx(() -> {
+        return taskRepository.executor().inTx(() -> {
             var assigneeIds = taskCreates.stream()
                     .map(TaskRequest.TaskCreate::userAssigneeId)
                     .filter(Objects::nonNull)
@@ -72,7 +72,7 @@ public final class TaskService {
     }
 
     public void assignTask(long taskId, Long userId) {
-        taskRepository.getJdbcConnectionFactory().inTx(() -> {
+        taskRepository.executor().inTx(() -> {
             var updated = taskRepository.updateAssignee(taskId, userId);
             if (updated.value() < 1) {
                 throw HttpServerResponseException.of(404, "Task not found");

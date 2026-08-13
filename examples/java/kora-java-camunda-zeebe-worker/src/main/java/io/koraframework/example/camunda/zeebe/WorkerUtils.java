@@ -1,24 +1,11 @@
 package io.koraframework.example.camunda.zeebe;
 
-import io.camunda.zeebe.client.api.response.ActivatedJob;
-import java.time.Instant;
 import org.slf4j.Logger;
 import io.koraframework.camunda.zeebe.worker.JobContext;
 
 public final class WorkerUtils {
 
     private WorkerUtils() {}
-
-    public static void logJob(Logger logger, ActivatedJob job) {
-        logger.info("""
-                Complete Job - {}
-                [processKey: {}]
-                [elementId: {}]
-                [deadline: {}]
-                [variables: {}]
-                """, job.getType(), job.getProcessInstanceKey(), job.getElementId(),
-                Instant.ofEpochMilli(job.getDeadline()), job.getVariables());
-    }
 
     public static void logJob(Logger logger, JobContext job) {
         logger.info("""

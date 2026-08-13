@@ -1,20 +1,20 @@
-﻿package io.koraframework.kotlin.example.resilient
+package io.koraframework.kotlin.example.resilient
 
 import io.koraframework.common.annotation.Component
 import io.koraframework.common.annotation.Root
-import io.koraframework.resilient.circuitbreaker.annotation.CircuitBreaker
+import io.koraframework.resilient.circuitbreaker.annotation.CircuitBreakable
 import io.koraframework.resilient.fallback.annotation.Fallback
-import io.koraframework.resilient.retry.annotation.Retry
+import io.koraframework.resilient.retry.annotation.Retryable
 import io.koraframework.resilient.timeout.annotation.Timeout
 import java.util.concurrent.ThreadLocalRandom
 
 @Root
 @Component
 open class ComboService {
-    @Fallback(value = "my_fallback", method = "getFallback()")
-    @CircuitBreaker("my_cb")
-    @Retry("my_retry")
-    @Timeout("my_timeout")
+    @Fallback(method = "getFallback()")
+    @CircuitBreakable(MyCircuitBreaker::class)
+    @Retryable(DefaultRetry::class)
+    @Timeout(DefaultTimeouter::class)
     open fun getValue(fail: Boolean): String {
         if (fail) {
             throw IllegalStateException("Failed")
@@ -36,4 +36,3 @@ open class ComboService {
         const val FALLBACK = "FALLBACK"
     }
 }
-

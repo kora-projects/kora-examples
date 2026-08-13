@@ -18,7 +18,7 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("io.koraframework:kora-parent:$koraVersion")
+    koraBom platform("io.koraframework:kora-bom:$koraVersion")
     annotationProcessor "io.koraframework:annotation-processors"
 
     implementation "io.koraframework:s3-client-aws"
@@ -29,7 +29,7 @@ dependencies {
 
     testImplementation "org.testcontainers:junit-jupiter:1.21.4"
     testImplementation "org.testcontainers:minio:1.21.4"
-    testImplementation "io.goodforgod:testcontainers-extensions-minio:0.13.1"
+    testImplementation "io.goodforgod:testcontainers-extensions-minio:0.15.0"
     testImplementation "io.koraframework:test-junit5"
 }
 
@@ -60,10 +60,6 @@ test {
             "-XX:+TieredCompilation",
             "-XX:TieredStopAtLevel=1",
     ]
-
-    environment([
-            "": ""
-    ])
 
     useJUnitPlatform()
     testLogging {

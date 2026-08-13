@@ -1,6 +1,5 @@
 package io.koraframework.guide.httpserver.advanced;
 
-import java.util.concurrent.CompletableFuture;
 import io.koraframework.application.graph.KoraApplication;
 import io.koraframework.common.annotation.KoraApp;
 import io.koraframework.config.hocon.HoconConfigModule;
@@ -21,12 +20,12 @@ public interface Application extends
         UndertowPublicHttpServerModule {
 
     default HttpServerRequestHandler manualDataPingHandler(DataApiAuthConfig authConfig) {
-        return HttpServerRequestHandlerImpl.get("/manual/data/ping", (context, request) -> {
+        return HttpServerRequestHandlerImpl.get("/manual/data/ping", request -> {
             var authorization = request.headers().getFirst("authorization");
             if (!authConfig.value().equals(authorization)) {
-                return CompletableFuture.completedFuture(HttpServerResponse.of(403, HttpBody.plaintext("Invalid API key")));
+                return HttpServerResponse.of(403, HttpBody.plaintext("Invalid API key"));
             }
-            return CompletableFuture.completedFuture(HttpServerResponse.of(200, HttpBody.plaintext("manual-data-pong")));
+            return HttpServerResponse.of(200, HttpBody.plaintext("manual-data-pong"));
         });
     }
 

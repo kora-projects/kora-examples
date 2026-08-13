@@ -26,7 +26,7 @@ class HttpServerPetV3Tests {
         val requestBody = JSONObject()
             .put("id", 1L)
             .put("name", "name")
-            .put("status", Pet.StatusEnum.AVAILABLE.getValue())
+            .put("status", Pet.StatusEnum.AVAILABLE.value)
             .put("category", JSONObject().put("id", 1L).put("name", "category"))
             .put("tags", tags)
 

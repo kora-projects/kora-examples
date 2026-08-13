@@ -22,8 +22,6 @@ def javaExamples = [
         "kora-java-openapi-generator-http-server",
         "kora-java-openapi-generator-http-client",
         "kora-java-database-jdbc",
-//        "kora-java-database-r2dbc", // Removed in Kora 2.0
-//        "kora-java-database-vertx", // Removed in Kora 2.0
         "kora-java-database-cassandra",
         "kora-java-telemetry",
         "kora-java-validation",
@@ -38,7 +36,7 @@ def javaExamples = [
         "kora-java-config-hocon",
         "kora-java-config-yaml",
         "kora-java-s3-client-aws",
-        "kora-java-s3-client-minio",
+        "kora-java-s3-client-kora",
         "kora-java-camunda-engine",
         "kora-java-camunda-zeebe-worker",
         "kora-java-helloworld",
@@ -58,8 +56,6 @@ include "examples:java:kora-java-crud-submodule:kora-java-crud-submodule-vet-api
 
 def graalvmExamples = [
         "kora-java-graalvm-crud-jdbc",
-//        "kora-java-graalvm-crud-r2dbc", // Removed in Kora 2.0
-//        "kora-java-graalvm-crud-vertx", // Removed in Kora 2.0
         "kora-java-graalvm-crud-cassandra",
         "kora-java-graalvm-kafka",
 ]
@@ -86,7 +82,7 @@ def kotlinExamples = [
         "kora-kotlin-http-server",
         "kora-kotlin-openapi-generator-http-client",
         "kora-kotlin-openapi-generator-http-server",
-        "kora-kotlin-s3-client-minio",
+        "kora-kotlin-s3-client-kora",
         "kora-kotlin-s3-client-aws",
         "kora-kotlin-soap-client",
         "kora-kotlin-grpc-client",
@@ -95,8 +91,6 @@ def kotlinExamples = [
         "kora-kotlin-camunda-engine",
         "kora-kotlin-camunda-zeebe-worker",
         "kora-kotlin-database-jdbc",
-//        "kora-kotlin-database-r2dbc", // Removed in Kora 2.0
-//        "kora-kotlin-database-vertx", // Removed in Kora 2.0
         "kora-kotlin-database-cassandra",
 ]
 

@@ -44,7 +44,7 @@ class HttpClientPetV2Tests : KoraAppTestConfigModifier {
         val responseBody = JSONObject()
             .put("id", 1L)
             .put("name", "name")
-            .put("status", Pet.StatusEnum.AVAILABLE.getValue())
+            .put("status", Pet.StatusEnum.AVAILABLE.value)
             .put("category", JSONObject().put("id", 1L).put("name", "category"))
             .put("tags", tags)
 
@@ -62,7 +62,7 @@ class HttpClientPetV2Tests : KoraAppTestConfigModifier {
         if (response is PetApiResponses.GetPetByIdApiResponse.GetPetById200ApiResponse) {
             assertEquals(responseBody.getLong("id"), response.content.id)
             assertEquals(responseBody.getString("name"), response.content.name)
-            assertEquals(responseBody.getString("status"), response.content.status?.getValue())
+            assertEquals(responseBody.getString("status"), response.content.status?.value)
         } else {
             fail("Shouldn't happen")
         }
@@ -76,7 +76,7 @@ class HttpClientPetV2Tests : KoraAppTestConfigModifier {
         val requestBody = JSONObject()
             .put("id", 1L)
             .put("name", "name")
-            .put("status", Pet.StatusEnum.AVAILABLE.getValue())
+            .put("status", Pet.StatusEnum.AVAILABLE.value)
             .put("category", JSONObject().put("id", 1L).put("name", "category"))
             .put("tags", tags)
 
@@ -91,12 +91,13 @@ class HttpClientPetV2Tests : KoraAppTestConfigModifier {
         ).respond(response().withBody(JsonBody(responseBody.toString())))
 
         // when
+        // the 2.0 generator orders the constructor by optionality, so the arguments are named
         val request = Pet(
-            1L,
-            "name",
-            Category(1L, "category"),
-            listOf(Tag(1L, "tag")),
-            Pet.StatusEnum.AVAILABLE
+            id = 1L,
+            name = "name",
+            category = Category(1L, "category"),
+            tags = listOf(Tag(1L, "tag")),
+            status = Pet.StatusEnum.AVAILABLE
         )
         val response = petApi.addPet(request)
 

@@ -1,4 +1,4 @@
-﻿package io.koraframework.kotlin.example.crud.model
+package io.koraframework.kotlin.example.crud.model
 
 import io.koraframework.common.annotation.Component
 import io.koraframework.example.crud.openapi.http.server.model.CategoryTO
@@ -21,10 +21,11 @@ class ManualPetMapper : PetMapper {
             Pet.Status.PENDING -> StatusEnum.PENDING
             Pet.Status.SOLD -> StatusEnum.SOLD
         }
-        return PetTO(pet.id, pet.name, enum, petCategoryToCategoryTO(pet.category))
+        // the 2.0 generator orders the constructor by optionality, so the arguments are named
+        return PetTO(status = enum, id = pet.id, name = pet.name, category = petCategoryToCategoryTO(pet.category))
     }
 
     override fun petCategoryToCategoryTO(category: PetCategory): CategoryTO {
-        return CategoryTO(category.id, category.name)
+        return CategoryTO(id = category.id, name = category.name)
     }
 }

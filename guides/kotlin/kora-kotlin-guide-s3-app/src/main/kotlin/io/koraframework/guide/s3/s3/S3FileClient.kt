@@ -1,22 +1,21 @@
 package io.koraframework.guide.s3.s3
 
-import io.koraframework.s3.client.annotation.S3
-import io.koraframework.s3.client.model.S3Body
-import io.koraframework.s3.client.model.S3Object
-import io.koraframework.s3.client.model.S3ObjectList
-import io.koraframework.s3.client.model.S3ObjectUpload
+import io.koraframework.s3.client.kora.annotation.S3
+import io.koraframework.s3.client.kora.model.response.GetObjectResult
+import io.koraframework.s3.client.kora.model.response.ListBucketResult
 
 @S3.Client("s3client.uploads")
+@S3.Bucket(".bucket")
 interface S3FileClient {
 
     @S3.Put("files/{fileId}")
-    fun uploadFile(fileId: String, body: S3Body): S3ObjectUpload
+    fun uploadFile(fileId: String, body: ByteArray): String
 
     @S3.Get("files/{fileId}")
-    fun downloadFile(fileId: String): S3Object
+    fun downloadFile(fileId: String): GetObjectResult
 
     @S3.List("files/")
-    fun listFiles(): S3ObjectList
+    fun listFiles(): ListBucketResult
 
     @S3.Delete("files/{fileId}")
     fun deleteFile(fileId: String)

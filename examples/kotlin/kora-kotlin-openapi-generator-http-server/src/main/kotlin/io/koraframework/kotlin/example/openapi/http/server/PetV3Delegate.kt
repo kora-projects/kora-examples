@@ -22,8 +22,11 @@ class PetV3Delegate : PetApiDelegate {
     }
 
     override fun findPetsByStatus(status: String?): PetApiResponses.FindPetsByStatusApiResponse {
-        val statusEnum = status?.let(Pet.StatusEnum::fromValue)
-            ?: return PetApiResponses.FindPetsByStatusApiResponse.FindPetsByStatus400ApiResponse()
+        val statusEnum = try {
+            status?.let(Pet.StatusEnum::fromValue)
+        } catch (_: IllegalArgumentException) {
+            null
+        } ?: return PetApiResponses.FindPetsByStatusApiResponse.FindPetsByStatus400ApiResponse()
         val pets = petMap.values.filter { statusEnum == it.status }
         return PetApiResponses.FindPetsByStatusApiResponse.FindPetsByStatus200ApiResponse(pets)
     }

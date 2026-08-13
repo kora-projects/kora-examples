@@ -6,7 +6,7 @@ import io.koraframework.config.hocon.HoconConfigModule;
 import io.koraframework.http.server.undertow.UndertowPublicHttpServerModule;
 import io.koraframework.json.common.JsonModule;
 import io.koraframework.logging.logback.LogbackModule;
-import ru.tinkoff.grpc.client.GrpcClientModule;
+import io.koraframework.grpc.client.GrpcClientModule;
 
 @KoraApp
 public interface Application extends

@@ -7,7 +7,6 @@ import io.koraframework.example.submodule.app.model.VetMapper;
 import io.koraframework.example.submodule.openapi.http.server.api.VetApiDelegate;
 import io.koraframework.example.submodule.openapi.http.server.model.MessageTO;
 import io.koraframework.example.submodule.openapi.http.server.model.VetCreateTO;
-import io.koraframework.example.submodule.openapi.http.server.model.VetUpdateTO;
 import io.koraframework.example.submodule.vet.service.VetService;
 
 @Component
@@ -54,7 +53,7 @@ public final class VetDelegate implements VetApiDelegate {
     }
 
     @Override
-    public UpdateVetApiResponse updateVet(long vetId, VetUpdateTO vetUpdateTO) {
+    public UpdateVetApiResponse updateVet(long vetId, VetCreateTO vetUpdateTO) {
         if (vetId < 0) {
             return new UpdateVetApiResponse.UpdateVet400ApiResponse(malformedId(vetId));
         }
