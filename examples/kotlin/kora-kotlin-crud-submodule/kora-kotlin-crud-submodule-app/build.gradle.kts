@@ -17,6 +17,7 @@ plugins {
 }
 
 dependencies {
+    kspTest("io.koraframework:symbol-processors:${property("koraVersion")}")
     implementation(project(":examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-pet-api"))
     implementation(project(":examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-vet-api"))
     implementation("io.koraframework:http-server-undertow")

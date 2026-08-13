@@ -125,6 +125,13 @@ implementation "org.flywaydb:flyway-database-postgresql:13.1.0"
 это отдельная ловушка: `org.mockito.kotlin:mockito-kotlin` тянет свою, более старую `mockito-core`,
 поэтому её версию задают явно рядом.
 
+**MockK.** Старый `io.mockk:mockk:1.13.x` тянет Byte Buddy `1.14.x`; его transformer пишет
+`i.m.p.j.t.InliningClassTransformer - Failed to transform class ... Java 25 (69) is not supported`.
+Обновите MockK минимум до `1.14.9` (он тянет Java 25-совместимый Byte Buddy `1.18.x`). Не оставляйте
+`-Dnet.bytebuddy.experimental=true` как постоянное решение: флаг только отключает защитную проверку
+неподдерживаемой версии class-файла. Источник зависимости проверьте командой
+`./gradlew <module>:dependencyInsight --dependency byte-buddy --configuration testRuntimeClasspath`.
+
 **Проверять после миграции**, а не полагаться на компиляцию: все три отказа рантаймовые, а
 Byte Buddy к тому же прячется внутри `Application graph failed to initialize with N errors`
 без видимых suppressed-исключений (Gradle их не печатает — временно включите `junitXml.required`).
@@ -677,7 +684,8 @@ junitVersion=6.1.3
 
 Артефакт тестирования — `io.koraframework:test-junit5`. Основной процессор подключается как
 `ksp("io.koraframework:symbol-processors:${property("koraVersion")}")`; test-конфигурация процессора
-нужна только тестам, которые сами генерируют Kora graph.
+нужна только тестам, которые сами генерируют Kora graph. Не удаляйте `kspTest` массовой
+заменой: сначала найдите все `@KoraApp`, объявленные именно в `src/test`.
 Например, `@KoraAppTest(TestApplication::class)` для `TestApplication`, объявленного в
 `src/test`, требует `kspTest("io.koraframework:symbol-processors:${property("koraVersion")}")`.
 

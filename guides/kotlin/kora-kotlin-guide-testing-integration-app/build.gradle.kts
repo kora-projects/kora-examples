@@ -10,6 +10,7 @@ dependencies {
     implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
 
     ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
+    kspTest("io.koraframework:symbol-processors:${property("koraVersion")}")
     testRuntimeOnly("org.postgresql:postgresql:42.7.3")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")

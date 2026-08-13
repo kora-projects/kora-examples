@@ -43,7 +43,7 @@ dependencies {
     testImplementation("org.json:json:20231013")
     testImplementation("org.skyscreamer:jsonassert:1.5.1")
 
-    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("io.mockk:mockk:1.14.11")
     testImplementation("io.koraframework:test-junit5")
     testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.15.0")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")

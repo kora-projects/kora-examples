@@ -13,12 +13,13 @@
 | `io.koraframework.migration.RenameKoraTypes` | типы, сменившие имя или модуль |
 | `io.koraframework.migration.MigrateNullabilityAnnotations` | `jakarta.annotation.Nullable` → JSpecify |
 | `io.koraframework.migration.UpdateKoraDependencies` | координаты сборки |
-| `io.koraframework.migration.NormalizeKotlinDependencies` | прямые `implementation(platform(...))`, versioned `ksp`, удаление лишнего `kspTest` и устаревшего processor wiring |
+| `io.koraframework.migration.NormalizeKotlinDependencies` | прямые `implementation(platform(...))`, versioned `ksp`/`kspTest`, удаление устаревшего processor wiring; `kspTest` сохраняется |
 | `io.koraframework.migration.UpdateJUnit` | любая literal-версия `junitVersion`/JUnit BOM → `6.1.3` |
+| `io.koraframework.migration.UpdateMockK` | любая явно заданная версия `io.mockk:mockk` → Java 25-совместимая `1.14.9` |
 | `io.koraframework.migration.RemoveSuspendHttpClientMethods` | снимает `suspend` с Kotlin client contracts; вызывающая цепочка и удаление неиспользуемых coroutine dependencies проверяются вручную |
 | `io.koraframework.migration.RemoveSuspendRepositoryMethods` | снимает `suspend` с Kotlin `*Repository.kt`; вызовы, тесты, duplicate repositories и coroutine dependencies проверяются вручную |
 | `io.koraframework.migration.RemoveSuspendHttpServerMethods` | снимает `suspend` с Kotlin `*Controller.kt`; вызовы, тесты, duplicate controllers и coroutine dependencies проверяются вручную |
-| `io.koraframework.migration.Kora1To2` | агрегат всех семи |
+| `io.koraframework.migration.Kora1To2` | агрегат всех рецептов |
 
 Каждый применим отдельно — например, если координаты в проекте уже поменяны руками.
 

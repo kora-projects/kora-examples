@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    kspTest("io.koraframework:symbol-processors:${property("koraVersion")}")
     api(project(":examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-common"))
     api("io.koraframework:database-jdbc")
     api("io.koraframework:cache-caffeine")

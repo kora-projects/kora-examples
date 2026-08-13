@@ -103,6 +103,7 @@ def replace_text(path: Path, replacements, apply: bool) -> bool:
     for old, new in replacements:
         updated = updated.replace(old, new)
     updated = update_junit_version(updated)
+    updated = update_mockk_version(updated)
     if path.name in {"build.gradle", "build.gradle.kts"}:
         updated = "".join(line for line in updated.splitlines(keepends=True) if LEGACY_APT_TOKEN not in line.lower())
     if "@CacheInvalidateAll" in updated and "cache.annotation.CacheInvalidateAll" not in updated:
@@ -163,6 +164,15 @@ def update_junit_version(text: str) -> str:
     )
 
 
+def update_mockk_version(text: str) -> str:
+    """Update explicitly pinned MockK to a Java 25-compatible release."""
+    return re.sub(
+        r"(io\.mockk:mockk:)[0-9][0-9A-Za-z.+_-]*",
+        r"\g<1>1.14.9",
+        text,
+    )
+
+
 def normalize_kotlin_dependencies(path: Path, text: str) -> str:
     """Use direct versioned KSP and implementation-platform dependencies in Kotlin builds."""
     text = re.sub(
@@ -196,24 +206,17 @@ def normalize_kotlin_dependencies(path: Path, text: str) -> str:
         'add("ksp", "io.koraframework:symbol-processors")',
         'add("ksp", "io.koraframework:symbol-processors:${property("koraVersion")}")',
     )
-    keep_ksp_test = path in {
-        ROOT / "examples/kotlin/kora-kotlin-crud/build.gradle.kts",
-        ROOT / "examples/kotlin/kora-kotlin-http-server/build.gradle.kts",
-    }
     lines = []
     for line in text.splitlines(keepends=True):
         lowered = line.lower()
         if LEGACY_APT_TOKEN in lowered:
             continue
-        if "ksptest" in lowered and not keep_ksp_test:
-            continue
         lines.append(line)
     text = "".join(lines)
-    if keep_ksp_test:
-        text = text.replace(
-            'kspTest("io.koraframework:symbol-processors")',
-            'kspTest("io.koraframework:symbol-processors:${property("koraVersion")}")',
-        )
+    text = text.replace(
+        'kspTest("io.koraframework:symbol-processors")',
+        'kspTest("io.koraframework:symbol-processors:${property("koraVersion")}")',
+    )
     return text
 
 
