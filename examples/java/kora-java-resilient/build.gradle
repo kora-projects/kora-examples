@@ -37,9 +37,6 @@ application {
 
 //noinspection GroovyAssignabilityCheck
 run {
-    environment([
-            "": ""
-    ])
 }
 
 distTar {
@@ -53,10 +50,6 @@ test {
             "-XX:+TieredCompilation",
             "-XX:TieredStopAtLevel=1",
     ]
-
-    environment([
-            "": ""
-    ])
 
     useJUnitPlatform()
     testLogging {

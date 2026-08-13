@@ -31,13 +31,13 @@ public final class AppContainer extends GenericContainer<AppContainer> {
     @Override
     protected void configure() {
         super.configure();
-        withExposedPorts(8080);
+        withExposedPorts(8080, 8085);
         withStartupTimeout(Duration.ofSeconds(60));
         withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(AppContainer.class)));
         // wait on the readiness probe rather than on a log line: the wording of Kora's startup
         // messages is not part of its contract, and this example only exposes the system server
         waitingFor(Wait.forHttp("/system/readiness")
-                .forPort(8080)
+                .forPort(8085)
                 .forStatusCode(200)
                 .withStartupTimeout(Duration.ofSeconds(60)));
     }

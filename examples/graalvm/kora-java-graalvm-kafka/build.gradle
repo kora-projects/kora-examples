@@ -89,10 +89,6 @@ test {
             "-XX:TieredStopAtLevel=1",
     ]
 
-    environment([
-            "": ""
-    ])
-
     useJUnitPlatform()
     testLogging {
         showStandardStreams = true

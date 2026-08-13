@@ -136,6 +136,9 @@ implementation "org.flywaydb:flyway-database-postgresql:13.1.0"
 Byte Buddy к тому же прячется внутри `Application graph failed to initialize with N errors`
 без видимых suppressed-исключений (Gradle их не печатает — временно включите `junitXml.required`).
 
+Gradle placeholder `environment(["": ""])` нужно удалить полностью. Пустое имя переменной окружения
+недопустимо на Windows: test JVM не стартует с `CreateProcess error=87, The parameter is incorrect`.
+
 ### 1.6 Процессорам нужна полная перекомпиляция
 
 При инкрементальной сборке процессор базы данных может прочитать интерфейс репозитория из

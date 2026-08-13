@@ -105,6 +105,7 @@ def replace_text(path: Path, replacements, apply: bool) -> bool:
     updated = update_junit_version(updated)
     updated = update_mockk_version(updated)
     if path.name in {"build.gradle", "build.gradle.kts"}:
+        updated = remove_empty_environment_block(updated)
         updated = "".join(line for line in updated.splitlines(keepends=True) if LEGACY_APT_TOKEN not in line.lower())
     if "@CacheInvalidateAll" in updated and "cache.annotation.CacheInvalidateAll" not in updated:
         updated = updated.replace(
@@ -169,6 +170,15 @@ def update_mockk_version(text: str) -> str:
     return re.sub(
         r"(io\.mockk:mockk:)[0-9][0-9A-Za-z.+_-]*",
         r"\g<1>1.14.9",
+        text,
+    )
+
+
+def remove_empty_environment_block(text: str) -> str:
+    """Remove invalid Gradle test environment entries with an empty variable name."""
+    return re.sub(
+        r'(?ms)\r?\n[ \t]*environment\(\[\s*\r?\n[ \t]*"": "",?\s*\r?\n[ \t]*\]\)\s*\r?\n',
+        "\n",
         text,
     )
 

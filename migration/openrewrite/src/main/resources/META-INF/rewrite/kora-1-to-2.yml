@@ -22,6 +22,7 @@ recipeList:
   - io.koraframework.migration.NormalizeKotlinDependencies
   - io.koraframework.migration.UpdateJUnit
   - io.koraframework.migration.UpdateMockK
+  - io.koraframework.migration.RemoveEmptyEnvironmentBlock
   - io.koraframework.migration.RemoveSuspendHttpClientMethods
   - io.koraframework.migration.RemoveSuspendRepositoryMethods
   - io.koraframework.migration.RemoveSuspendHttpServerMethods
@@ -201,6 +202,18 @@ recipeList:
   - org.openrewrite.text.FindAndReplace:
       find: '(?<prefix>io\.mockk:mockk:)[0-9][0-9A-Za-z.+_-]*'
       replace: '${prefix}1.14.9'
+      regex: true
+      filePattern: '**/*.gradle;**/*.gradle.kts'
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.RemoveEmptyEnvironmentBlock
+displayName: Remove invalid empty Gradle environment entries
+description: Remove environment(["": ""]) placeholders that prevent JVM process startup on Windows.
+recipeList:
+  - org.openrewrite.text.FindAndReplace:
+      find: '(?ms)\r?\n[ \t]*environment\(\[\s*\r?\n[ \t]*"": "",?\s*\r?\n[ \t]*\]\)\s*\r?\n'
+      replace: '\n'
       regex: true
       filePattern: '**/*.gradle;**/*.gradle.kts'
 

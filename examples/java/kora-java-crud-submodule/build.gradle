@@ -32,10 +32,6 @@ subprojects {
                 "-XX:TieredStopAtLevel=1",
         ]
 
-        environment([
-                "": ""
-        ])
-
         useJUnitPlatform()
         failOnNoDiscoveredTests = false
         testLogging {
