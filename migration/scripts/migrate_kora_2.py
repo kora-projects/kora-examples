@@ -102,6 +102,7 @@ def replace_text(path: Path, replacements, apply: bool) -> bool:
     updated = original
     for old, new in replacements:
         updated = updated.replace(old, new)
+    updated = update_junit_version(updated)
     if path.name in {"build.gradle", "build.gradle.kts"}:
         updated = "".join(line for line in updated.splitlines(keepends=True) if LEGACY_APT_TOKEN not in line.lower())
     if "@CacheInvalidateAll" in updated and "cache.annotation.CacheInvalidateAll" not in updated:
@@ -114,6 +115,12 @@ def replace_text(path: Path, replacements, apply: bool) -> bool:
             "import io.koraframework.cache.annotation.CacheInvalidate\nimport io.koraframework.cache.annotation.CacheInvalidateAll\n",
         )
     if path.suffix == ".kt":
+        if "@HttpClient" in updated:
+            updated = re.sub(r"(?m)^([ \t]*)suspend fun ", r"\1fun ", updated)
+        if "@Repository" in updated:
+            updated = re.sub(r"(?m)^([ \t]*)suspend fun ", r"\1fun ", updated)
+        if "@HttpController" in updated or "@HttpRoute" in updated:
+            updated = re.sub(r"(?m)^([ \t]*)suspend fun ", r"\1fun ", updated)
         updated = updated.replace("import org.jspecify.annotations.Nullable\n", "")
         updated = updated.replace("import org.jspecify.annotations.NonNull\n", "")
         updated = updated.replace("@field:Nullable ", "")
@@ -140,6 +147,20 @@ def replace_text(path: Path, replacements, apply: bool) -> bool:
     if apply:
         path.write_text(updated, encoding="utf-8", newline="")
     return True
+
+
+def update_junit_version(text: str) -> str:
+    """Update any literal JUnit version to the migration target, preserving Gradle syntax."""
+    text = re.sub(
+        r"(?m)^(\s*junitVersion\s*=\s*)[0-9][0-9A-Za-z.+_-]*(\s*(?:#.*)?)$",
+        r"\g<1>6.1.3\g<2>",
+        text,
+    )
+    return re.sub(
+        r"(org\.junit:junit-bom:)[0-9][0-9A-Za-z.+_-]*",
+        r"\g<1>6.1.3",
+        text,
+    )
 
 
 def normalize_kotlin_dependencies(path: Path, text: str) -> str:
@@ -175,7 +196,10 @@ def normalize_kotlin_dependencies(path: Path, text: str) -> str:
         'add("ksp", "io.koraframework:symbol-processors")',
         'add("ksp", "io.koraframework:symbol-processors:${property("koraVersion")}")',
     )
-    keep_ksp_test = path == ROOT / "examples/kotlin/kora-kotlin-crud/build.gradle.kts"
+    keep_ksp_test = path in {
+        ROOT / "examples/kotlin/kora-kotlin-crud/build.gradle.kts",
+        ROOT / "examples/kotlin/kora-kotlin-http-server/build.gradle.kts",
+    }
     lines = []
     for line in text.splitlines(keepends=True):
         lowered = line.lower()
@@ -229,6 +253,7 @@ def main() -> int:
 
     changed = sum(replace_text(path, REPLACEMENTS, args.apply) for path in text_files())
     changed += replace_text(ROOT / "build.gradle", ROOT_REPLACEMENTS, args.apply)
+    changed += replace_text(ROOT / "gradle.properties", (), args.apply)
     moved = package_moves(args.apply)
     mode = "APPLIED" if args.apply else "DRY-RUN"
     print(f"{mode}: {changed} text files, {moved} package trees")

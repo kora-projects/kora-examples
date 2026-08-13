@@ -27,7 +27,7 @@ dependencies {
     testImplementation "org.openrewrite:rewrite-yaml"
     testImplementation "org.openrewrite:rewrite-test"
 
-    testImplementation platform("org.junit:junit-bom:5.13.4")
+    testImplementation platform("org.junit:junit-bom:6.1.3")
     testImplementation "org.junit.jupiter:junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
@@ -35,7 +35,14 @@ dependencies {
 test {
     useJUnitPlatform()
     testLogging {
-        events("passed", "skipped", "failed")
+        def isCiBuild = providers.environmentVariable("CI").map { it.toBoolean() }.orElse(false).get()
+        if (isCiBuild) {
+            showStandardStreams(false)
+            events("failed")
+        } else {
+            showStandardStreams(true)
+            events("passed", "skipped", "failed")
+        }
         exceptionFormat = "full"
     }
 }

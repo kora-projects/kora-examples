@@ -18,7 +18,7 @@ dependencies {
 
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
     testImplementation("org.testcontainers:minio:1.21.4")
-    testImplementation("io.goodforgod:testcontainers-extensions-minio:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-minio:0.15.0")
     testImplementation("io.koraframework:test-junit5")
 }
 

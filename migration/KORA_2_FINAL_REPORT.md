@@ -98,6 +98,7 @@
 | `database-r2dbc`, `database-vertx` | удалены | `database-jdbc` |
 | `suspend`- и реактивные контракты репозиториев | удалены | синхронные методы на виртуальных потоках |
 | корутинные интеграции в модулях Kora | удалены | то же |
+| Kotlin Structured Concurrency | не сохраняется | Java `StructuredTaskScope` из latest GA JDK + latest Preview, `--enable-preview` на compile/test/run |
 | `http-client-async` | удалён | `http-client-jdk` / `http-client-ok` |
 | `json-module` | переименован | `json-common` |
 | `cache-redis` | разделён по транспорту | `cache-redis-lettuce` |

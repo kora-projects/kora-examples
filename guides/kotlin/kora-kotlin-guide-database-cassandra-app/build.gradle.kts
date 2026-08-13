@@ -18,7 +18,7 @@ dependencies {
     implementation("io.koraframework:logging-logback")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("io.goodforgod:testcontainers-extensions-scylla:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-scylla:0.15.0")
     testImplementation("io.koraframework:test-junit5")
 }
 

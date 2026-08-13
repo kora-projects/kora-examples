@@ -14,7 +14,11 @@
 | `io.koraframework.migration.MigrateNullabilityAnnotations` | `jakarta.annotation.Nullable` → JSpecify |
 | `io.koraframework.migration.UpdateKoraDependencies` | координаты сборки |
 | `io.koraframework.migration.NormalizeKotlinDependencies` | прямые `implementation(platform(...))`, versioned `ksp`, удаление лишнего `kspTest` и устаревшего processor wiring |
-| `io.koraframework.migration.Kora1To2` | агрегат всех шести |
+| `io.koraframework.migration.UpdateJUnit` | любая literal-версия `junitVersion`/JUnit BOM → `6.1.3` |
+| `io.koraframework.migration.RemoveSuspendHttpClientMethods` | снимает `suspend` с Kotlin client contracts; вызывающая цепочка и удаление неиспользуемых coroutine dependencies проверяются вручную |
+| `io.koraframework.migration.RemoveSuspendRepositoryMethods` | снимает `suspend` с Kotlin `*Repository.kt`; вызовы, тесты, duplicate repositories и coroutine dependencies проверяются вручную |
+| `io.koraframework.migration.RemoveSuspendHttpServerMethods` | снимает `suspend` с Kotlin `*Controller.kt`; вызовы, тесты, duplicate controllers и coroutine dependencies проверяются вручную |
+| `io.koraframework.migration.Kora1To2` | агрегат всех семи |
 
 Каждый применим отдельно — например, если координаты в проекте уже поменяны руками.
 
@@ -84,5 +88,7 @@ cd migration/openrewrite && ../../gradlew test
   для дженериков и массивов — семантика, описана в языковых руководствах.
 - **Не трогает каталоги ресурсов**, включая `META-INF/native-image/<group>/` — их переименовывают
   вручную.
-- **Не делает семантику**: resilient-спецификации, снятие `suspend`, S3-клиент, сгенерированный
+- **Не делает семантику**: resilient-спецификации, снятие `suspend` по вызывающей цепочке,
+  перенос Kotlin Structured Concurrency на актуальный Java `StructuredTaskScope` preview,
+  S3-клиент, сгенерированный
   OpenAPI-код. Это `KORA_MIGRATION_NEURO.md`.

@@ -10,11 +10,11 @@ plugins {
 dependencies {
     implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
     ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
+    kspTest("io.koraframework:symbol-processors:${property("koraVersion")}")
 
     implementation("io.koraframework:http-server-undertow")
     implementation("io.koraframework:json-common")
     implementation("io.koraframework:validation-module")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     implementation("io.koraframework:config-hocon")
     implementation("io.koraframework:logging-logback")
 

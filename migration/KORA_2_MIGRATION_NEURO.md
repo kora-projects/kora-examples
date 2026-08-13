@@ -230,7 +230,15 @@ return KoraConfigModification.ofString("""
 ### Required analysis
 
 1. Построить полный граф вызовов от `suspend`-метода репозитория вверх — до контроллера/слушателя/теста. Снятие `suspend` обязано пройти по всей цепочке; частичная правка оставит несобираемый код.
-2. Отдельно выделить места, где корутины использовались **не** ради Kora (параллелизм, `async`/`await`, каналы) — там корутины остаются, но граница с Kora становится синхронной.
+2. Отдельно выделить места, где корутины использовались ради параллелизма (`coroutineScope`,
+   `supervisorScope`, `async`/`await`, `awaitAll`, structured cancellation/timeouts). Они не
+   остаются в application service: их семантика переводится на Java `StructuredTaskScope`.
+   Использовать последний GA JDK и последнюю preview-итерацию этого JDK; включить
+   `--enable-preview` для compile, test и каждого runtime launch. В `@HttpClient` interface
+   нельзя оставлять даже default `suspend`-обёртки над blocking-методом.
+   Для Kotlin compilation дополнительно задать `-Xjdk-release=<latest-GA-major>` и
+   `-Xjvm-enable-preview`; одного `JavaCompile.compilerArgs += --enable-preview` недостаточно
+   для описания Kotlin-задач. Не переносить названия API из предыдущего preview JDK.
 3. Проверить транзакции: код, полагавшийся на корутинный контекст транзакции, требует пересборки границ.
 4. Проверить отмену: `withTimeout`/отмена скоупа больше не прерывает операцию БД.
 
@@ -282,7 +290,10 @@ class PetService(private val repository: PetRepository) {
 
 ### Escalate when
 
-В цепочке есть параллелизм, отмена по таймауту или бизнес-логика на каналах/потоках — переработку согласовывает человек.
+В цепочке есть параллелизм, отмена по таймауту или supervisor semantics — разработчик обязан
+выбрать эквивалентный `StructuredTaskScope.Joiner`/timeout policy и покрыть failure/cancellation
+тестами. Каналы/Flow не имеют механического аналога в `StructuredTaskScope` и требуют отдельного
+редизайна; сохранять Kotlin Structured Concurrency как обход миграции нельзя.
 
 ---
 

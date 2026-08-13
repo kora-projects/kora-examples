@@ -59,6 +59,8 @@ OpenRewrite-рецепт **не трансформирует Kotlin** — для
 Его Java-часть покрыта before/after тестами (`cd migration/openrewrite && ../../gradlew test`, 5/5);
 рецепты по координатам модульным тестом не покрыты — причины разобраны в `openrewrite/README.md`.
 
-Что автоматизация принципиально не делает: типизированные resilient-спецификации, снятие `suspend` по цепочке вызовов,
+Что автоматизация принципиально не делает: типизированные resilient-спецификации, семантическое снятие `suspend` по цепочке вызовов
+(сигнатуры `@HttpClient` она исправляет механически), перенос Kotlin Structured Concurrency на
+Java `StructuredTaskScope` с выбором актуального preview `Joiner`/timeout/cancellation policy,
 корректная расстановка type-use аннотаций JSpecify, адаптация сгенерированного OpenAPI-кода, миграция S3-клиента.
 Эти классы изменений описаны в `KORA_MIGRATION_NEURO.md`.

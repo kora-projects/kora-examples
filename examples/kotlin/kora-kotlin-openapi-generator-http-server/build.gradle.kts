@@ -102,8 +102,8 @@ tasks.test {
     jvmArgs("-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1")
     useJUnitPlatform()
     testLogging {
-        showStandardStreams = false
-        events("failed")
+        showStandardStreams = true
+        events("passed", "skipped", "failed")
         exceptionFormat = TestExceptionFormat.FULL
     }
     reports {

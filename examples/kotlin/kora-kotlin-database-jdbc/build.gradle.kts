@@ -12,14 +12,13 @@ dependencies {
     ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
 
     implementation("org.postgresql:postgresql:42.7.7")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     implementation("io.koraframework:database-jdbc")
     implementation("io.koraframework:json-common")
     implementation("io.koraframework:logging-logback")
     implementation("io.koraframework:config-hocon")
 
     testImplementation("io.koraframework:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.15.0")
 }
 
 kotlin {

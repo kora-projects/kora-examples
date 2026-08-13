@@ -9,5 +9,5 @@ dependencies {
     api("io.koraframework:resilient-kora")
 
     testImplementation("io.koraframework:config-hocon")
-    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.15.0")
 }

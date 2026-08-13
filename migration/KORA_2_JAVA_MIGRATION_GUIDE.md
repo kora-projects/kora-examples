@@ -25,16 +25,17 @@
 
 ## 1. Сборка и окружение
 
-### 1.1 JDK: Gradle-процесс должен идти на JDK 25
+### 1.1 JDK: Gradle-процесс должен идти на последнем GA feature release
 
 **Было:** Gradle на JDK 21, toolchain 21.
 
-**Стало:** toolchain 25 **и** сам Gradle запущен на JDK 25.
+**Стало:** toolchain последнего GA JDK **и** сам Gradle запущен на том же major. На момент
+актуализации документа это JDK 26; значение нужно перепроверять на дату миграции.
 
 ```groovy
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
+        languageVersion = JavaLanguageVersion.of(26) // заменить на latest GA
         vendor = JvmVendorSpec.ADOPTIUM
     }
 }
@@ -47,7 +48,7 @@ Dependency requires at least JVM runtime version 25. This build uses a Java 21 J
 > Run this build using a Java 25 or newer JVM.
 ```
 
-**Проверка:** `JAVA_HOME=<JDK 25> ./gradlew projects` проходит; с JDK 21 — падает.
+**Проверка:** `JAVA_HOME=<latest-GA-JDK> ./gradlew projects` проходит; с JDK 21 — падает.
 
 **Ограничение:** прописывать `org.gradle.java.home` в `gradle.properties` репозитория не стоит — путь машинозависим. Задавайте `JAVA_HOME` или используйте Gradle toolchain для запуска демона.
 
@@ -724,6 +725,15 @@ var status = Pet.StatusEnum.fromValue(rawStatus);
 
 ## 11. Тестирование
 
+Версию JUnit обновите до `6.1.3` через общую property:
+
+```properties
+junitVersion=6.1.3
+```
+
+Модули подключают `platform("org.junit:junit-bom:$junitVersion")`; версия
+`org.testcontainers:junit-jupiter` относится к Testcontainers и не заменяется на версию JUnit.
+
 Пакет расширения: `io.koraframework.test.extension.junit5.*` (`@KoraAppTest`, `@TestComponent`, `KoraAppTestConfigModifier`, `KoraConfigModification`), артефакт `io.koraframework:test-junit5`.
 
 Подход из эталона сохранился без изменений по смыслу: `@KoraAppTest(Application.class)`, моки через `@Mock @TestComponent`, конфиг — через `KoraConfigModification.ofString(...)`, интеграционные тесты — на Testcontainers.
@@ -1124,7 +1134,7 @@ waitingFor(Wait.forHttp("/system/readiness").forPort(8080).forStatusCode(200)
 | Переезд DI-аннотаций в `…annotation` | ✅ | ✅ | — |
 | Переименования модулей (`json-common`, `cache-redis-lettuce`) | ✅ | ✅ | — |
 | Разделение HTTP-пакетов | — | ✅ | — |
-| Версии плагинов, toolchain 25 | — | ✅ | — |
+| Версии плагинов, toolchain latest GA JDK | — | ✅ | — |
 | Режимы OpenAPI-генерации | — | ✅ | адаптация кода — вручную |
 | `jakarta` → JSpecify (тип) | ✅ | ✅ | **расстановка** — вручную |
 | Типизированные resilient-спецификации | — | — | ✅ |
@@ -1136,3 +1146,23 @@ waitingFor(Wait.forHttp("/system/readiness").forPort(8080).forStatusCode(200)
 | Метаданные достижимости native-image | — | — | ✅ |
 
 Ограничения текущего скрипта `migrate_kora_2.py` описаны в `migration/README.md` — он содержит замены с хардкодом имён классов конкретных примеров и несколько слишком широких текстовых замен; для применения к чужому проекту требуется доработка.
+## Java Structured Concurrency для мигрируемого Kotlin-кода
+
+Если Kotlin-часть приложения использовала Structured Coroutines Concurrency
+(`coroutineScope`, `supervisorScope`, `async`/`await`, `awaitAll`, structured cancellation или
+timeouts), финальная архитектура Kora 2.0 должна использовать Java `StructuredTaskScope`.
+
+Берите последний **GA feature release JDK** на момент миграции и последнюю итерацию Structured
+Concurrency Preview именно этого JDK. Не закрепляйте старый API preview из JDK 21–25 и не берите
+EA JDK в production только ради более нового preview. На момент актуализации документа это JDK 26,
+Structured Concurrency Sixth Preview (JEP 525).
+
+Preview включается для всех фаз: `JavaCompile` — `--enable-preview` плюс совпадающий `--release`,
+Kotlin compilation — `-Xjdk-release=<latest-GA-major>` и `-Xjvm-enable-preview`, tests/`JavaExec`/
+production launcher — `--enable-preview`. Build image и runtime image обязаны иметь одинаковый
+major JDK. Выбор `Joiner`, timeout, failure/cancellation и supervisor semantics является
+семантической миграцией и проверяется отдельными тестами.
+
+Полный Kotlin/Gradle шаблон и checklist находятся в Kotlin guide, §13.
+
+---

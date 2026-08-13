@@ -30,8 +30,6 @@ class RootService(
     private val mapperRequestHttpClient: MapperRequestHttpClient,
     private val mapperResponseHttpClient: MapperResponseHttpClient,
     private val parametersHttpClient: ParametersHttpClient,
-    private val suspendHttpClient: SuspendHttpClient,
     private val voidHttpClient: VoidHttpClient,
     private val formHttpClient: FormHttpClient
 )
-

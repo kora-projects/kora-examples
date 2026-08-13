@@ -20,7 +20,7 @@ dependencies {
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.koraframework:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-redis:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-redis:0.15.0")
     testImplementation("redis.clients:jedis:4.4.3")
 }
 

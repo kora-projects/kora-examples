@@ -22,12 +22,11 @@ dependencies {
         exclude(group = "org.glassfish.jaxb")
         exclude(group = "com.sun.activation")
     }
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.1")
     implementation("io.koraframework:logging-logback")
     implementation("io.koraframework:config-hocon")
 
     testImplementation("io.koraframework:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-mockserver:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-mockserver:0.15.0")
 }
 
 kotlin {

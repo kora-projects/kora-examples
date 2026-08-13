@@ -1,6 +1,7 @@
 package io.koraframework.migration;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.test.SourceSpecs.text;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.java.JavaParser;
@@ -165,6 +166,83 @@ class Kora1To2Test implements RewriteTest {
                         @Component
                         public class PetService {}
                         """
+                )
+        );
+    }
+
+    @Test
+    void removesSuspendFromKotlinHttpClientContract() {
+        rewriteRun(
+                spec -> spec.recipeFromResources("io.koraframework.migration.RemoveSuspendHttpClientMethods"),
+                text(
+                        """
+                        interface PetHttpClient {
+                            suspend fun get(id: Long): Pet
+                        }
+                        """,
+                        """
+                        interface PetHttpClient {
+                            fun get(id: Long): Pet
+                        }
+                        """,
+                        source -> source.path("src/main/kotlin/PetHttpClient.kt")
+                )
+        );
+    }
+
+    @Test
+    void removesSuspendFromKotlinRepositoryContract() {
+        rewriteRun(
+                spec -> spec.recipeFromResources("io.koraframework.migration.RemoveSuspendRepositoryMethods"),
+                text(
+                        """
+                        interface PetRepository {
+                            suspend fun findById(id: Long): Pet?
+                        }
+                        """,
+                        """
+                        interface PetRepository {
+                            fun findById(id: Long): Pet?
+                        }
+                        """,
+                        source -> source.path("src/main/kotlin/PetRepository.kt")
+                )
+        );
+    }
+
+    @Test
+    void removesSuspendFromKotlinHttpServerContract() {
+        rewriteRun(
+                spec -> spec.recipeFromResources("io.koraframework.migration.RemoveSuspendHttpServerMethods"),
+                text(
+                        """
+                        class PetController {
+                            suspend fun get(id: Long): Pet
+                        }
+                        """,
+                        """
+                        class PetController {
+                            fun get(id: Long): Pet
+                        }
+                        """,
+                        source -> source.path("src/main/kotlin/PetController.kt")
+                )
+        );
+    }
+
+    @Test
+    void updatesAnyLiteralJUnitVersionTo613() {
+        rewriteRun(
+                spec -> spec.recipeFromResources("io.koraframework.migration.UpdateJUnit"),
+                text(
+                        "junitVersion=5.11.0-RC1\n",
+                        "junitVersion=6.1.3\n",
+                        source -> source.path("gradle.properties")
+                ),
+                text(
+                        "testImplementation platform(\"org.junit:junit-bom:6.0.2\")\n",
+                        "testImplementation platform(\"org.junit:junit-bom:6.1.3\")\n",
+                        source -> source.path("build.gradle")
                 )
         );
     }

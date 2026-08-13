@@ -22,13 +22,19 @@
 
 ## 1. Сборка и окружение
 
-### 1.1 JDK: Gradle-процесс должен идти на JDK 25
+### 1.1 JDK: последний GA feature release
 
 ```kotlin
+val latestJava = 26 // обновить на дату миграции
+
 kotlin {
-    jvmToolchain(25)
+    jvmToolchain(latestJava)
 }
 ```
+
+Берите последний GA feature release с `openjdk.org/projects/jdk`, а не исторический минимум,
+на котором собирался Kora 2.0. На момент актуализации документа это JDK 26. Для
+`StructuredTaskScope` используйте последнюю preview-итерацию именно выбранного JDK.
 
 Toolchain недостаточно: `io.koraframework:openapi-generator` попадает в **buildscript classpath**, который резолвится JVM самого Gradle. На JDK 21 конфигурация падает:
 
@@ -36,7 +42,7 @@ Toolchain недостаточно: `io.koraframework:openapi-generator` поп�
 Dependency requires at least JVM runtime version 25. This build uses a Java 21 JVM.
 ```
 
-**Проверка:** `JAVA_HOME=<JDK 25> ./gradlew projects` проходит, на JDK 21 — нет.
+**Проверка:** `JAVA_HOME=<latest-GA-JDK> ./gradlew projects` проходит, на JDK 21 — нет.
 
 ### 1.2 Kotlin и KSP
 
@@ -235,7 +241,41 @@ class HttpExceptionHandler(private val errorWriter: JsonWriter<MessageTO>) : Htt
 
 Для возврата `Mono`/`Flux` в `http-server-common` нет мапперов (проверено по исходникам) — такие методы переводятся на синхронный возврат `HttpServerResponse`.
 
+Методы `@HttpController`/`@HttpRoute` также не должны оставаться `suspend`. Если отдельный
+suspend controller только дублирует уже имеющийся синхронный пример, удалите controller и его
+route-тест целиком. Иначе снимите `suspend` и синхронно перепишите всю вызывающую цепочку.
+После удаления последнего coroutine usage удалите `kotlinx-coroutines-core`/`jdk8` из модуля.
+
+OpenRewrite recipe `RemoveSuspendHttpServerMethods` и Python migrator снимают `suspend` в
+файлах controller-контрактов. Удаление дубликатов, тестов и dependency требует проверки модуля.
+
 **Диагностическая ловушка:** пока в графе остаётся неразрешимый компонент, сообщение об ошибке может указывать на другой, исправный компонент. Сначала убирайте код на удалённой функциональности, потом разбирайте остаток.
+
+### HTTP-клиент: `suspend` API запрещён
+
+В Kora 2.0 методы декларативного `@HttpClient` должны быть синхронными. Удалите `suspend`
+из сигнатур клиента. Не оставляйте в том же интерфейсе default-обёртки вида
+`suspend fun get(...) = withContext(Dispatchers.IO) { getBlocking(...) }`: это по-прежнему
+публичный coroutine API HTTP-клиента и маскирует синхронный контракт.
+
+```kotlin
+// 1.x
+suspend fun get(id: Long): Pet
+
+// 2.0
+fun get(id: Long): Pet
+```
+
+После замены уберите ставшие ненужными `runBlocking`/`runTest`, coroutine-тесты и импорты.
+Если модуль больше не использует корутины, удалите также прямые зависимости
+`org.jetbrains.kotlinx:kotlinx-coroutines-core` и `kotlinx-coroutines-jdk8`. Не удаляйте их
+раньше переписывания всех usages, но и не оставляйте как финальное решение для structured
+parallelism: `coroutineScope`/`supervisorScope`/`async`/`await` мигрируют по §13.
+Если корутины действительно нужны бизнес-логике, мост размещается в отдельном application
+service, но не в `@HttpClient` interface. Дублирующий suspend-only клиент лучше удалить целиком.
+
+OpenRewrite recipe `RemoveSuspendHttpClientMethods` и Python migrator снимают `suspend` в
+HTTP-client contracts. Переписывание вызывающей цепочки остаётся семантической проверкой.
 
 ### HTTP-клиент: `configPath` → `value`
 
@@ -455,6 +495,9 @@ class MyPredicate : CircuitBreakerPredicate {
 
 - `database.jdbc.EntityJdbc` → `database.jdbc.annotation.EntityJdbc`.
 - Контракты репозиториев в 2.0 **синхронные**. `suspend`-репозитории и корутинные контракты удалены.
+- Если suspend repository был отдельным дубликатом уже существующего sync repository, удалите
+  его целиком вместе с DI-ссылками и отдельными coroutine-тестами. Не создавайте второй
+  синхронный интерфейс с теми же запросами.
 
 **Было:**
 
@@ -476,7 +519,13 @@ interface PetRepository : JdbcRepository {
 
 **Это не механическое удаление `suspend`.** Снятие `suspend` распространяется вверх по цепочке вызовов: сервисы, контроллеры, тесты. Меняются отмена (structured concurrency больше не отменяет операцию БД), границы транзакций и распространение исключений. Тесты на `runTest`/`runBlocking` перестают быть нужны там, где вызовы стали синхронными.
 
-Сохранять `suspend` «ради стиля» поверх синхронного контракта не следует. Там, где корутины остаются в собственном коде приложения (вне контрактов Kora), мост возможен, но должен быть осознанным решением.
+Сохранять `suspend` «ради стиля» поверх синхронного контракта не следует. Если собственный
+application-код использовал Kotlin Structured Concurrency для параллелизма, его также нужно
+перевести на Java Structured Concurrency по правилам §13, а не оставлять coroutine-мост.
+
+После удаления последнего coroutine usage удалите из модуля прямые зависимости
+`kotlinx-coroutines-core`/`kotlinx-coroutines-jdk8`. Если корутины используются собственной
+бизнес-логикой вне repository-контракта, зависимость сохраняется.
 
 ### Ручные транзакции
 
@@ -617,9 +666,20 @@ suspend fun findPet(id: Long): PetTO = withContext(Dispatchers.IO) { petApi.getP
 
 ## 11. Тестирование
 
+Общую версию JUnit обновите до `6.1.3`:
+
+```properties
+junitVersion=6.1.3
+```
+
+Используйте `testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))`.
+`org.testcontainers:junit-jupiter` — интеграция Testcontainers, её версия независима от JUnit BOM.
+
 Артефакт тестирования — `io.koraframework:test-junit5`. Основной процессор подключается как
 `ksp("io.koraframework:symbol-processors:${property("koraVersion")}")`; test-конфигурация процессора
 нужна только тестам, которые сами генерируют Kora graph.
+Например, `@KoraAppTest(TestApplication::class)` для `TestApplication`, объявленного в
+`src/test`, требует `kspTest("io.koraframework:symbol-processors:${property("koraVersion")}")`.
 
 Пакет расширения: `io.koraframework.test.extension.junit5.*` — `@KoraAppTest`, `@TestComponent`, `KoraAppTestConfigModifier`, `KoraConfigModification`.
 
@@ -706,9 +766,111 @@ val event = requireNotNull(reader.read(data))
 
 ---
 
-## 13. Синхронная модель и Virtual Threads
+## 13. Синхронная модель, Virtual Threads и Java Structured Concurrency
 
-Kora 2.0 исполняет синхронные контракты на виртуальных потоках. Kotlin-код, который был `suspend` только ради неблокирующего доступа к БД или HTTP, переводится в синхронный. Корутины остаются допустимы во внутренней логике приложения, но не в контрактах фреймворка.
+Kora 2.0 исполняет синхронные контракты на виртуальных потоках. Kotlin-код, который был
+`suspend` только ради неблокирующего доступа к БД или HTTP, переводится в синхронный.
+
+### 13.1 Обязательная замена Kotlin Structured Concurrency
+
+Все конструкции Kotlin Structured Concurrency (`coroutineScope`, `supervisorScope`,
+`async`/`await`, `awaitAll`, дочерние `launch`, structured cancellation и timeout scope)
+переводятся на Java Structured Concurrency: `StructuredTaskScope`, `fork`, `join`, подходящий
+`Joiner` и timeout configuration. После миграции удаляются coroutine imports и зависимости
+`kotlinx-coroutines-core`/`kotlinx-coroutines-jdk8`, если иных usages не осталось.
+
+**Версионное правило:** брать не зафиксированный в этом документе старый JDK, а последний
+доступный **GA feature release Java** на момент миграции и последнюю итерацию Structured
+Concurrency Preview именно из него. Не использовать EA в production только ради более нового
+preview. На момент актуализации гайда (август 2026) это **JDK 26 + Structured Concurrency Sixth
+Preview (JEP 525)**. Нельзя копировать `StructuredTaskScope` API из JDK 21–25: preview API
+менялся, включая factories, `Joiner` и тип результата `join()`.
+
+Пример для актуального JDK 26:
+
+```kotlin
+import java.util.concurrent.Callable
+import java.util.concurrent.StructuredTaskScope
+
+fun getDashboard(userId: Long): Dashboard =
+    StructuredTaskScope.open(
+        StructuredTaskScope.Joiner.awaitAllSuccessfulOrThrow<Any>(),
+    ).use { scope ->
+        val profile = scope.fork(Callable { profileClient.getProfile(userId) })
+        val recommendations = scope.fork(Callable { recommendationClient.getForUser(userId) })
+
+        scope.join()
+        Dashboard(profile.get(), recommendations.get())
+    }
+```
+
+Выбор policy переносится явно:
+
+- fail-fast и отмена siblings при ошибке → `awaitAllSuccessfulOrThrow()`;
+- первый успешный результат → актуальный `Joiner` из API выбранного JDK;
+- supervisor-подобная семантика → `awaitAll()` и явная проверка `Subtask.state()`/`exception()`;
+- `withTimeout` → timeout в `StructuredTaskScope.Configuration`;
+- cancellation и exception propagation обязательно покрываются тестами заново.
+
+### 13.2 Preview должен быть включён везде
+
+Одного флага на компиляции недостаточно. `--enable-preview` обязателен при компиляции и на
+каждом JVM-запуске: tests, `JavaExec`, application distribution/production command. Версия
+`--release` обязана совпадать с выбранным latest GA JDK.
+
+```kotlin
+val latestJava = 26 // обновить до latest GA на момент миграции
+
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(latestJava))
+}
+
+kotlin {
+    jvmToolchain(latestJava)
+    compilerOptions {
+        // Kotlin sources also use the selected JDK API and emit preview bytecode.
+        freeCompilerArgs.addAll(
+            "-Xjdk-release=$latestJava",
+            "-Xjvm-enable-preview",
+        )
+    }
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.release.set(latestJava)
+    options.compilerArgs.add("--enable-preview")
+}
+
+tasks.withType<Test>().configureEach {
+    jvmArgs("--enable-preview")
+}
+
+tasks.withType<JavaExec>().configureEach {
+    jvmArgs("--enable-preview")
+}
+
+application {
+    // Merge with existing arguments instead of dropping application-specific JVM flags.
+    applicationDefaultJvmArgs = listOf("--enable-preview", "-Dfile.encoding=UTF-8")
+}
+```
+
+Для прямого запуска: `java --enable-preview -jar application.jar`. Образ контейнера и runtime
+обязаны использовать тот же major JDK, которым скомпилирован preview-код.
+
+Checklist перед merge:
+
+1. Проверить latest GA на `openjdk.org/projects/jdk` и обновить toolchain/CI/container runtime.
+2. Открыть JEP и Javadoc Structured Concurrency именно выбранного JDK; перепроверить `open`,
+   `Joiner`, тип результата `join`, timeout и exception types.
+3. Собрать main/test Kotlin и Java с preview; запустить unit/integration tests с preview.
+4. Проверить production launcher, Docker/Kubernetes command и IDE run configurations:
+   в каждом месте должен быть `--enable-preview`.
+5. Удалить `kotlinx-coroutines-*`, только когда repository-wide audit больше не находит usages.
+
+Это семантическая миграция: OpenRewrite/Python не могут автоматически выбрать `Joiner`, timeout,
+failure/cancellation policy или восстановить supervisor semantics. Automation только находит и
+удаляет запрещённые Kora contracts; structured concurrency переписывается разработчиком.
 
 Изменения, которые нужно продумать при снятии `suspend`: отмена, границы транзакций, распространение исключений, необходимость `Dispatchers.IO` (не нужен — виртуальные потоки), тесты.
 
@@ -915,7 +1077,7 @@ Native-образ Kotlin-приложения на Kora 2.0 в этом репо
 | Переезд DI-аннотаций | только Java | ✅ | — |
 | Переименования модулей | только Java | ✅ | — |
 | Разделение HTTP-пакетов | — | ✅ | — |
-| Версии Kotlin/KSP, toolchain 25 | — | ✅ | — |
+| Версии Kotlin/KSP, toolchain latest GA JDK | — | ✅ | — |
 | `KspTask` → привязка по имени | — | ✅ | проверить каждое место |
 | Режимы OpenAPI-генерации | — | ✅ | адаптация кода — вручную |
 | Удаление `@Nullable` в Kotlin | — | ✅ | спорные случаи — вручную |

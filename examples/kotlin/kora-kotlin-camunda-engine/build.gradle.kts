@@ -24,7 +24,7 @@ dependencies {
     testImplementation("org.mockito:mockito-core:5.18.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     testImplementation("io.koraframework:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.15.0")
     testRuntimeOnly("com.h2database:h2:2.2.224")
     testImplementation("org.camunda.bpm:camunda-bpm-assert:7.21.0")
     testImplementation("org.assertj:assertj-core:3.26.0")

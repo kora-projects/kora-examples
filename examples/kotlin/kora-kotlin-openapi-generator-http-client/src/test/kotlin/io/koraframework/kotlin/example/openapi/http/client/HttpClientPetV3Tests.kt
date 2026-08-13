@@ -4,7 +4,6 @@ import io.goodforgod.testcontainers.extensions.ContainerMode
 import io.goodforgod.testcontainers.extensions.mockserver.ConnectionMockServer
 import io.goodforgod.testcontainers.extensions.mockserver.MockServerConnection
 import io.goodforgod.testcontainers.extensions.mockserver.TestcontainersMockServer
-import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -58,7 +57,7 @@ class HttpClientPetV3Tests : KoraAppTestConfigModifier {
         ).respond(response().withBody(responseBody.toString()))
 
         // when
-        val response = runBlocking { petApi.getPetById(1L) }
+        val response = petApi.getPetById(1L)
 
         // then
         if (response is PetApiResponses.GetPetByIdApiResponse.GetPetById200ApiResponse) {
@@ -99,7 +98,7 @@ class HttpClientPetV3Tests : KoraAppTestConfigModifier {
             tags = listOf(Tag(1L, "tag")),
             status = Pet.StatusEnum.AVAILABLE
         )
-        val response = runBlocking { petApi.addPet(request) }
+        val response = petApi.addPet(request)
 
         // then
         if (response is PetApiResponses.AddPetApiResponse.AddPet200ApiResponse) {

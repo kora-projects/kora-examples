@@ -29,7 +29,7 @@ dependencies {
     implementation("org.postgresql:postgresql:42.7.7")
 
     testRuntimeOnly(project(":examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-common"))
-    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.15.0")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
 }
 

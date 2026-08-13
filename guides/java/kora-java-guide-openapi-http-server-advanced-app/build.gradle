@@ -103,9 +103,8 @@ test {
 
     useJUnitPlatform()
     testLogging {
-        showStandardStreams(false)
-        events("failed")
+        showStandardStreams(true)
+        events("passed", "skipped", "failed")
         exceptionFormat("full")
     }
 }
-

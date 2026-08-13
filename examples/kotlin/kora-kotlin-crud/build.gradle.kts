@@ -38,7 +38,6 @@ dependencies {
     implementation("io.koraframework:logging-logback")
 
     implementation("org.postgresql:postgresql:42.7.7")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.1")
 
     kspTest("io.koraframework:symbol-processors:${property("koraVersion")}")
     testImplementation("org.json:json:20231013")
@@ -46,7 +45,7 @@ dependencies {
 
     testImplementation("io.mockk:mockk:1.13.8")
     testImplementation("io.koraframework:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.15.0")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
 }
 

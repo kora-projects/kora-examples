@@ -14,7 +14,7 @@ dependencies {
     implementation("io.koraframework:config-hocon")
     implementation("io.koraframework:logging-logback")
     testImplementation("io.koraframework:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-redis:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-redis:0.15.0")
     testImplementation("redis.clients:jedis:4.4.3")
 }
 
