@@ -13,10 +13,10 @@
 ## Структура
 
 - [Examples](examples) - самостоятельные демонстрационные приложения по модулям Kora.
-- [Guides](guides) - приложения-компаньоны для guide-разделов документации.
+- [Guides](guides) - приложения-компаньоны для руководств-разделов документации.
 - [Java examples](examples/java) и [Kotlin examples](examples/kotlin) - каталоги примеров по языкам.
 - [Java guides](guides/java) и [Kotlin guides](guides/kotlin) - каталоги guide-приложений по языкам.
-- [GraalVM examples](examples/graalvm) - примеры сборки native image.
+- [GraalVM examples](examples/graalvm) - примеры сборки `GraalVM Native image`.
 
 [Описание](https://kora-projects.github.io/kora-docs/ru/) | [Документация](https://kora-projects.github.io/kora-docs/ru/documentation/general/) | [Ознакомление](https://kora-projects.github.io/kora-docs/ru/examples/hello-world/)
 
