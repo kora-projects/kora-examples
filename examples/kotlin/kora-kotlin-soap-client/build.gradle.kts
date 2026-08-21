@@ -13,15 +13,8 @@ dependencies {
     ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
 
     implementation("io.koraframework:json-common")
-    implementation("io.koraframework:http-client-jdk")
-    implementation("io.koraframework:soap-client") {
-        exclude(group = "jakarta.xml")
-        exclude(group = "jakarta.jws")
-        exclude(group = "jakarta.xml.ws")
-        exclude(group = "jakarta.xml.bind")
-        exclude(group = "org.glassfish.jaxb")
-        exclude(group = "com.sun.activation")
-    }
+    implementation("io.koraframework:http-client-ok")
+    implementation("io.koraframework:soap-client")
     implementation("io.koraframework:logging-logback")
     implementation("io.koraframework:config-hocon")
 

@@ -24,6 +24,7 @@ dependencies {
     implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
 
     ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
+    ksp("io.mcarle:konvert:4.5.1")
 
     implementation("io.koraframework:http-server-undertow")
     implementation("io.koraframework:http-client-ok")
@@ -36,6 +37,7 @@ dependencies {
     implementation("io.koraframework:config-hocon")
     implementation("io.koraframework:openapi-management")
     implementation("io.koraframework:logging-logback")
+    implementation("io.mcarle:konvert-api:4.5.1")
 
     implementation("org.postgresql:postgresql:42.7.7")
 

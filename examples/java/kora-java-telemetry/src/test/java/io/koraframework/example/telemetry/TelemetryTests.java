@@ -5,6 +5,7 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import java.net.http.HttpClient;
@@ -20,6 +21,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 class TelemetryTests {
 
     @Container
+    private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:17-alpine")
+            .withNetworkAliases("postgres")
+            .withNetwork(Network.SHARED);
+
+    @Container
     private static final TelemetryContainer telemetryContainer = new TelemetryContainer()
             .withNetworkAliases("otel")
             .withNetwork(Network.SHARED);
@@ -28,6 +34,10 @@ class TelemetryTests {
     private static final AppContainer container = AppContainer.build()
             .withNetworkAliases("app")
             .withNetwork(Network.SHARED)
+            .dependsOn(postgresContainer, telemetryContainer)
+            .withEnv("POSTGRES_JDBC_URL", "jdbc:postgresql://postgres:5432/" + postgresContainer.getDatabaseName())
+            .withEnv("POSTGRES_USER", postgresContainer.getUsername())
+            .withEnv("POSTGRES_PASS", postgresContainer.getPassword())
             .withEnv("METRIC_COLLECTOR_ENDPOINT", telemetryContainer.getCollectorURIInNetwork().toString());
 
     @Test
@@ -43,6 +53,7 @@ class TelemetryTests {
         // when
         var responseTest = httpClient.send(requestTest, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, responseTest.statusCode());
+        assertEquals("Hello world: 1", responseTest.body());
 
         // then
         Awaitility.await().atMost(Duration.ofSeconds(5))
@@ -51,7 +62,7 @@ class TelemetryTests {
                     final String[] logsSplit = logs.split("\n");
                     return Arrays.stream(logsSplit)
                             .anyMatch(l -> l.replace('\t', ' ').endsWith(
-                                    "TracesExporter {\"kind\": \"exporter\", \"data_type\": \"traces\", \"name\": \"logging\", \"#spans\": 1}"));
+                                    "TracesExporter {\"kind\": \"exporter\", \"data_type\": \"traces\", \"name\": \"logging\", \"#spans\": 2}"));
                 });
     }
 

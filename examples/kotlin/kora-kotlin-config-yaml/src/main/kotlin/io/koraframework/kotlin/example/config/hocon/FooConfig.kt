@@ -2,6 +2,7 @@
 
 import io.koraframework.config.common.annotation.ConfigSource
 import io.koraframework.config.common.annotation.ConfigMapper
+import io.koraframework.common.annotation.Mapping
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.*
@@ -39,6 +40,9 @@ interface FooConfig {
     fun valueBigInt(): BigInteger
     fun valueDouble(): Double
     fun valueBigDecimal(): BigDecimal
+    @Mapping(TokenConfigValueMapper::class)
+    fun apiToken(): Token
+    fun relaxedKey(): String
     fun valueBoolean(): Boolean
     fun valueListAsString(): List<String>
     fun valueListAsArray(): List<String>
@@ -61,4 +65,3 @@ interface FooConfig {
     fun bar(): BarConfig
     fun bars(): List<BarConfig>
 }
-

@@ -6,6 +6,8 @@ import io.koraframework.test.extension.junit5.KoraAppTest
 import io.koraframework.test.extension.junit5.TestComponent
 import java.time.Duration
 import java.time.Period
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.util.UUID
 
 @KoraAppTest(Application::class)
@@ -34,11 +36,16 @@ class YamlConfigTests {
         assertEquals(Duration.ofSeconds(250), fooConfig.valueDuration())
         assertEquals(1, fooConfig.valueInt())
         assertEquals(2L, fooConfig.valueLong())
+        assertEquals(BigInteger.valueOf(3), fooConfig.valueBigInt())
         assertEquals(4.1, fooConfig.valueDouble())
+        assertEquals(BigDecimal("5.1"), fooConfig.valueBigDecimal())
+        assertEquals("advanced-config-secret", fooConfig.apiToken().value)
+        assertEquals("relaxed-name", fooConfig.relaxedKey())
         assertTrue(fooConfig.valueBoolean())
         assertEquals(listOf("v1", "v2"), fooConfig.valueListAsString())
         assertEquals(listOf("v1", "v2"), fooConfig.valueListAsArray())
         assertEquals(setOf("v1", "v2"), fooConfig.valueSetAsString())
+        assertEquals(setOf("v1", "v2"), fooConfig.valueSetAsArray())
         assertEquals(mapOf("k1" to "v1", "k2" to "v2"), fooConfig.valueMap())
         assertEquals(mapOf("k1" to "v1", "k2" to "v2"), fooConfig.valueProperties())
         assertEquals("someString", fooConfig.bar().someBarString())
@@ -49,4 +56,3 @@ class YamlConfigTests {
         assertEquals("someString2", fooConfig.bars()[1].baz().someBazString())
     }
 }
-

@@ -20,7 +20,7 @@ dependencies {
 
     testImplementation("org.skyscreamer:jsonassert:1.5.1")
     testImplementation("com.squareup.okhttp:okhttp:2.7.5")
-    testImplementation("io.koraframework:http-client-jdk")
+    testImplementation("io.koraframework:http-client-ok")
     testImplementation("io.koraframework:test-junit5")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
 }

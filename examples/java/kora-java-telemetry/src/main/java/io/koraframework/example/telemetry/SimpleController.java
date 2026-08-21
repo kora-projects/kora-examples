@@ -10,9 +10,15 @@ import io.koraframework.http.server.common.annotation.HttpController;
 @Component
 @HttpController
 public final class SimpleController {
+    private final TraceRepository repository;
+
+    public SimpleController(TraceRepository repository) {
+        this.repository = repository;
+    }
 
     @HttpRoute(method = HttpMethod.GET, path = "/text")
     public HttpServerResponse get() {
-        return HttpServerResponse.of(200, HttpBody.plaintext("Hello world"));
+        var databaseValue = repository.selectOne();
+        return HttpServerResponse.of(200, HttpBody.plaintext("Hello world: " + databaseValue));
     }
 }

@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.Period;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,13 +42,16 @@ class HoconConfigTests {
         assertEquals(Duration.ofSeconds(250), fooConfig.valueDuration());
         assertEquals(1, fooConfig.valueInt());
         assertEquals(2L, fooConfig.valueLong());
-        // assertEquals(BigInteger.valueOf(3), fooConfig.valueBigInt());
+        assertEquals(BigInteger.valueOf(3), fooConfig.valueBigInt());
         assertEquals(4.1, fooConfig.valueDouble());
-        // assertEquals(BigDecimal.valueOf(5.1), fooConfig.valueBigDecimal());
+        assertEquals(new BigDecimal("5.1"), fooConfig.valueBigDecimal());
+        assertEquals("advanced-config-secret", fooConfig.apiToken().value());
+        assertEquals("relaxed-name", fooConfig.relaxedKey());
         assertTrue(fooConfig.valueBoolean());
         assertEquals(List.of("v1", "v2"), fooConfig.valueListAsString());
         assertEquals(List.of("v1", "v2"), fooConfig.valueListAsArray());
         assertEquals(Set.of("v1", "v2"), fooConfig.valueSetAsString());
+        assertEquals(Set.of("v1", "v2"), fooConfig.valueSetAsArray());
         assertEquals(Map.of("k1", "v1", "k2", "v2"), fooConfig.valueMap());
         assertEquals(Map.of("k1", "v1", "k2", "v2"), fooConfig.valueProperties());
         assertEquals("someString", fooConfig.bar().someBarString());

@@ -22,7 +22,7 @@ dependencies {
     annotationProcessor "io.koraframework:annotation-processors"
 
     implementation "io.koraframework.experimental:s3-client-kora"
-    implementation "io.koraframework:http-client-ok"
+    implementation "io.koraframework:http-client-apache"
 
     implementation "io.koraframework:logging-logback"
     implementation "io.koraframework:config-hocon"

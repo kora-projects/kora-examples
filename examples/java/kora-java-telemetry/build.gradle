@@ -24,12 +24,15 @@ dependencies {
     implementation "io.koraframework:micrometer-module"
     implementation "io.koraframework:opentelemetry-tracing-exporter-grpc"
     implementation "io.koraframework:http-server-undertow"
+    implementation "io.koraframework:database-jdbc"
+    implementation "org.postgresql:postgresql:42.7.7"
 
     implementation "io.koraframework:logging-logback"
     implementation "io.koraframework:config-hocon"
 
     testImplementation "io.koraframework:test-junit5"
     testImplementation "org.testcontainers:junit-jupiter:1.21.4"
+    testImplementation "org.testcontainers:postgresql:1.21.4"
 }
 
 application {

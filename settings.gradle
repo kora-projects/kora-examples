@@ -18,6 +18,7 @@ rootProject.name = "kora-examples"
 def javaExamples = [
         "kora-java-http-server",
         "kora-java-http-client",
+        "kora-java-json",
         "kora-java-soap-client",
         "kora-java-openapi-generator-http-server",
         "kora-java-openapi-generator-http-client",
@@ -41,6 +42,7 @@ def javaExamples = [
         "kora-java-camunda-zeebe-worker",
         "kora-java-helloworld",
         "kora-java-crud",
+        "kora-java-petclinic",
 ]
 
 javaExamples.each {
@@ -79,6 +81,7 @@ def kotlinExamples = [
         "kora-kotlin-telemetry",
         "kora-kotlin-validation",
         "kora-kotlin-http-client",
+        "kora-kotlin-json",
         "kora-kotlin-http-server",
         "kora-kotlin-openapi-generator-http-client",
         "kora-kotlin-openapi-generator-http-server",
@@ -92,6 +95,7 @@ def kotlinExamples = [
         "kora-kotlin-camunda-zeebe-worker",
         "kora-kotlin-database-jdbc",
         "kora-kotlin-database-cassandra",
+        "kora-kotlin-petclinic",
 ]
 
 kotlinExamples.each {

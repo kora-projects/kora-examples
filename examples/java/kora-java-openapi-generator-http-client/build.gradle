@@ -36,7 +36,7 @@ dependencies {
     annotationProcessor "io.koraframework:annotation-processors"
 
     implementation "io.koraframework:validation-module"
-    implementation "io.koraframework:http-client-jdk"
+    implementation "io.koraframework:http-client-apache"
     implementation "io.koraframework:json-common"
     implementation "io.projectreactor:reactor-core:3.6.18" // For reactive examples (optional)
 

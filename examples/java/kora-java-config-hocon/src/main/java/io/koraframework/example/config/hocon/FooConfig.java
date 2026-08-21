@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import io.koraframework.config.common.annotation.ConfigSource;
 import io.koraframework.config.common.annotation.ConfigMapper;
+import io.koraframework.common.annotation.Mapping;
 
 @ConfigSource("foo")
 public interface FooConfig {
@@ -59,6 +60,11 @@ public interface FooConfig {
     double valueDouble();
 
     BigDecimal valueBigDecimal();
+
+    @Mapping(TokenConfigValueMapper.class)
+    Token apiToken();
+
+    String relaxedKey();
 
     boolean valueBoolean();
 
