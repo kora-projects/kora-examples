@@ -13,6 +13,7 @@ dependencies {
 
     implementation("io.koraframework:kafka")
     implementation("io.koraframework:json-common")
+    implementation("io.koraframework:resilient-kora")
     implementation("io.koraframework:logging-logback")
     implementation("io.koraframework:config-hocon")
 

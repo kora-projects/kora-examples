@@ -6,7 +6,7 @@ import io.koraframework.common.annotation.Tag;
 import io.koraframework.config.hocon.HoconConfigModule;
 import io.koraframework.example.openapi.petV3.api.ApiSecurity;
 import io.koraframework.http.client.common.auth.HttpClientTokenProvider;
-import io.koraframework.http.client.jdk.JdkHttpClientModule;
+import io.koraframework.http.client.apache.ApacheHttpClientModule;
 import io.koraframework.json.common.JsonModule;
 import io.koraframework.logging.logback.LogbackModule;
 import io.koraframework.validation.module.ValidationModule;
@@ -17,7 +17,7 @@ public interface Application extends
         LogbackModule,
         ValidationModule,
         JsonModule,
-        JdkHttpClientModule {
+        ApacheHttpClientModule {
 
     static void main(String[] args) {
         KoraApplication.run(ApplicationGraph::graph);

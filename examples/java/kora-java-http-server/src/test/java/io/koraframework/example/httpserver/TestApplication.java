@@ -6,7 +6,7 @@ import io.koraframework.common.annotation.Root;
 import io.koraframework.example.http.server.Application;
 import io.koraframework.example.http.server.JsonPostController;
 import io.koraframework.http.client.common.annotation.HttpClient;
-import io.koraframework.http.client.jdk.JdkHttpClientModule;
+import io.koraframework.http.client.apache.ApacheHttpClientModule;
 import io.koraframework.http.common.HttpMethod;
 import io.koraframework.http.common.annotation.HttpRoute;
 import io.koraframework.json.common.annotation.Json;
@@ -32,7 +32,7 @@ import io.koraframework.json.common.annotation.Json;
  * tests.
  */
 @KoraApp
-public interface TestApplication extends Application, JdkHttpClientModule {
+public interface TestApplication extends Application, ApacheHttpClientModule {
 
     @Root
     @Component

@@ -6,13 +6,13 @@ import io.koraframework.common.annotation.Tag
 import io.koraframework.http.client.common.auth.HttpClientTokenProvider
 import io.koraframework.kotlin.example.openapi.petV3.api.ApiSecurity
 import io.koraframework.config.hocon.HoconConfigModule
-import io.koraframework.http.client.jdk.JdkHttpClientModule
+import io.koraframework.http.client.ok.OkHttpClientModule
 import io.koraframework.json.common.JsonModule
 import io.koraframework.logging.logback.LogbackModule
 import io.koraframework.validation.common.constraint.ValidatorModule
 
 @KoraApp
-interface Application : HoconConfigModule, LogbackModule, ValidatorModule, JsonModule, JdkHttpClientModule {
+interface Application : HoconConfigModule, LogbackModule, ValidatorModule, JsonModule, OkHttpClientModule {
 
     // Сгенерированный ApiSecurity требует HttpClientTokenProvider под тегом каждой схемы, даже если
     // приложение её не использует. Перехватчик перебирает схемы по порядку и берёт первую, чей

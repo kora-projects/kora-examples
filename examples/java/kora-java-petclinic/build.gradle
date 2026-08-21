@@ -1,0 +1,73 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
+plugins {
+    id "application"
+    id "jacoco"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+        vendor = JvmVendorSpec.ADOPTIUM
+    }
+}
+
+configurations {
+    koraBom
+    annotationProcessor.extendsFrom(koraBom)
+    implementation.extendsFrom(koraBom)
+    testAnnotationProcessor.extendsFrom(koraBom)
+    testImplementation.extendsFrom(koraBom)
+}
+
+dependencies {
+    koraBom platform("io.koraframework:kora-bom:$koraVersion")
+    annotationProcessor "io.koraframework:annotation-processors"
+
+    implementation "io.koraframework:http-server-undertow"
+    implementation "io.koraframework:database-jdbc"
+    implementation "io.koraframework:database-flyway"
+    implementation "io.koraframework:json-common"
+    implementation "io.koraframework:validation-module"
+    implementation "io.koraframework:config-hocon"
+    implementation "io.koraframework:logging-logback"
+    implementation "org.postgresql:postgresql:42.7.7"
+    implementation "org.flywaydb:flyway-database-postgresql:13.1.0"
+
+    testAnnotationProcessor "io.koraframework:annotation-processors"
+    testImplementation platform("org.junit:junit-bom:$junitVersion")
+    testImplementation "io.koraframework:test-junit5"
+    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.15.0"
+}
+
+application {
+    applicationName = "application"
+    mainClass = "io.koraframework.example.petclinic.Application"
+    applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+}
+
+run {
+    environment([
+        "POSTGRES_JDBC_URL": "jdbc:postgresql://${findProperty('postgresHost') ?: 'localhost'}:${findProperty('postgresPort') ?: '5432'}/${findProperty('postgresDatabase') ?: 'postgres'}",
+        "POSTGRES_USER": findProperty("postgresUser") ?: "postgres",
+        "POSTGRES_PASS": findProperty("postgresPassword") ?: "postgres",
+    ])
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        showStandardStreams = true
+        events("passed", "skipped", "failed")
+        exceptionFormat = TestExceptionFormat.FULL
+    }
+    reports {
+        html.required = false
+        junitXml.required = false
+    }
+}
+
+compileJava {
+    options.encoding = "UTF-8"
+    options.compilerArgs += ["-Akora.app.submodule.enabled=true"]
+}

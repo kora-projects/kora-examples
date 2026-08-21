@@ -21,6 +21,8 @@ foo:
   valueBigInt: 3
   valueDouble: 4.1
   valueBigDecimal: 5.1
+  apiToken: "Bearer advanced-config-secret"
+  relaxed-key: "relaxed-name"
   valueBoolean: true
   valueListAsString: "v1,v2"
   valueListAsArray: [ "v1", "v2" ]

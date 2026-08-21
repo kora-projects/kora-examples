@@ -3,7 +3,7 @@ package io.koraframework.example.http.client;
 import io.koraframework.application.graph.KoraApplication;
 import io.koraframework.common.annotation.KoraApp;
 import io.koraframework.config.hocon.HoconConfigModule;
-import io.koraframework.http.client.jdk.JdkHttpClientModule;
+import io.koraframework.http.client.apache.ApacheHttpClientModule;
 import io.koraframework.json.common.JsonModule;
 import io.koraframework.logging.logback.LogbackModule;
 
@@ -12,7 +12,7 @@ public interface Application extends
         HoconConfigModule,
         LogbackModule,
         JsonModule,
-        JdkHttpClientModule {
+        ApacheHttpClientModule {
 
     static void main(String[] args) {
         KoraApplication.run(ApplicationGraph::graph);

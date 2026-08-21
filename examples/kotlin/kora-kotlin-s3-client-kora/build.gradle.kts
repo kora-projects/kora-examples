@@ -12,7 +12,7 @@ dependencies {
     ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
 
     implementation("io.koraframework.experimental:s3-client-kora")
-    implementation("io.koraframework:http-client-ok")
+    implementation("io.koraframework:http-client-jdk")
     implementation("io.koraframework:logging-logback")
     implementation("io.koraframework:config-hocon")
 

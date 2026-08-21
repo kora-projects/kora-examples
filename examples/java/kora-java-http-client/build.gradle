@@ -22,7 +22,7 @@ dependencies {
     koraBom platform("io.koraframework:kora-bom:$koraVersion")
     annotationProcessor "io.koraframework:annotation-processors"
 
-    implementation "io.koraframework:http-client-jdk"
+    implementation "io.koraframework:http-client-apache"
     implementation "io.koraframework:json-common"
 
     implementation "io.koraframework:logging-logback"
