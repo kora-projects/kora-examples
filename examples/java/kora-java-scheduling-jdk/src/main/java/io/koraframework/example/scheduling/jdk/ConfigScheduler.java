@@ -1,14 +1,14 @@
 package io.koraframework.example.scheduling.jdk;
 
 import io.koraframework.common.annotation.Component;
-import io.koraframework.scheduling.jdk.annotation.ScheduleAtFixedRate;
+import io.koraframework.scheduling.jdk.annotation.ScheduleJdkAtFixedRate;
 
 @Component
 public final class ConfigScheduler {
 
     private int state = 0;
 
-    @ScheduleAtFixedRate(config = "scheduling.jobs.fix-rate")
+    @ScheduleJdkAtFixedRate(config = "scheduling.jobs.fix-rate")
     void schedule() {
         state++;
     }

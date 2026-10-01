@@ -5,7 +5,7 @@ import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import io.koraframework.scheduling.jdk.RunOnceJob;
+import io.koraframework.scheduling.jdk.job.RunOnceJob;
 import io.koraframework.test.extension.junit5.KoraAppTest;
 import io.koraframework.test.extension.junit5.TestComponent;
 

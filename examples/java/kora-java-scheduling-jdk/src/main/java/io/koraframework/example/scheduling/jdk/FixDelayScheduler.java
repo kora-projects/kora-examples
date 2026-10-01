@@ -2,14 +2,14 @@ package io.koraframework.example.scheduling.jdk;
 
 import java.time.temporal.ChronoUnit;
 import io.koraframework.common.annotation.Component;
-import io.koraframework.scheduling.jdk.annotation.ScheduleWithFixedDelay;
+import io.koraframework.scheduling.jdk.annotation.ScheduleJdkWithFixedDelay;
 
 @Component
 public final class FixDelayScheduler {
 
     private int state = 0;
 
-    @ScheduleWithFixedDelay(initialDelay = 50, delay = 50, unit = ChronoUnit.MILLIS)
+    @ScheduleJdkWithFixedDelay(initialDelay = 50, delay = 50, unit = ChronoUnit.MILLIS)
     void schedule() {
         state++;
     }

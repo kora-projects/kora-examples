@@ -1,7 +1,7 @@
 package io.koraframework.example.scheduling.quartz;
 
 import io.koraframework.common.annotation.Component;
-import io.koraframework.scheduling.quartz.ScheduleWithTrigger;
+import io.koraframework.scheduling.quartz.annotation.ScheduleQuartzWithTrigger;
 
 @Component
 public final class TriggerScheduler {
@@ -11,7 +11,7 @@ public final class TriggerScheduler {
     /**
      * @see Application#myTrigger()
      */
-    @ScheduleWithTrigger(TriggerScheduler.class)
+    @ScheduleQuartzWithTrigger(TriggerScheduler.class)
     void schedule() {
         state++;
     }
