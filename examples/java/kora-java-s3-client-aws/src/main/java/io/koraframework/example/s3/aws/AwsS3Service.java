@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Kora 2.0 exposes the AWS SDK {@link S3Client} itself as a component, so working with S3 through
  * this module means working with the AWS SDK API directly. The declarative {@code @S3.Client}
- * contracts live in a different artifact now, see {@code kora-java-s3-client-minio}.
+ * contracts live in a different artifact now, see {@code kora-java-s3-client-kora}.
  */
 @Component
 public class AwsS3Service {

@@ -116,7 +116,7 @@ curl http://localhost:8080/hello
 | gRPC-сервер | [Java](examples/java/kora-java-grpc-server) | [Kotlin](examples/kotlin/kora-kotlin-grpc-server) |
 | gRPC-клиент | [Java](examples/java/kora-java-grpc-client) | [Kotlin](examples/kotlin/kora-kotlin-grpc-client) |
 | S3 — AWS SDK | [Java](examples/java/kora-java-s3-client-aws) | [Kotlin](examples/kotlin/kora-kotlin-s3-client-aws) |
-| S3 — MinIO | [Java](examples/java/kora-java-s3-client-minio) | [Kotlin](examples/kotlin/kora-kotlin-s3-client-minio) |
+| S3 — Kora | [Java](examples/java/kora-java-s3-client-kora) | [Kotlin](examples/kotlin/kora-kotlin-s3-client-kora) |
 
 ### Отказоустойчивость и аспекты
 

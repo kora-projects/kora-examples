@@ -32,7 +32,7 @@ dependencies {
     testImplementation("org.json:json:20231013")
     testImplementation("org.skyscreamer:jsonassert:1.5.1")
     testImplementation("io.koraframework:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-mockserver:0.15.0")
+    testImplementation("io.goodforgod:testcontainers-extensions-mockserver:0.16.0")
 }
 
 kotlin {

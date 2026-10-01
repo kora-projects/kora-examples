@@ -16,7 +16,7 @@ dependencies {
     implementation("io.koraframework:logging-logback")
 
     testImplementation("io.koraframework:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-scylla:0.15.0")
+    testImplementation("io.goodforgod:testcontainers-extensions-scylla:0.16.0")
 }
 
 kotlin {

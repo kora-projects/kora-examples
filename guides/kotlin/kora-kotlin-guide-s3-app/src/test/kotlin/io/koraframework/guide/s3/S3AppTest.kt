@@ -1,10 +1,10 @@
 package io.koraframework.guide.s3
 
 import io.goodforgod.testcontainers.extensions.ContainerMode
-import io.goodforgod.testcontainers.extensions.minio.Bucket
-import io.goodforgod.testcontainers.extensions.minio.ConnectionMinio
-import io.goodforgod.testcontainers.extensions.minio.MinioConnection
-import io.goodforgod.testcontainers.extensions.minio.TestcontainersMinio
+import io.goodforgod.testcontainers.extensions.rustfs.Bucket
+import io.goodforgod.testcontainers.extensions.rustfs.ConnectionRustFS
+import io.goodforgod.testcontainers.extensions.rustfs.RustFSConnection
+import io.goodforgod.testcontainers.extensions.rustfs.TestcontainersRustFS
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -22,14 +22,14 @@ import software.amazon.awssdk.services.s3.S3Client
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 
-@TestcontainersMinio(
+@TestcontainersRustFS(
     mode = ContainerMode.PER_RUN,
     bucket = Bucket(value = [S3AppTest.BUCKET], create = Bucket.Mode.PER_METHOD, drop = Bucket.Mode.PER_METHOD)
 )
 @KoraAppTest(Application::class)
 class S3AppTest : KoraAppTestConfigModifier {
-    @ConnectionMinio
-    lateinit var minioConnection: MinioConnection
+    @ConnectionRustFS
+    lateinit var rustfsConnection: RustFSConnection
 
     @TestComponent
     lateinit var s3FileClient: S3FileClient
@@ -41,9 +41,9 @@ class S3AppTest : KoraAppTestConfigModifier {
     lateinit var s3Client: S3Client
 
     override fun config(): KoraConfigModification =
-        KoraConfigModification.ofSystemProperty("S3_URL", minioConnection.params().uri().toString())
-            .withSystemProperty("S3_ACCESS_KEY", minioConnection.params().accessKey())
-            .withSystemProperty("S3_SECRET_KEY", minioConnection.params().secretKey())
+        KoraConfigModification.ofSystemProperty("S3_URL", rustfsConnection.params().uri().toString())
+            .withSystemProperty("S3_ACCESS_KEY", rustfsConnection.params().accessKey())
+            .withSystemProperty("S3_SECRET_KEY", rustfsConnection.params().secretKey())
             .withSystemProperty("S3_BUCKET", BUCKET)
 
     @Test

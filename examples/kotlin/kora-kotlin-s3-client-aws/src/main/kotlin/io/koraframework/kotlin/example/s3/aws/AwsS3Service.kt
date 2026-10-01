@@ -14,7 +14,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectResponse
 /**
  * Kora 2.0 exposes the AWS SDK [S3Client] itself as a component, so working with S3 through this
  * module means working with the AWS SDK API directly. The declarative `@S3.Client` contracts live
- * in a different artifact now, see `kora-kotlin-s3-client-minio`.
+ * in a different artifact now, see `kora-kotlin-s3-client-kora`.
  */
 @Component
 class AwsS3Service(

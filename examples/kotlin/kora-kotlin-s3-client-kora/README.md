@@ -1,10 +1,10 @@
-# Kora Java S3 Minio
+# Kora Kotlin S3 Kora
 
-Пример модуля S3 Minio в Kora.
+Пример декларативного S3 клиента Kora, который работает против RustFS как S3-совместимого хранилища.
 
 В примере использовались модули:
 
-- [S3 Minio](https://kora-projects.github.io/kora-docs/ru/documentation/s3-client/#minio)
+- [S3 клиент](https://kora-projects.github.io/kora-docs/ru/documentation/s3-client/)
 
 ## Build
 

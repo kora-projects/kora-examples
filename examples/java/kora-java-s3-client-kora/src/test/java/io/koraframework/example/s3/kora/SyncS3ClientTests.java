@@ -3,10 +3,10 @@ package io.koraframework.example.s3.kora;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.goodforgod.testcontainers.extensions.ContainerMode;
-import io.goodforgod.testcontainers.extensions.minio.Bucket;
-import io.goodforgod.testcontainers.extensions.minio.ConnectionMinio;
-import io.goodforgod.testcontainers.extensions.minio.MinioConnection;
-import io.goodforgod.testcontainers.extensions.minio.TestcontainersMinio;
+import io.goodforgod.testcontainers.extensions.rustfs.Bucket;
+import io.goodforgod.testcontainers.extensions.rustfs.ConnectionRustFS;
+import io.goodforgod.testcontainers.extensions.rustfs.RustFSConnection;
+import io.goodforgod.testcontainers.extensions.rustfs.TestcontainersRustFS;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,7 @@ import io.koraframework.test.extension.junit5.KoraAppTestConfigModifier;
 import io.koraframework.test.extension.junit5.KoraConfigModification;
 import io.koraframework.test.extension.junit5.TestComponent;
 
-@TestcontainersMinio(
+@TestcontainersRustFS(
         mode = ContainerMode.PER_RUN,
         bucket = @Bucket(
                 value = SyncS3ClientTests.BUCKET,
@@ -27,8 +27,8 @@ class SyncS3ClientTests implements KoraAppTestConfigModifier {
 
     static final String BUCKET = "simple";
 
-    @ConnectionMinio
-    private MinioConnection minioConnection;
+    @ConnectionRustFS
+    private RustFSConnection rustfsConnection;
 
     @TestComponent
     private SyncS3Client client;
@@ -36,9 +36,9 @@ class SyncS3ClientTests implements KoraAppTestConfigModifier {
     @Override
     public KoraConfigModification config() {
         return KoraConfigModification
-                .ofSystemProperty("S3_URL", minioConnection.params().uri().toString())
-                .withSystemProperty("S3_ACCESS_KEY", minioConnection.params().accessKey())
-                .withSystemProperty("S3_SECRET_KEY", minioConnection.params().secretKey())
+                .ofSystemProperty("S3_URL", rustfsConnection.params().uri().toString())
+                .withSystemProperty("S3_ACCESS_KEY", rustfsConnection.params().accessKey())
+                .withSystemProperty("S3_SECRET_KEY", rustfsConnection.params().secretKey())
                 .withSystemProperty("S3_BUCKET", BUCKET);
     }
 

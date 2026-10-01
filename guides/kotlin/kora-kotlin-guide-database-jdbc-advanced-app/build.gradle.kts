@@ -22,7 +22,7 @@ dependencies {
     implementation("io.koraframework:json-common")
     implementation("io.koraframework:logging-logback")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
-    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.15.0")
+    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.16.0")
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.koraframework:test-junit5")
 }

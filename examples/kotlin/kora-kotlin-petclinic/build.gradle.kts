@@ -23,7 +23,7 @@ dependencies {
 
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("io.koraframework:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.15.0")
+    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.16.0")
 }
 
 kotlin {

@@ -17,8 +17,7 @@ dependencies {
     implementation("io.koraframework:config-hocon")
 
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
-    testImplementation("org.testcontainers:minio:1.21.4")
-    testImplementation("io.goodforgod:testcontainers-extensions-minio:0.15.0")
+    testImplementation("io.goodforgod:testcontainers-extensions-rustfs:0.16.0")
     testImplementation("io.koraframework:test-junit5")
 }
 
@@ -31,7 +30,7 @@ kotlin {
 
 application {
     applicationName = "application"
-    mainClass.set("io.koraframework.kotlin.example.s3.minio.ApplicationKt")
+    mainClass.set("io.koraframework.kotlin.example.s3.kora.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 
