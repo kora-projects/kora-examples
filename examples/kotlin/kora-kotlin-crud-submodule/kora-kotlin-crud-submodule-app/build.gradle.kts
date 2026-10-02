@@ -1,40 +1,42 @@
-import com.google.devtools.ksp.gradle.KspTask
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
     dependencies {
-        classpath("ru.tinkoff.kora:openapi-generator:${property("koraVersion")}")
+        classpath("io.koraframework:openapi-generator:${property("koraVersion")}")
     }
 }
 
 plugins {
     id("application")
-    id("org.openapi.generator") version ("7.14.0")
+    id("org.openapi.generator") version ("7.24.0")
     id("org.flywaydb.flyway") version ("8.4.2")
 }
 
 dependencies {
+    kspTest("io.koraframework:symbol-processors:${property("koraVersion")}")
     implementation(project(":examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-pet-api"))
     implementation(project(":examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-vet-api"))
-    implementation("ru.tinkoff.kora:http-server-undertow")
-    implementation("ru.tinkoff.kora:config-hocon")
-    implementation("ru.tinkoff.kora:logging-logback")
-    implementation("ru.tinkoff.kora:json-module")
-    implementation("ru.tinkoff.kora:micrometer-module")
-    implementation("ru.tinkoff.kora:validation-module")
-    implementation("ru.tinkoff.kora:openapi-management")
+    implementation("io.koraframework:http-server-undertow")
+    implementation("io.koraframework:config-hocon")
+    implementation("io.koraframework:logging-logback")
+    implementation("io.koraframework:json-common")
+    implementation("io.koraframework:micrometer-module")
+    implementation("io.koraframework:validation-module")
+    implementation("io.koraframework:openapi-management")
     implementation("org.postgresql:postgresql:42.7.7")
 
-    kspTest("ru.tinkoff.kora:symbol-processors")
-
     testRuntimeOnly(project(":examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-common"))
-    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.16.0")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
 }
 
 application {
     applicationName = "application"
-    mainClass.set("ru.tinkoff.kora.kotlin.example.submodule.app.ApplicationKt")
+    mainClass.set("io.koraframework.kotlin.example.submodule.app.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 
@@ -57,7 +59,7 @@ val openApiGenerateHttpServer = tasks.register<GenerateTask>("openApiGenerateHtt
     group = "openapi tools"
     inputSpec.set("$projectDir/src/main/resources/openapi/http-server.yaml")
     outputDir.set(layout.buildDirectory.dir("generated/openapi").get().asFile.absolutePath)
-    val corePackage = "ru.tinkoff.kora.kotlin.example.submodule.openapi.http.server"
+    val corePackage = "io.koraframework.kotlin.example.submodule.openapi.http.server"
     apiPackage.set("$corePackage.api")
     modelPackage.set("$corePackage.model")
     invokerPackage.set("$corePackage.invoker")
@@ -74,7 +76,7 @@ tasks.test {
 }
 
 kotlin.sourceSets.main { kotlin.srcDir(openApiGenerateHttpServer.get().outputDir) }
-tasks.withType<KspTask>().configureEach {
+tasks.matching { it.name.startsWith("ksp") }.configureEach {
     dependsOn(openApiGenerateHttpServer)
 }
 tasks.compileKotlin {

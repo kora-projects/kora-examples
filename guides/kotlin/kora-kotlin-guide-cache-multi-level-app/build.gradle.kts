@@ -7,39 +7,26 @@ plugins {
     id("application")
 }
 
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom)
-    compileOnly.get().extendsFrom(koraBom)
-    runtimeOnly.get().extendsFrom(koraBom)
-    implementation.get().extendsFrom(koraBom)
-    testCompileOnly.get().extendsFrom(koraBom)
-    kspTest.get().extendsFrom(koraBom)
-    testRuntimeOnly.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom)
-}
-
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
 
-    ksp("ru.tinkoff.kora:symbol-processors")
-    implementation("ru.tinkoff.kora:cache-caffeine")
-    implementation("ru.tinkoff.kora:cache-redis")
-    implementation("ru.tinkoff.kora:config-hocon")
-    implementation("ru.tinkoff.kora:http-server-undertow")
-    implementation("ru.tinkoff.kora:json-module")
-    implementation("ru.tinkoff.kora:logging-logback")
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
+    implementation("io.koraframework:cache-caffeine")
+    implementation("io.koraframework:cache-redis-lettuce")
+    implementation("io.koraframework:config-hocon")
+    implementation("io.koraframework:http-server-undertow")
+    implementation("io.koraframework:json-common")
+    implementation("io.koraframework:logging-logback")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("ru.tinkoff.kora:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-redis:0.13.1")
+    testImplementation("io.koraframework:test-junit5")
+    testImplementation("io.goodforgod:testcontainers-extensions-redis:0.16.0")
     testImplementation("redis.clients:jedis:4.4.3")
 }
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
     sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
@@ -48,7 +35,7 @@ kotlin {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
@@ -56,7 +43,7 @@ java {
 
 application {
     applicationName = "application"
-    mainClass.set("ru.tinkoff.kora.guide.cache.ApplicationKt")
+    mainClass.set("io.koraframework.guide.cache.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 

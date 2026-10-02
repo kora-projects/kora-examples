@@ -1,11 +1,14 @@
-import com.google.devtools.ksp.gradle.KspTask
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.jvm.toolchain.JvmVendorSpec
 
 buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
     dependencies {
-        classpath("ru.tinkoff.kora:openapi-generator:${property("koraVersion")}")
+        classpath("io.koraframework:openapi-generator:${property("koraVersion")}")
     }
 }
 
@@ -13,40 +16,27 @@ plugins {
     id("org.jetbrains.kotlin.jvm")
     id("com.google.devtools.ksp")
     id("application")
-    id("org.openapi.generator") version "7.14.0"
-}
-
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom)
-    compileOnly.get().extendsFrom(koraBom)
-    runtimeOnly.get().extendsFrom(koraBom)
-    implementation.get().extendsFrom(koraBom)
-    testCompileOnly.get().extendsFrom(koraBom)
-    kspTest.get().extendsFrom(koraBom)
-    testRuntimeOnly.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom)
+    id("org.openapi.generator") version "7.24.0"
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
 
-    ksp("ru.tinkoff.kora:symbol-processors")
-    implementation("ru.tinkoff.kora:config-hocon")
-    implementation("ru.tinkoff.kora:http-server-undertow")
-    implementation("ru.tinkoff.kora:json-module")
-    implementation("ru.tinkoff.kora:logging-logback")
-    implementation("ru.tinkoff.kora:openapi-management")
-    implementation("ru.tinkoff.kora:validation-module")
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
+    implementation("io.koraframework:config-hocon")
+    implementation("io.koraframework:http-server-undertow")
+    implementation("io.koraframework:json-common")
+    implementation("io.koraframework:logging-logback")
+    implementation("io.koraframework:openapi-management")
+    implementation("io.koraframework:validation-module")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.koraframework:test-junit5")
 }
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
     sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
@@ -55,7 +45,7 @@ kotlin {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
@@ -63,9 +53,9 @@ java {
 val openApiGenerateDataHttpServer = tasks.register<GenerateTask>("openApiGenerateDataHttpServer") {
     generatorName = "kora"
     group = "openapi tools"
-    inputSpec = "$projectDir/src/main/resources/openapi/data-http-server.yaml"
-    outputDir = "$buildDir/generated/data-http-server"
-    val corePackage = "ru.tinkoff.kora.guide.openapi.httpserver.data"
+    inputSpec.set(layout.projectDirectory.file("src/main/resources/openapi/data-http-server.yaml"))
+    outputDir.set(layout.buildDirectory.dir("generated/data-http-server"))
+    val corePackage = "io.koraframework.guide.openapi.httpserver.data"
     apiPackage = "${corePackage}.api"
     modelPackage = "${corePackage}.model"
     invokerPackage = "${corePackage}.invoker"
@@ -76,7 +66,7 @@ val openApiGenerateDataHttpServer = tasks.register<GenerateTask>("openApiGenerat
             {
               "*": [
                 {
-                  "type": "ru.tinkoff.kora.guide.openapi.httpserver.advanced.controller.DataApiExceptionHandler"
+                  "type": "io.koraframework.guide.openapi.httpserver.advanced.controller.DataApiExceptionHandler"
                 }
               ]
             }
@@ -87,14 +77,14 @@ val openApiGenerateDataHttpServer = tasks.register<GenerateTask>("openApiGenerat
 kotlin.sourceSets.main {
     kotlin.srcDir(openApiGenerateDataHttpServer.get().outputDir)
 }
-tasks.withType<KspTask>().configureEach {
+tasks.matching { it.name.startsWith("ksp") }.configureEach {
     dependsOn(openApiGenerateDataHttpServer)
 }
 
 
 application {
     applicationName = "application"
-    mainClass.set("ru.tinkoff.kora.guide.openapi.httpserver.advanced.ApplicationKt")
+    mainClass.set("io.koraframework.guide.openapi.httpserver.advanced.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 

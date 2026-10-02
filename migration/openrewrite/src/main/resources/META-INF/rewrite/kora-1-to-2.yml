@@ -1,0 +1,263 @@
+########################################################################################
+# Kora 1.x -> 2.0, OpenRewrite recipes.
+#
+# Focused recipes that can be activated one by one; Kora1To2 composes all of them.
+# Only deterministic, AST-safe changes live here. Semantic changes (resilient specs,
+# suspend call-chain removal, JSpecify placement, S3 client) are out of scope on purpose and are
+# described in KORA_2_MIGRATION_NEURO.md.
+########################################################################################
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.Kora1To2
+displayName: Migrate Kora 1.x to 2.0
+description: >-
+  Aggregate of every deterministic Kora 1.x to 2.0 change: package relocation, annotation
+  and type moves, nullability annotations and build coordinates. Semantic API changes are
+  intentionally left to module-specific migration.
+recipeList:
+  - io.koraframework.migration.RelocateKoraPackages
+  - io.koraframework.migration.RelocateKoraAnnotations
+  - io.koraframework.migration.RenameKoraTypes
+  - io.koraframework.migration.MigrateNullabilityAnnotations
+  - io.koraframework.migration.UpdateKoraDependencies
+  - io.koraframework.migration.NormalizeKotlinDependencies
+  - io.koraframework.migration.UpdateJUnit
+  - io.koraframework.migration.UpdateMockK
+  - io.koraframework.migration.RemoveEmptyEnvironmentBlock
+  - io.koraframework.migration.RemoveSuspendHttpClientMethods
+  - io.koraframework.migration.RemoveSuspendRepositoryMethods
+  - io.koraframework.migration.RemoveSuspendHttpServerMethods
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.RelocateKoraPackages
+displayName: Relocate Kora packages
+description: Kora 2.0 moved every package from `ru.tinkoff.kora` to `io.koraframework`.
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: ru.tinkoff.kora
+      newPackageName: io.koraframework
+      recursive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.RelocateKoraAnnotations
+displayName: Relocate Kora DI annotations into `common.annotation`
+description: >-
+  Kora 2.0 moved the dependency injection annotations out of `io.koraframework.common`
+  into `io.koraframework.common.annotation`. Runs after RelocateKoraPackages, so the
+  source type names are already the 2.0 ones.
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.KoraApp
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.KoraApp
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.Component
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.Component
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.DefaultComponent
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.DefaultComponent
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.KoraSubmodule
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.KoraSubmodule
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.Mapping
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.Mapping
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.Module
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.Module
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.common.Tag
+      newFullyQualifiedTypeName: io.koraframework.common.annotation.Tag
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.RenameKoraTypes
+displayName: Rename Kora types that changed name or module
+description: >-
+  Types whose fully qualified name changed for a reason other than the package relocation:
+  the Undertow module was split into public and private servers, the JSON module moved to
+  `json-common`, the config extractor annotation was renamed, and the Redis cache module
+  became transport specific.
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.http.server.undertow.UndertowHttpServerModule
+      newFullyQualifiedTypeName: io.koraframework.http.server.undertow.UndertowPublicHttpServerModule
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.json.module.JsonModule
+      newFullyQualifiedTypeName: io.koraframework.json.common.JsonModule
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.config.common.annotation.ConfigValueExtractor
+      newFullyQualifiedTypeName: io.koraframework.config.common.annotation.ConfigMapper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.cache.redis.RedisCacheModule
+      newFullyQualifiedTypeName: io.koraframework.cache.redis.lettuce.LettuceRedisCacheModule
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.MigrateNullabilityAnnotations
+displayName: Replace `jakarta.annotation.Nullable` with JSpecify
+description: >-
+  Kora 2.0 reads JSpecify annotations. This recipe only swaps the type; it does NOT move
+  the annotation to the type-use position that JSpecify requires on generics and arrays --
+  that placement is a semantic change and is described in the language migration guides.
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: jakarta.annotation.Nullable
+      newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.UpdateKoraDependencies
+displayName: Update Kora build coordinates
+description: >-
+  Kora 2.0 publishes under the `io.koraframework` group; the BOM and other artifacts were also renamed.
+  Versions are left untouched -- the Kora version is normally driven by the
+  `io.koraframework:kora-bom` BOM.
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: ru.tinkoff.kora
+      oldArtifactId: kora-parent
+      newGroupId: io.koraframework
+      newArtifactId: kora-bom
+      overrideManagedVersion: false
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: ru.tinkoff.kora
+      oldArtifactId: "*"
+      newGroupId: io.koraframework
+      overrideManagedVersion: false
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: io.koraframework
+      oldArtifactId: kora-parent
+      newGroupId: io.koraframework
+      newArtifactId: kora-bom
+      overrideManagedVersion: false
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: io.koraframework
+      oldArtifactId: json-module
+      newGroupId: io.koraframework
+      newArtifactId: json-common
+      overrideManagedVersion: false
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: io.koraframework
+      oldArtifactId: cache-redis
+      newGroupId: io.koraframework
+      newArtifactId: cache-redis-lettuce
+      overrideManagedVersion: false
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.NormalizeKotlinDependencies
+displayName: Normalize Kora dependencies in Kotlin Gradle builds
+description: >-
+  Use the BOM directly on implementation, version KSP explicitly, and remove obsolete processor wiring.
+  kspTest is semantic and is preserved; tests declaring @KoraApp in src/test require it.
+recipeList:
+  - org.openrewrite.text.FindAndReplace:
+      find: '(?ms)^[ \t]*val koraBom: Configuration by configurations\.creating\r?\n[ \t]*configurations \{\r?\n.*?extendsFrom\(koraBom\).*?^[ \t]*\}\r?\n(?:\r?\n)?'
+      replace: ''
+      regex: true
+      filePattern: '**/*.gradle.kts'
+
+  - org.openrewrite.text.FindAndReplace:
+      find: 'koraBom(platform("io.koraframework:kora-bom:${property("koraVersion")}"))'
+      replace: 'implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))'
+      filePattern: '**/*.gradle.kts'
+  - org.openrewrite.text.FindAndReplace:
+      find: 'ksp("io.koraframework:symbol-processors")'
+      replace: 'ksp("io.koraframework:symbol-processors:${property("koraVersion")}")'
+      filePattern: '**/*.gradle.kts'
+  - org.openrewrite.text.FindAndReplace:
+      find: 'kspTest("io.koraframework:symbol-processors")'
+      replace: 'kspTest("io.koraframework:symbol-processors:${property("koraVersion")}")'
+      filePattern: '**/*.gradle.kts'
+  - org.openrewrite.text.FindAndReplace:
+      find: '(?mi)^.*ka(?i:pt).*\r?\n'
+      replace: ''
+      regex: true
+      filePattern: '**/*.gradle.kts'
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.UpdateJUnit
+displayName: Update JUnit to 6.1.3
+description: Update any literal shared JUnit version property and explicitly pinned JUnit BOM to 6.1.3.
+recipeList:
+  - org.openrewrite.text.FindAndReplace:
+      find: '(?m)^(?<prefix>\s*junitVersion\s*=\s*)[0-9][0-9A-Za-z.+_-]*(?<suffix>\s*(?:#.*)?)$'
+      replace: '${prefix}6.1.3${suffix}'
+      regex: true
+      filePattern: '**/gradle.properties'
+  - org.openrewrite.text.FindAndReplace:
+      find: '(?<prefix>org\.junit:junit-bom:)[0-9][0-9A-Za-z.+_-]*'
+      replace: '${prefix}6.1.3'
+      regex: true
+      filePattern: '**/*.gradle;**/*.gradle.kts'
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.UpdateMockK
+displayName: Update MockK for Java 25
+description: Update any explicitly pinned MockK version to 1.14.9, whose Byte Buddy supports Java 25 class files.
+recipeList:
+  - org.openrewrite.text.FindAndReplace:
+      find: '(?<prefix>io\.mockk:mockk:)[0-9][0-9A-Za-z.+_-]*'
+      replace: '${prefix}1.14.9'
+      regex: true
+      filePattern: '**/*.gradle;**/*.gradle.kts'
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.RemoveEmptyEnvironmentBlock
+displayName: Remove invalid empty Gradle environment entries
+description: Remove environment(["": ""]) placeholders that prevent JVM process startup on Windows.
+recipeList:
+  - org.openrewrite.text.FindAndReplace:
+      find: '(?ms)\r?\n[ \t]*environment\(\[\s*\r?\n[ \t]*"": "",?\s*\r?\n[ \t]*\]\)\s*\r?\n'
+      replace: '\n'
+      regex: true
+      filePattern: '**/*.gradle;**/*.gradle.kts'
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.RemoveSuspendHttpClientMethods
+displayName: Remove suspend from Kotlin HTTP client methods
+description: >-
+  Kora 2.0 HTTP client contracts are synchronous. Removes suspend from methods declared in
+  conventional *HttpClient.kt and *ApiClient.kt contract files. Coroutine call sites still
+  require a semantic review.
+recipeList:
+  - org.openrewrite.text.FindAndReplace:
+      find: '(?m)^([ \\t]*)suspend fun '
+      replace: '$1fun '
+      regex: true
+      filePattern: '**/*HttpClient.kt;**/*ApiClient.kt'
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.RemoveSuspendRepositoryMethods
+displayName: Remove suspend from Kotlin repository methods
+description: >-
+  Kora 2.0 repository contracts are synchronous. Removes suspend from conventional Kotlin
+  *Repository.kt contracts. Call sites, tests, duplicate repositories and coroutine dependencies
+  require a semantic review.
+recipeList:
+  - org.openrewrite.text.FindAndReplace:
+      find: '(?m)^([ \\t]*)suspend fun '
+      replace: '$1fun '
+      regex: true
+      filePattern: '**/*Repository.kt'
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.koraframework.migration.RemoveSuspendHttpServerMethods
+displayName: Remove suspend from Kotlin HTTP server methods
+description: >-
+  Kora 2.0 HTTP server contracts are synchronous. Removes suspend from conventional Kotlin
+  *Controller.kt files. Call sites, tests, duplicate controllers and coroutine dependencies
+  require a semantic review.
+recipeList:
+  - org.openrewrite.text.FindAndReplace:
+      find: '(?m)^([ \\t]*)suspend fun '
+      replace: '$1fun '
+      regex: true
+      filePattern: '**/*Controller.kt'

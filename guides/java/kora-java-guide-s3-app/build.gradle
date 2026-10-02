@@ -4,7 +4,7 @@ plugins {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
         vendor = JvmVendorSpec.ADOPTIUM
     }
 }
@@ -20,29 +20,30 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
+    koraBom platform("io.koraframework:kora-bom:$koraVersion")
 
-    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+    annotationProcessor "io.koraframework:annotation-processors"
 
-    implementation "ru.tinkoff.kora:config-hocon"
-    implementation "ru.tinkoff.kora:http-client-ok"
-    implementation "ru.tinkoff.kora:http-server-undertow"
-    implementation "ru.tinkoff.kora:json-module"
-    implementation "ru.tinkoff.kora:logging-logback"
-    implementation "ru.tinkoff.kora.experimental:s3-client-aws"
+    implementation "io.koraframework:config-hocon"
+    implementation "io.koraframework:http-client-ok"
+    implementation "io.koraframework:http-server-undertow"
+    implementation "io.koraframework:json-common"
+    implementation "io.koraframework:logging-logback"
+    implementation "io.koraframework:s3-client-aws"
+    implementation "io.koraframework.experimental:s3-client-kora"
 
-    testAnnotationProcessor "ru.tinkoff.kora:annotation-processors"
+    testAnnotationProcessor "io.koraframework:annotation-processors"
 
     testImplementation platform("org.junit:junit-bom:$junitVersion")
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.testcontainers:junit-jupiter:1.21.4"
-    testImplementation "io.goodforgod:testcontainers-extensions-minio:0.13.1"
-    testImplementation "ru.tinkoff.kora:test-junit5"
+    testImplementation "io.goodforgod:testcontainers-extensions-rustfs:0.16.0"
+    testImplementation "io.koraframework:test-junit5"
 }
 
 application {
     applicationName = "application"
-    mainClass = "ru.tinkoff.kora.guide.s3.Application"
+    mainClass = "io.koraframework.guide.s3.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 

@@ -1,6 +1,6 @@
 # Kora Guide S3 App
 
-This module is the runnable Java/Gradle companion application for the [S3 guide](../../agents-md/kora-docs/mkdocs/docs/en/guides/s3.md). It demonstrates Kora S3 client integration, object upload/download operations, MinIO-compatible local testing, and typed service code around object storage.
+This module is the runnable Java/Gradle companion application for the [S3 guide](../../agents-md/kora-docs/mkdocs/docs/en/guides/s3.md). It demonstrates Kora S3 client integration, object upload/download operations, local testing against RustFS, and typed service code around object storage.
 
 ## Documentation
 - [Guide in English](https://kora-projects.github.io/kora-docs/en/guides/s3)

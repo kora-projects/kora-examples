@@ -2,8 +2,40 @@ services:
   scylla:
     image: scylladb/scylla:2025.3
     restart: unless-stopped
+    command: --smp 1 --developer-mode 1 --authenticator PasswordAuthenticator
     ports:
-      - '5432:5432'
+      - '9042:9042'
+    healthcheck:
+      test: [ "CMD-SHELL", "cqlsh -u cassandra -p cassandra -e 'DESCRIBE KEYSPACES' || exit 1" ]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 20s
+
+
+  redis:
+    image: redis:8.0-alpine
+    restart: unless-stopped
+    command: [ "redis-server", "--requirepass", "redis" ]
+    ports:
+      - '6379:6379'
+
+
+  scylla-init:
+    image: scylladb/scylla:2025.3
+    restart: "no"
+    depends_on:
+      scylla:
+        condition: service_healthy
+    volumes:
+      - ./src/main/resources/migrations:/migrations:ro
+    entrypoint: [ "sh", "-c" ]
+    command:
+      - |
+        cqlsh scylla -u cassandra -p cassandra -e "CREATE KEYSPACE IF NOT EXISTS petshop WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}" &&
+        cqlsh scylla -u cassandra -p cassandra -k petshop -f /migrations/setup.cql
+
+
 # Можно закомментировать секцию application и использовать docker-compose
 # как окружения для запуска сервиса через gradle run
   application:
@@ -14,14 +46,18 @@ services:
       - '8080:8080'
       - '8085:8085'
     environment:
-      CASSANDRA_CONTACT_POINTS: jdbc:postgresql://postgres:5432/postgres
+      CASSANDRA_CONTACT_POINTS: scylla:9042
       CASSANDRA_USER: cassandra
       CASSANDRA_PASS: cassandra
-      CASSANDRA_DC: cassandra
-      CASSANDRA_KEYSPACE: cassandra
-      REDIS_URL: redis
-      REDIS_USER: redis
+      CASSANDRA_DC: datacenter1
+      CASSANDRA_KEYSPACE: petshop
+      REDIS_URL: redis://redis:6379/0
+      REDIS_USER: default
       REDIS_PASS: redis
     depends_on:
-      - scylla
-      - redis
+      scylla:
+        condition: service_healthy
+      scylla-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started

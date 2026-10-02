@@ -6,37 +6,24 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom)
-    compileOnly.get().extendsFrom(koraBom)
-    runtimeOnly.get().extendsFrom(koraBom)
-    implementation.get().extendsFrom(koraBom)
-    testCompileOnly.get().extendsFrom(koraBom)
-    kspTest.get().extendsFrom(koraBom)
-    testRuntimeOnly.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom)
-}
-
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
 
-    ksp("ru.tinkoff.kora:symbol-processors")
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation(project(":guides:kotlin:kora-kotlin-guide-http-server-app"))
-    testImplementation("ru.tinkoff.kora:config-hocon")
-    testImplementation("ru.tinkoff.kora:http-server-undertow")
-    testImplementation("ru.tinkoff.kora:json-module")
-    testImplementation("ru.tinkoff.kora:logging-logback")
-    testImplementation("ru.tinkoff.kora:test-junit5")
-    testImplementation("org.mockito:mockito-core:5.12.0")
+    testImplementation("io.koraframework:config-hocon")
+    testImplementation("io.koraframework:http-server-undertow")
+    testImplementation("io.koraframework:json-common")
+    testImplementation("io.koraframework:logging-logback")
+    testImplementation("io.koraframework:test-junit5")
+    testImplementation("org.mockito:mockito-core:5.23.0")
 }
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
     sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
@@ -45,7 +32,7 @@ kotlin {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
