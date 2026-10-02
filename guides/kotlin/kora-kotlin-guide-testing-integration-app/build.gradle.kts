@@ -19,7 +19,7 @@ dependencies {
     testImplementation("io.koraframework:database-flyway")
     // flyway-core 13 не содержит поддержки конкретных СУБД, иначе Flyway падает
     // с "Unsupported Database: PostgreSQL"
-    testImplementation("org.flywaydb:flyway-database-postgresql:13.1.0")
+    testImplementation("org.flywaydb:flyway-database-postgresql:13.8.1")
     testImplementation("io.koraframework:database-jdbc")
     testImplementation("io.koraframework:http-client-common")
     testImplementation("io.koraframework:http-server-undertow")

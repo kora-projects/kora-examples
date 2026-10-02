@@ -19,11 +19,12 @@ dependencies {
     implementation("io.koraframework:config-hocon")
     implementation("io.koraframework:logging-logback")
     implementation("org.postgresql:postgresql:42.7.7")
-    implementation("org.flywaydb:flyway-database-postgresql:13.1.0")
+    implementation("org.flywaydb:flyway-database-postgresql:13.8.1")
 
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("io.koraframework:test-junit5")
     testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.16.0")
+    testRuntimeOnly("tools.jackson.core:jackson-databind") // Flyway 13 migrations in tests
 }
 
 kotlin {

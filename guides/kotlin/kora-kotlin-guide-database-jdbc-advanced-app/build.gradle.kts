@@ -16,13 +16,14 @@ dependencies {
     implementation("io.koraframework:database-flyway")
     // с Flyway 10 поддержка конкретных СУБД вынесена в отдельные артефакты;
     // без этого приложение падает на старте: "Unsupported Database: PostgreSQL"
-    implementation("org.flywaydb:flyway-database-postgresql:13.1.0")
+    implementation("org.flywaydb:flyway-database-postgresql:13.8.1")
     implementation("io.koraframework:database-jdbc")
     implementation("io.koraframework:http-server-undertow")
     implementation("io.koraframework:json-common")
     implementation("io.koraframework:logging-logback")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.16.0")
+    testRuntimeOnly("tools.jackson.core:jackson-databind") // Flyway 13 migrations in tests
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.koraframework:test-junit5")
 }

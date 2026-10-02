@@ -1,6 +1,6 @@
 [
   {
-    "name": "io.koraframework.logging.logback.ConsoleTextRecordEncoder",
+    "name": "io.koraframework.logging.logback.text.ConsoleTextRecordEncoder",
     "allDeclaredConstructors": true,
     "allPublicMethods": true
   },

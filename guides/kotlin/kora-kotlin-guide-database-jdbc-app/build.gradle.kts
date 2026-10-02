@@ -16,7 +16,7 @@ dependencies {
     implementation("io.koraframework:database-flyway")
     // с Flyway 10 поддержка конкретных СУБД вынесена в отдельные артефакты;
     // без этого приложение падает на старте: "Unsupported Database: PostgreSQL"
-    implementation("org.flywaydb:flyway-database-postgresql:13.1.0")
+    implementation("org.flywaydb:flyway-database-postgresql:13.8.1")
     implementation("io.koraframework:database-jdbc")
     implementation("io.koraframework:http-server-undertow")
     implementation("io.koraframework:json-common")
