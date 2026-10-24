@@ -1,32 +1,53 @@
-# OpenRewrite-рецепты Kora 1.x → 2.0
+# OpenRewrite: Kora 1.x → Kora 2.x для любого Java-проекта
 
-Сам рецепт — `src/main/resources/META-INF/rewrite/kora-1-to-2.yml`. Каноническое расположение:
-модуль собирается в jar, который можно положить в конфигурацию `rewrite` любого проекта,
-либо файл можно указать напрямую через `configFile`.
+Рецепты находятся в `src/main/resources/META-INF/rewrite/kora-1-to-2.yml` относительно этого
+каталога. Они подключаются к **целевому проекту**, не требуют его расположения рядом с инструментарием.
+Python-скрипты и OpenRewrite — альтернативные/дополняющие способы обработки пересекающихся правил;
+проверяйте dry-run каждого этапа, не применяйте слепо оба набора.
 
-## Состав
+## Основной набор
 
-| Рецепт | Что делает |
+`io.koraframework.migration.Kora1To2` включает:
+
+| Рецепт | Область |
 |---|---|
-| `io.koraframework.migration.RelocateKoraPackages` | `ru.tinkoff.kora.*` → `io.koraframework.*` |
-| `io.koraframework.migration.RelocateKoraAnnotations` | DI-аннотации из `common` в `common.annotation` |
-| `io.koraframework.migration.RenameKoraTypes` | типы, сменившие имя или модуль |
-| `io.koraframework.migration.MigrateNullabilityAnnotations` | `jakarta.annotation.Nullable` → JSpecify |
-| `io.koraframework.migration.UpdateKoraDependencies` | координаты сборки |
-| `io.koraframework.migration.NormalizeKotlinDependencies` | прямые `implementation(platform(...))`, versioned `ksp`/`kspTest`, удаление устаревшего processor wiring; `kspTest` сохраняется |
-| `io.koraframework.migration.UpdateJUnit` | любая literal-версия `junitVersion`/JUnit BOM → `6.1.3` |
-| `io.koraframework.migration.UpdateMockK` | любая явно заданная версия `io.mockk:mockk` → Java 25-совместимая `1.14.9` |
-| `io.koraframework.migration.RemoveEmptyEnvironmentBlock` | удаляет `environment(["": ""])`, ломающий запуск JVM на Windows с `CreateProcess error=87` |
-| `io.koraframework.migration.RemoveSuspendHttpClientMethods` | снимает `suspend` с Kotlin client contracts; вызывающая цепочка и удаление неиспользуемых coroutine dependencies проверяются вручную |
-| `io.koraframework.migration.RemoveSuspendRepositoryMethods` | снимает `suspend` с Kotlin `*Repository.kt`; вызовы, тесты, duplicate repositories и coroutine dependencies проверяются вручную |
-| `io.koraframework.migration.RemoveSuspendHttpServerMethods` | снимает `suspend` с Kotlin `*Controller.kt`; вызовы, тесты, duplicate controllers и coroutine dependencies проверяются вручную |
-| `io.koraframework.migration.Kora1To2` | агрегат всех рецептов |
+| `RelocateKoraPackages` | Java package/type references `ru.tinkoff.kora` → `io.koraframework` |
+| `RelocateKoraAnnotations` | Перенос известных DI-аннотаций в `common.annotation` |
+| `RenameKoraTypes` | Известные типы модулей и Logback encoder; XML/JSON FQCN энкодера |
+| `MigrateNullabilityAnnotations` | Attributed Java `jakarta.annotation.Nullable` → JSpecify; placement требует проверки |
+| `UpdateKoraDependencies` | Kora group/artifact moves; conventional version properties |
+| `NormalizeKotlinDependencies` | Точные текстовые формы BOM/KSP dependencies в Gradle Kotlin DSL |
 
-Каждый применим отдельно — например, если координаты в проекте уже поменяны руками.
+Все имена имеют префикс `io.koraframework.migration.`. Java type recipes используют attribution;
+они не разрешают runtime config и receiver types в неподдержанных исходниках. Kotlin dependency
+recipe работает с build text, а не с Kotlin AST. Custom build blocks и KAPT wiring сохраняются.
 
-## Как применить к своему проекту
+Текущий baseline YAML — Kora `2.0.0.RC2`, Kotlin `2.4.20`, KSP `2.3.12`.
+Если выбрана другая версия 2.x, сначала обновите versions/coordinates через
+`migrate_kora_2.py --project-root <project> --target-version <version>` либо вручную.
+Property rules не перезаписывают уже выбранную другую новую версию или SNAPSHOT.
+При полностью самостоятельном использовании YAML измените target version rules в копии рецепта;
+рецепт не имеет runtime-параметра `--target-version`. Custom property/alias names остаются ручной работой.
 
-В корневой build-файл **мигрируемого** проекта:
+## Дополнительные рецепты включаются явно
+
+Следующие рецепты **не входят** в основной агрегат:
+
+- `UpdateJUnit`: literal JUnit pins → `6.1.3`.
+- `UpdateMockK`: literal MockK pins → `1.14.9`.
+- `RemoveEmptyEnvironmentBlock`: удаляет точный пустой Gradle environment placeholder.
+- `RemoveSuspendHttpClientMethods`, `RemoveSuspendRepositoryMethods`, `RemoveSuspendHttpServerMethods`:
+  эвристические текстовые правки только по conventional filename patterns.
+
+Последние три не определяют принадлежность API к Kora. Используйте их только после проверки
+каждого затронутого файла; custom filenames ими не покрываются. В общем случае меняйте Kotlin
+контракты и coroutine call chains по языковому guide. Удаление сторонних processors, nullability,
+плагинов и версии JDK не выполняется по имени файла.
+
+## Подключение из произвольного проекта
+
+Выберите совместимую комбинацию OpenRewrite plugin/recipe dependencies по сборке проекта.
+Ниже — пример Gradle Groovy DSL с absolute path к YAML:
 
 ```groovy
 plugins {
@@ -39,58 +60,52 @@ dependencies {
 
 rewrite {
     activeRecipe("io.koraframework.migration.Kora1To2")
-    configFile = file("<путь>/migration/openrewrite/src/main/resources/META-INF/rewrite/kora-1-to-2.yml")
+    configFile = file("/absolute/path/to/toolkit/openrewrite/src/main/resources/META-INF/rewrite/kora-1-to-2.yml")
 }
 ```
 
+Для Gradle Kotlin DSL используйте эквивалентные `id(...)`, `rewrite(...)`, `activeRecipe(...)`.
+Windows path задайте с `/` или корректно экранируйте `\`. Сам инструментарий не должен быть
+subproject приложения: `openrewrite/settings.gradle` описывает отдельную сборку рецептов.
+Выполняйте wrapper **своего приложения** из его корня:
+
 ```shell
-./gradlew rewriteDryRun   # патч в build/reports/rewrite/rewrite.patch
+./gradlew rewriteDryRun
+# Просмотреть build/reports/rewrite/rewrite.patch.
 ./gradlew rewriteRun
 ```
 
-Запускать `rewriteRun` внутри самого `migration/openrewrite` бессмысленно: это отдельный Gradle-build
-со своим `settings.gradle`, и видит он только свои исходники, а не репозиторий примеров.
+Для multi-module и composite builds подключите плагин/конфигурацию к нужным builds и убедитесь,
+что dry-run видит каждый source set. Maven: подключите декларативный YAML через rewrite-maven-plugin
+вашей сборки либо упакуйте ресурсы рецепта в jar и укажите его dependency; проверьте dry-run
+по всем reactor modules. Gradle tooling markers неприменимы к Maven-модели.
 
-## Тесты
+Jar с рецептом можно собрать отдельно и добавить в recipe classpath целевого проекта.
+Artifact coordinates такого jar определяет ваша публикация; они не заданы как внешний обязательный сервис.
+
+## Dependency resolution и границы покрытия
+
+`ChangeDependency` требует build model. В Gradle он получает её от плагина, поэтому простой
+unit test на строке build.gradle не проверяет реальное изменение зависимостей.
+Новые coordinates должны разрешаться в выбранном repository. Нельзя ожидать, что
+`io.koraframework:<artifact>:1.x` существует после одного изменения groupId.
+Обновляйте group, artifact и version согласованно: Python stage делает это за проход для
+распознанных literal форм; BOM, catalogs, convention plugins и `${...}` properties проверьте отдельно.
+
+Java AST tests не подтверждают работу в каждой версии Gradle/Maven и не заменяют dry-run/build
+реального проекта. Скрипты не выбирают произвольный runtime transport, config path или
+замену удалённой интеграции. Native resources, Kotlin source semantics, OpenAPI generated code,
+custom factories и type-use nullability покрываются руководствами и тестами приложения.
+
+## Проверка рецептов
+
+С совместимым установленным Gradle:
 
 ```shell
-cd migration/openrewrite && ../../gradlew test
+gradle -p /absolute/path/to/toolkit/openrewrite test
 ```
 
-`Kora1To2Test` — before/after на каждую группу Java-правил плюс проверка идемпотентности
-(на уже мигрированном коде рецепт не делает ничего). На момент последнего прогона — 5/5.
-
-## Чего тесты НЕ покрывают и почему
-
-`UpdateKoraDependencies` построен на `org.openrewrite.java.dependencies.ChangeDependency`, у которого
-два ограничения, делающих модульный тест невозможным:
-
-1. **На Gradle-файлах он работает только при наличии маркера `GradleProject`**, который ставит
-   Gradle-плагин во время реального запуска. В `RewriteTest` такого маркера нет, и рецепт молча
-   не делает ничего (проверено отдельным пробником). Официальный обход — `withToolingApi()` из
-   `rewrite-gradle-tooling-model`, но этот артефакт не опубликован для ветки 8.56.x.
-2. **Переименование artifactId применяется только после успешного резолва новых координат.**
-   Пары вида `ru.tinkoff.kora:cache-redis:1.1.29` → `io.koraframework:cache-redis-lettuce:1.1.29`
-   не резолвятся никогда: версии 1.x под новой группой не существует по определению,
-   а `cache-redis-lettuce` есть только в снапшоте 2.0 (на Maven Central лежит `2.0.0.alpha6`,
-   где этого артефакта ещё нет). Поэтому перед запуском рецепта версию Kora надо поднять
-   до 2.0 и иметь соответствующий репозиторий (Maven Local после `publishToMavenLocal` либо
-   snapshots-репозиторий Sonatype).
-
-Сам репозиторий `kora-examples` мигрировался **скриптом** `migration/scripts/migrate_kora_2.py`,
-а не этим рецептом: скрипт меняет и версию, и координаты одним проходом и не требует,
-чтобы промежуточное состояние резолвилось. Рецепт здесь — для чужих проектов, где нужна
-именно AST-безопасная правка Java, а не текстовые замены.
-
-## Что рецепт не делает вообще
-
-- **Kotlin не трогает.** OpenRewrite парсит Kotlin экспериментально; для Kotlin-модулей
-  рабочая автоматика — скрипт.
-- **Не ставит JSpecify в type-use позицию.** Меняется только тип аннотации; правильное место
-  для дженериков и массивов — семантика, описана в языковых руководствах.
-- **Не трогает каталоги ресурсов**, включая `META-INF/native-image/<group>/` — их переименовывают
-  вручную.
-- **Не делает семантику**: resilient-спецификации, снятие `suspend` по вызывающей цепочке,
-  перенос Kotlin Structured Concurrency на актуальный Java `StructuredTaskScope` preview,
-  S3-клиент, сгенерированный
-  OpenAPI-код. Это `KORA_MIGRATION_NEURO.md`.
+Тестовый проект использует JDK 21 parser toolchain; целевая Kora-сборка должна использовать
+JDK своего релиза (baseline JDK 25). Для конкретной модификации запускайте только необходимые
+проверки по согласованию с владельцем проекта. Отчёты текущего запуска являются источником
+результата; здесь не фиксируется число тестов как обещание проверки чужого приложения.

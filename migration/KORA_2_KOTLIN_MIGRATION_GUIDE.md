@@ -1,18 +1,83 @@
-# Kora 1.x → 2.0: руководство по миграции Kotlin-проектов
+# Kora 1.x → 2.x: руководство по миграции Kotlin-проектов
 
 Самодостаточный документ: Kotlin-разработчику для миграции своего проекта не нужно открывать Java-гайд.
 Правила, общие для двух языков, продублированы здесь целиком, с идиоматичными Kotlin-примерами.
 
-Источники истины: локальный чекаут фреймворка `../kora` @ `master` (`2.0.0-SNAPSHOT`), документация 1.x — `agents-md/kora-docs`.
-Эталонный полностью мигрированный Kotlin-модуль на момент написания отсутствует — эталон существует только для Java
-(`examples/java/kora-java-crud`), поэтому Kotlin-специфичные правила помечаются как проверенные только там, где это подтверждено сборкой.
+Проверенная целевая версия — `2.0.0.RC2`; изменения после неё отмечены отдельно по commit ID.
+Источники API — исходники и BOM выбранного релиза Kora, документация версии 2.x.
+Примеры показывают форму изменения и не заменяют сборку конкретного проекта.
+
+## Применение к своему проекту
+
+Руководство не требует checkout примеров или соседнего checkout фреймворка. Выберите точный
+релиз Kora 2.x, сохраните текущую сборку и определите собственные source sets, factory paths,
+версии плагинов, processors и точки входа. Имена `Pet`, `Application`, `SimpleCache` в примерах —
+иллюстрации; заменяйте их своими типами. Список шагов не означает, что проект использует все интеграции.
+
+Скопируйте весь инструментарий в произвольный каталог. Нужен Python 3.11+.
+В POSIX shell задайте `MIGRATION_TOOLS` — абсолютный путь каталога с `scripts/`,
+`PROJECT_ROOT` — абсолютный путь вашего проекта. В PowerShell используйте `$tools` и `$project`:
+
+```powershell
+$tools = 'C:\tools\kora-migration'
+$project = 'C:\work\your-service'
+python "$tools\scripts\migrate_kora_2.py" --project-root "$project" --diff
+```
+
+Общие параметры каждого скрипта: `--project-root`, `[PATH ...]`, повторяемый `--exclude GLOB`,
+`--diff`, `--apply`. Без `--apply` файлы не записываются. Без `--project-root` используется текущий
+рабочий каталог. PATH задаются относительно корня и ограничивают обработку выбранными модулями/файлами;
+root build и version catalog за этой областью не обновляются автоматически.
+
+```shell
+python "$MIGRATION_TOOLS/scripts/migrate_kora_2.py" --project-root "$PROJECT_ROOT" --target-version 2.0.0.RC2 --diff
+python "$MIGRATION_TOOLS/scripts/migrate_api_renames.py" --project-root "$PROJECT_ROOT" --diff
+python "$MIGRATION_TOOLS/scripts/migrate_config_keys.py" --project-root "$PROJECT_ROOT" --diff
+python "$MIGRATION_TOOLS/scripts/migrate_resilient_specs.py" --project-root "$PROJECT_ROOT" --diff
+```
+
+Проверьте каждый diff и `REVIEW`, затем повторите нужные команды с `--apply`.
+Нет отдельного этапа RC1 → RC2: существующие команды ведут 1.x проект в выбранную 2.x версию.
+Generated/build/vendor каталоги не мигрируйте; добавьте свои исключения. Symlinks/junctions не обходятся.
+Все создаваемые/переносимые файлы проверяются на коллизии до записи. При конфликте этап останавливается;
+во время самой записи возможны IO-сбои, поэтому исходное состояние должно быть сохранено в VCS.
+
+`migrate_kora_2.py` меняет Kora namespace/FQCN, импортированные типы и распознанные координаты
+Gradle/Maven/catalog. `--kora-version-property frameworkVersion` задаёт ваше имя свойства версии.
+SNAPSHOT сохраняется. Kotlin/KSP pins обновляются только с `--update-tooling`;
+дополнительно доступны `--kotlin-version`, `--ksp-version`. Custom convention plugins,
+version.ref/aliases, BOM management и непредусмотренные формы DSL проверяются вручную.
+`--move-packages` переносит source paths `ru/tinkoff/kora`; произвольные пакеты приложения не меняются.
+
+Простые имена меняются только при явном Kora import; comments/string literals в source не переписываются.
+Wildcard/alias imports, receiver types и shadowing требуют анализа. Скрипты не удаляют глобально KAPT,
+`@Nullable`, `@Nonnull`, `suspend`, не меняют произвольные `parameters`, имена классов приложения,
+JUnit/MockK/GraalVM/OpenAPI plugin или JDK toolchain. Миграцию этих мест выполняйте по семантическим разделам.
+
+Config stage знает `httpServer` / `openapi.management`; для custom paths задайте
+`--http-server-path`, `--openapi-path`. Для каждого circuit breaker явно укажите
+`--circuit-breaker-path resilient.circuitbreaker.<name>`. `db` не переименовывается автоматически:
+сопоставьте путь со своей JDBC factory. YAML получает вложенный `system`; сложный/inline HOCON,
+YAML anchors, source-embedded config и конфликтующие ключи требуют ручного переноса.
+
+Resilient stage генерирует specs из импортированных Kora annotations в package исходника.
+Для custom корня config задайте `--config-prefix`, для generated type prefix — `--spec-prefix`.
+Индивидуальные config paths, общий spec для нескольких исходников и коллизии проверьте вручную.
+API stage оставляет неоднозначные JSON/repository/extract вызовы на `REVIEW`, сохраняя чужие методы.
+
+После правок перегенерируйте AP/KSP/OpenAPI/protobuf, выполните сборку своего проекта и его тесты.
+Gradle: используйте wrapper проекта, `clean`, затем production/test compilation с `--no-build-cache`.
+Maven: используйте wrapper проекта или установленный Maven, `clean compile test-compile`.
+Для тестов Gradle сначала настройте `showStandardStreams(false)` и `events("failed")`.
+Успех механического этапа не подтверждает runtime config, wire contracts и native image.
+
 
 ---
 
 ## 0. Порядок миграции проекта
 
-1. `python migration/scripts/migrate_kora_2.py` (сначала dry-run, затем `--apply`) — Kotlin-файлы, Gradle DSL, ресурсы, перенос пакетных каталогов. Для Kotlin это единственный слой автоматизации.
-2. OpenRewrite-рецепт (`migration/openrewrite/`) Kotlin не трансформирует вовсе; если в проекте есть и Java-модули — см. `migration/openrewrite/README.md`.
+1. `python "$MIGRATION_TOOLS/scripts/migrate_kora_2.py" --project-root "$PROJECT_ROOT"` (сначала dry-run, затем `--apply`) — Kotlin-файлы, Gradle DSL, ресурсы; перенос пакетных каталогов включается через `--move-packages`. Остальные скрипты применяются к API/config/specs по своей области.
+2. OpenRewrite-рецепт (`openrewrite/`) Kotlin не трансформирует вовсе; если в проекте есть и Java-модули — см. `openrewrite/README.md`.
 3. **Обязательно**: `clean` + первая сборка с `--no-build-cache` (см. §1.4).
 4. `./gradlew <module>:kspKotlin --console=plain` — KSP отрабатывает раньше компиляции и даёт первую волну ошибок.
 5. Применить семантические правила из этого документа.
@@ -22,19 +87,19 @@
 
 ## 1. Сборка и окружение
 
-### 1.1 JDK: последний GA feature release
+### 1.1 JDK и совместимость сборки
 
 ```kotlin
-val latestJava = 26 // обновить на дату миграции
+val targetJava = 25 // baseline RC2; согласуйте с выбранным релизом
 
 kotlin {
-    jvmToolchain(latestJava)
+    jvmToolchain(targetJava)
 }
 ```
 
-Берите последний GA feature release с `openjdk.org/projects/jdk`, а не исторический минимум,
-на котором собирался Kora 2.0. На момент актуализации документа это JDK 26. Для
-`StructuredTaskScope` используйте последнюю preview-итерацию именно выбранного JDK.
+Используйте JDK, совместимый с выбранными Kora, Gradle/Maven и Kotlin. Baseline RC2 требует JDK 25
+для запуска buildscript generator. Java preview API подключайте только при реальной необходимости
+и с одинаковым JDK на compilation/test/runtime; сам переход Kora не требует включать preview.
 
 Toolchain недостаточно: `io.koraframework:openapi-generator` попадает в **buildscript classpath**, который резолвится JVM самого Gradle. На JDK 21 конфигурация падает:
 
@@ -42,16 +107,16 @@ Toolchain недостаточно: `io.koraframework:openapi-generator` поп�
 Dependency requires at least JVM runtime version 25. This build uses a Java 21 JVM.
 ```
 
-**Проверка:** `JAVA_HOME=<latest-GA-JDK> ./gradlew projects` проходит, на JDK 21 — нет.
+**Проверка:** `JAVA_HOME=<compatible-JDK> ./gradlew projects` проходит, на JDK 21 — нет.
 
 ### 1.2 Kotlin и KSP
 
 | Было | Стало |
 |---|---|
-| Kotlin `1.9.25` | `2.4.10` |
-| KSP `1.9.25-1.0.20` | `2.3.11` |
+| Kotlin `1.9.25` | `2.4.20` |
+| KSP `1.9.25-1.0.20` | `2.3.12` |
 
-Эти версии совпадают с теми, на которых собран сам фреймворк (`../kora/gradle/libs.versions.toml`) — расхождение версий приведёт к трудноотлаживаемым падениям процессоров.
+Эти версии совпадают с теми, на которых собран сам фреймворк (version catalog исходников выбранного релиза Kora) — расхождение версий приведёт к трудноотлаживаемым падениям процессоров.
 
 **KSP 2 больше не экспортирует тип `KspTask`.** Старая обвязка перестала компилироваться:
 
@@ -94,13 +159,12 @@ tasks.matching { it.name.startsWith("ksp") }.configureEach { … }
 ./gradlew classes testClasses --continue --no-build-cache
 ```
 
-**Проверка (выполнена на Java-эталоне):** обычная сборка после `clean` → 100 ошибок; с `--no-build-cache` → успех.
+**Проверка:** сравните generated output после clean и перегенерации без build cache; старых пакетов в нём быть не должно.
 
 ### 1.5 Выравнивание сторонних версий — отдельный класс отказов
 
 Kora 2.0 подняла версии транзитивных библиотек, и модули, закрепившие свои, ломаются **в рантайме**,
-а не при компиляции. Все четыре случая ниже проявились в этом репозитории; ошибки не указывают
-на причину.
+а не при компиляции. Ниже — типичные конфликты закреплённых версий; определяйте действующий runtime classpath своего проекта.
 
 | Библиотека | Версия в Kora 2.0 | Симптом при расхождении |
 |---|---|---|
@@ -197,7 +261,7 @@ class UserRequest(val name: String?)
 
 **Причина:** JSpecify-аннотации являются type-use; `@field:Nullable` под Kotlin 2.4 — некорректная цель, а дублирование нуллабельности аннотацией и типом расходится с платформенными типами при взаимодействии со сгенерированным Java-кодом.
 
-**Автоматизация:** удаление импортов и простых форм `@Nullable` покрыто скриптом; случаи, где аннотация несла смысл (например, платформенные типы на границе с Java), требуют ручного решения.
+**Автоматизация:** REVIEW. Переносите nullability в Kotlin-типы вручную; импорт и аннотация могут относиться к Java/platform boundaries.
 
 ---
 
@@ -362,7 +426,7 @@ httpServer {                 httpServer {
 
 **Почему критично.** `SystemHttpServerConfig extends HttpServerConfig`, то есть системный сервер наследует `port()` = `8080`. Пока старый ключ не распознан, **оба** сервера берут 8080 и приложение падает на старте (`Address already in use`). Компиляция при этом зелёная: лишние ключи просто игнорируются.
 
-**Автоматизация:** `python migration/scripts/migrate_config_keys.py --apply`.
+**Автоматизация:** `python "$MIGRATION_TOOLS/scripts/migrate_config_keys.py" --project-root "$PROJECT_ROOT" --apply`.
 
 ### 5.2 Секция JDBC: `db` → `jdbc`
 
@@ -378,7 +442,7 @@ db {          jdbc {
 
 **Симптом:** компиляция зелёная, падение на старте: `ConfigValueException: … got null at path: 'ROOT.jdbc.username'`.
 
-**Автоматизация:** `migrate_config_keys.py`.
+**Автоматизация:** для HTTP/OpenAPI — path-scoped правила; JDBC path меняется вручную по выбранной factory.
 
 ### 5.3 Остальное
 
@@ -481,9 +545,9 @@ class MyPredicate : CircuitBreakerPredicate {
 
 **Важно для Kotlin:** пока строковая форма остаётся в коде, KSP-процессор resilient падает с
 `java.lang.ClassCastException: java.lang.String cannot be cast to com.google.devtools.ksp.symbol.KSType`
-вместо внятной диагностики. Это подтверждённая связка «немигрированный код → краш процессора» (см. `KORA_2_FRAMEWORK_ISSUES.md`).
+вместо внятной диагностики. Это подтверждённая связка «немигрированный код → краш процессора» (см. журнал подтверждённых проблем выбранного релиза).
 
-**Автоматизация:** нет — требуется завести новые типы и связать их с секциями конфигурации.
+**Автоматизация:** `migrate_resilient_specs.py` создаёт specs при явном Kora import; custom paths, expressions и коллизии требуют ручного решения.
 
 ---
 
@@ -708,7 +772,7 @@ dependencies {
 
 `kspTest("io.koraframework:symbol-processors:${property("koraVersion")}")` добавляется только
 когда тестовые исходники действительно требуют генерации графа, например содержат отдельный
-`@KoraApp`. В текущих примерах это требуется только `examples/kotlin/kora-kotlin-crud`.
+`@KoraApp`. Проверьте каждый test source set, который объявляет собственный граф.
 
 ---
 
@@ -784,20 +848,18 @@ Kora 2.0 исполняет синхронные контракты на вир�
 
 ### 13.1 Обязательная замена Kotlin Structured Concurrency
 
-Все конструкции Kotlin Structured Concurrency (`coroutineScope`, `supervisorScope`,
-`async`/`await`, `awaitAll`, дочерние `launch`, structured cancellation и timeout scope)
-переводятся на Java Structured Concurrency: `StructuredTaskScope`, `fork`, `join`, подходящий
-`Joiner` и timeout configuration. После миграции удаляются coroutine imports и зависимости
-`kotlinx-coroutines-core`/`kotlinx-coroutines-jdk8`, если иных usages не осталось.
+Для `coroutineScope`, `supervisorScope`, `async`/`await`, `awaitAll`, дочерних `launch`,
+structured cancellation и timeout scopes сначала определите требуемую семантику.
+Варианты — синхронное выполнение, параллелизм на virtual threads или Java Structured Concurrency.
+Переход Kora не требует применять `StructuredTaskScope` во всех application services.
+Coroutine dependencies удаляются только после проверки всех оставшихся usages проекта.
 
-**Версионное правило:** брать не зафиксированный в этом документе старый JDK, а последний
-доступный **GA feature release Java** на момент миграции и последнюю итерацию Structured
-Concurrency Preview именно из него. Не использовать EA в production только ради более нового
-preview. На момент актуализации гайда (август 2026) это **JDK 26 + Structured Concurrency Sixth
-Preview (JEP 525)**. Нельзя копировать `StructuredTaskScope` API из JDK 21–25: preview API
-менялся, включая factories, `Joiner` и тип результата `join()`.
+Если выбран Java preview API, закрепите JDK, совместимые plugins и одинаковый major на
+compile/test/runtime. API `StructuredTaskScope` зависит от конкретной версии JDK;
+нельзя смешивать factories, `Joiner` и тип результата `join()` из разных preview итераций.
 
-Пример для актуального JDK 26:
+Ниже — пример формы решения для JDK 26. Сверьте его с API выбранного JDK перед использованием;
+для baseline RC2 без этого сценария достаточно поддерживаемого JDK 25.
 
 ```kotlin
 import java.util.concurrent.Callable
@@ -827,28 +889,28 @@ fun getDashboard(userId: Long): Dashboard =
 
 Одного флага на компиляции недостаточно. `--enable-preview` обязателен при компиляции и на
 каждом JVM-запуске: tests, `JavaExec`, application distribution/production command. Версия
-`--release` обязана совпадать с выбранным latest GA JDK.
+`--release` обязана совпадать с выбранным JDK.
 
 ```kotlin
-val latestJava = 26 // обновить до latest GA на момент миграции
+val targetJava = 26 // только если выбран JDK 26 и совместимый preview API
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(latestJava))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(targetJava))
 }
 
 kotlin {
-    jvmToolchain(latestJava)
+    jvmToolchain(targetJava)
     compilerOptions {
         // Kotlin sources also use the selected JDK API and emit preview bytecode.
         freeCompilerArgs.addAll(
-            "-Xjdk-release=$latestJava",
+            "-Xjdk-release=$targetJava",
             "-Xjvm-enable-preview",
         )
     }
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.release.set(latestJava)
+    options.release.set(targetJava)
     options.compilerArgs.add("--enable-preview")
 }
 
@@ -871,7 +933,7 @@ application {
 
 Checklist перед merge:
 
-1. Проверить latest GA на `openjdk.org/projects/jdk` и обновить toolchain/CI/container runtime.
+1. Закрепить совместимую версию JDK и одинаковый major для toolchain/CI/container runtime.
 2. Открыть JEP и Javadoc Structured Concurrency именно выбранного JDK; перепроверить `open`,
    `Joiner`, тип результата `join`, timeout и exception types.
 3. Собрать main/test Kotlin и Java с preview; запустить unit/integration tests с preview.
@@ -892,7 +954,7 @@ failure/cancellation policy или восстановить supervisor semantics
 В репозитории нет Kotlin-модулей с native-сборкой — все три GraalVM-примера на Java. Поэтому
 ниже явно разделено: §15.1–§15.7 — правила, **проверенные сборкой и запуском** образов и не
 зависящие от языка (это конфигурация Gradle и метаданные самого фреймворка), §15.8 — то, что
-специфично для Kotlin и **не измерено** на этом репозитории.
+специфично для Kotlin; измерьте это в своём приложении.
 
 Окружение проверки: GraalVM CE 25.2.4+7.1 (`native-image 25.0.4`), установка —
 `sdk install java 25.2.4-graalce`; образ для сборки в Docker — `ghcr.io/graalvm/native-image-community:25`.
@@ -1054,7 +1116,7 @@ waitingFor(
 
 ### 15.8. Что специфично для Kotlin (гипотезы, не измерено)
 
-Native-образ Kotlin-приложения на Kora 2.0 в этом репозитории не собирался. Ниже — рассуждения,
+Native-образ требует отдельной проверки Kotlin-приложения. Ниже — рекомендации,
 которые нужно проверить на своём проекте, а не принимать на веру:
 
 - **Вывод KSP дополнительных метаданных требовать не должен.** Сгенерированный `ApplicationGraph`
@@ -1069,7 +1131,7 @@ Native-образ Kotlin-приложения на Kora 2.0 в этом репо
   такой класс рефлексивно, регистрировать надо именно его, а не «видимый» конструктор из исходника.
 
 Методика проверки любой из этих гипотез — трассирующий агент и минимальный native-пробник;
-она описана в `KORA_MIGRATION_NEURO.md`, раздел
+она описана в `KORA_2_MIGRATION_NEURO.md`, раздел
 *Diagnostic pattern: native-image собрался, но падает в рантайме*.
 
 ### 15.9. GraalVM-модули на удалённой функциональности
@@ -1088,13 +1150,13 @@ Native-образ Kotlin-приложения на Kora 2.0 в этом репо
 | Переезд DI-аннотаций | только Java | ✅ | — |
 | Переименования модулей | только Java | ✅ | — |
 | Разделение HTTP-пакетов | — | ✅ | — |
-| Версии Kotlin/KSP, toolchain latest GA JDK | — | ✅ | — |
-| `KspTask` → привязка по имени | — | ✅ | проверить каждое место |
-| Режимы OpenAPI-генерации | — | ✅ | адаптация кода — вручную |
-| Удаление `@Nullable` в Kotlin | — | ✅ | спорные случаи — вручную |
-| Типизированные resilient-спецификации | — | — | ✅ |
+| Kotlin/KSP pins | — | `--update-tooling` | toolchain/прочие плагины — вручную |
+| `KspTask` → привязка по имени | — | REVIEW | проверить task API выбранного KSP |
+| Режимы OpenAPI-генерации | — | — | ✅ |
+| Nullability в Kotlin | — | REVIEW | ✅ |
+| Типизированные resilient-спецификации | — | import-bound генерация | custom paths/коллизии — вручную |
 | Снятие `suspend` по цепочке вызовов | — | — | ✅ |
-| `@Component` на мапперы/интерцепторы | — | частично (хардкод) | ✅ |
+| `@Component` на мапперы/интерцепторы | — | — | ✅ |
 | S3-клиент | — | — | ✅ |
 | Ключи конфигурации (`openapi.management.files`, `rapidoc`→`scalar`) | — | ✅ | — |
 | Путь конфигурации openapi-клиента (`PetApi`→`petApi`) | — | — | ✅ |
@@ -1102,8 +1164,83 @@ Native-образ Kotlin-приложения на Kora 2.0 в этом репо
 | `JdbcExecutor.SqlSupplier`/`SqlRunnable` в `inTx` | — | — | ✅ |
 | `kspTest` в модулях с `@KoraApp` в тестах | — | — | ✅ |
 | Именованные аргументы для сгенерированных TO | — | — | ✅ |
-| Версия плагина GraalVM, толчейн 25, базовый образ Docker | — | ✅ | — |
+| GraalVM plugin, toolchain, Docker image | — | — | ✅ |
 | `imageName`/`mainClass`, `jar.enabled` (§15.3–§15.4) | — | — | ✅ |
 | Метаданные достижимости native-image | — | — | ✅ |
 
-OpenRewrite в текущем виде **не трансформирует Kotlin** — для Kotlin-модулей рабочей автоматикой остаётся скрипт, а всё семантическое делается вручную или нейро-агентом по `KORA_MIGRATION_NEURO.md`.
+OpenRewrite в текущем виде **не трансформирует Kotlin** — для Kotlin-модулей рабочей автоматикой остаётся скрипт, а всё семантическое делается вручную или нейро-агентом по `KORA_2_MIGRATION_NEURO.md`.
+
+
+## Актуальная целевая версия Kora 2.x
+
+Сведения сверены с исходниками Kora в диапазоне `2.0.0.RC1..2.0.0.RC2`, затем
+`2.0.0.RC2..5e9ef697b`. Документация: страницы Kora 2.x по выбранной интеграции.
+Изменения после тега RC2 перечислены отдельно: они требуют сборки соответствующего HEAD,
+а не опубликованного RC2. Все описанные ниже проверки входят в миграцию 1.x → 2.x.
+
+### Версии и порядок
+
+RC2 использует Kotlin `2.4.20`, KSP `2.3.12`, JUnit `6.1.3`, JDK 25.
+Источник версий — `gradle/libs.versions.toml` в теге RC2. Это проверенная комбинация,
+а не требование автоматически обновлять все сторонние зависимости проекта.
+
+Для опубликованного релиза задайте `koraVersion=2.0.0.RC2`. Для локального HEAD используйте
+версию, с которой выполнен `publishToMavenLocal` (обычно `2.0.0-SNAPSHOT`);
+не выдавайте SNAPSHOT за содержимое релизного тега.
+
+```shell
+# Единый механический этап миграции 1.x → 2.x.
+python "$MIGRATION_TOOLS/scripts/migrate_kora_2.py" --project-root "$PROJECT_ROOT"
+python "$MIGRATION_TOOLS/scripts/migrate_kora_2.py" --project-root "$PROJECT_ROOT" --apply
+# Дополнительные существующие этапы: сначала dry-run, затем --apply.
+python "$MIGRATION_TOOLS/scripts/migrate_api_renames.py" --project-root "$PROJECT_ROOT"
+python "$MIGRATION_TOOLS/scripts/migrate_config_keys.py" --project-root "$PROJECT_ROOT"
+python "$MIGRATION_TOOLS/scripts/migrate_resilient_specs.py" --project-root "$PROJECT_ROOT" --help
+# JDK 25 должен запускать сам Gradle.
+./gradlew clean --continue
+./gradlew classes testClasses --continue --no-build-cache
+```
+
+`migrate_kora_2.py` включает актуальные правила пакетов, версий и FQCN энкодера в Java/Kotlin/XML/JSON.
+Проверьте version catalogs и нестандартные имена свойств вручную. SNAPSHOT не перезаписывается.
+OpenRewrite: используйте существующий агрегат `io.koraframework.migration.Kora1To2`.
+
+### Проверка используемых контрактов Kora 2.x
+
+| Область / коммит | Изменение и действие |
+|---|---|
+| Logging `4873194f5` | `io.koraframework.logging.logback.ConsoleTextRecordEncoder` → `io.koraframework.logging.logback.text.ConsoleTextRecordEncoder`. Проверьте также `logback.xml`, native reflect-config и собственные реализации encoder SPI. Выбор фабрики через `kora.logging.encoder`; JSON требует `logging-logback-json`. Настройку XML и фабрики не заменяйте слепо. |
+| Telemetry `72e6a1708`, `e6f9ea09c` | Появились глобальные `metrics.enabled` (по умолчанию true), `metrics.tags`, `MetricsTagsProvider`, `OpentelemetryTracingAttributesProvider`. Глобальный switch не включает метрики отдельных компонентов: их `telemetry.metrics.enabled` по умолчанию false. `telemetry.logging.enabled` — false, tracing — true. |
+| Собственные telemetry-фабрики | Сверьте сигнатуры с RC2: `prometheusMeterRegistry` теперь принимает `MetricsConfig`; `opentelemetryResourceConfig` переименован в `opentelemetryTracingConfig`; `opentelemetryTracingResource` получает providers. Имена метрик, tags, spans, attributes изменены: обновите PromQL, alerts, dashboards и trace assertions по реальному scrape/trace. Глобальная замена строк здесь небезопасна. |
+| HTTP `bf088040b` | Заголовок `Server` теперь выключен. Если клиенты или тесты требуют его, задайте `httpServer.headerServerNameEnabled=true` (для системного сервера настройка своя). |
+| Kafka `a0a2b8c1d` | Assign consumer получает список из `config.topics()`; отдельный аргумент `String topic` конструктора удалён. При отсутствии `group.id` нужен непустой `topics`, `topicsPattern` запрещён. Для генерируемых listeners пересоздайте код, для ручных контейнеров исправьте constructor и config вместе. |
+| Scheduling `2fba8ca77`, `85aec8a77` | JDK jobs используют virtual threads; `executionParallelism` ограничивает конкуренцию. Проверьте thread-local assumptions и лимиты внешних сервисов. Job config поддерживает `enabled`; отключённые jobs не должны ожидаться в тестах расписания. |
+| DB scheduler `f24bfc2f3`, `b0e8cf54f`, `7b91c1520` | Новый `scheduling-db` — опциональный модуль. Ключ создания таблицы — `tableInitialize`, default false. Production schema переносите управляемой миграцией. Импорт модуля теперь действительно запускает scheduler. |
+| Resilience `31e64c063`, `b788b5536` | Добавлены распределённые rate limiter/retry budget и исключения, не регистрируемые retry/circuit breaker. Старые custom predicates/specs проверьте вручную; локальные реализации не заменяйте распределёнными автоматически. |
+| PostgreSQL `d03ce87fe` | `database-jdbc-postgres` — дополнительный модуль и мапперы PostgreSQL. Обычный JDBC не требует автоматической замены зависимости. |
+| OpenAPI `60286239c`, `3edf979b8` | Добавлены `clientResponseMode=SUCCESSFUL`, диапазоны ответов, OpenID Connect/security fixes. Перегенерируйте Java/Kotlin; проверьте sealed response handling и типы исключений. Старые режимы не переключайте без изменения вызовов. |
+| Native `7bb835d0b` | Обновлены reflection/resource metadata. Повторите native build с новыми артефактами; JVM compilation не проверяет native image. |
+| DI / transactions | Исправлены `@Conditional`, nullable dependencies, subgraphs, refresh и JDBC post-commit/post-rollback (один вызов для своей транзакции). Удалите workaround только после теста соответствующего сценария. |
+
+### Только после RC2: актуальный HEAD `5e9ef697b`
+
+- `dd389c578`: `enableServerValidationInterceptor` теперь **false** по умолчанию.
+  В RC2 при включённом `enableServerValidation` default был **true**. Для сохранения стандартного
+  HTTP mapping ошибок явно задайте `enableServerValidationInterceptor="true"` при генерации HEAD.
+- `693aca682`: form converters используют media-type tags; urlencoded object fields следуют OpenAPI form serialization.
+  `urlEncodedFormObjectsAsJson="true"` возвращает legacy JSON в одном поле при отсутствии `encoding.contentType`.
+  Проверьте wire format и пользовательские `HttpClientParameterWriter` / `HttpServerParameterReader`.
+- `5e9ef697b`: удалён неработавший `upload.singlePartUploadLimit`; оставлены `upload.partSize` и `upload.chunkSize`.
+  Удалите obsolete key вручную только в S3 upload config.
+- OpenAPI исправляет nullable/required/enum/discriminator/anyOf/oneOf, JSON maps и form bodies.
+  Перегенерируйте код, затем проверьте изменения публичных типов и контрактов; generated-файлы вручную не патчите.
+- S3 исправляет URI с prefix/trailing slash, nullable get/head results, multipart и tagged factories.
+  Проверьте реальные object keys, streaming uploads и собственные telemetry interceptors.
+
+### Приёмка
+
+Повторный запуск скрипта должен показать 0 изменений. Соберите production и test sources;
+проверьте HTTP headers/errors/form payloads, Kafka assign без group, scheduler enable/disable,
+transaction callbacks, `/metrics` и экспорт traces. Native и Docker integration проверяются отдельно.
+Список исправлений релиза не означает, что каждый компонент нужно переписывать: меняйте код
+только там, где проект использует затронутый контракт.

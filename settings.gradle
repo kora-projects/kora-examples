@@ -33,6 +33,8 @@ def javaExamples = [
         "kora-java-grpc-server",
         "kora-java-kafka",
         "kora-java-scheduling-jdk",
+        "kora-java-scheduling-db",
+        "kora-java-resilient-distributed",
         "kora-java-scheduling-quartz",
         "kora-java-config-hocon",
         "kora-java-config-yaml",

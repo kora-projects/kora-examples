@@ -1,5 +1,70 @@
 # Kora 1.x → 2.0: инструкции для нейро-агентов
 
+## Применение к своему проекту
+
+Руководство не требует checkout примеров или соседнего checkout фреймворка. Выберите точный
+релиз Kora 2.x, сохраните текущую сборку и определите собственные source sets, factory paths,
+версии плагинов, processors и точки входа. Имена `Pet`, `Application`, `SimpleCache` в примерах —
+иллюстрации; заменяйте их своими типами. Список шагов не означает, что проект использует все интеграции.
+
+Скопируйте весь инструментарий в произвольный каталог. Нужен Python 3.11+.
+В POSIX shell задайте `MIGRATION_TOOLS` — абсолютный путь каталога с `scripts/`,
+`PROJECT_ROOT` — абсолютный путь вашего проекта. В PowerShell используйте `$tools` и `$project`:
+
+```powershell
+$tools = 'C:\tools\kora-migration'
+$project = 'C:\work\your-service'
+python "$tools\scripts\migrate_kora_2.py" --project-root "$project" --diff
+```
+
+Общие параметры каждого скрипта: `--project-root`, `[PATH ...]`, повторяемый `--exclude GLOB`,
+`--diff`, `--apply`. Без `--apply` файлы не записываются. Без `--project-root` используется текущий
+рабочий каталог. PATH задаются относительно корня и ограничивают обработку выбранными модулями/файлами;
+root build и version catalog за этой областью не обновляются автоматически.
+
+```shell
+python "$MIGRATION_TOOLS/scripts/migrate_kora_2.py" --project-root "$PROJECT_ROOT" --target-version 2.0.0.RC2 --diff
+python "$MIGRATION_TOOLS/scripts/migrate_api_renames.py" --project-root "$PROJECT_ROOT" --diff
+python "$MIGRATION_TOOLS/scripts/migrate_config_keys.py" --project-root "$PROJECT_ROOT" --diff
+python "$MIGRATION_TOOLS/scripts/migrate_resilient_specs.py" --project-root "$PROJECT_ROOT" --diff
+```
+
+Проверьте каждый diff и `REVIEW`, затем повторите нужные команды с `--apply`.
+Нет отдельного этапа RC1 → RC2: существующие команды ведут 1.x проект в выбранную 2.x версию.
+Generated/build/vendor каталоги не мигрируйте; добавьте свои исключения. Symlinks/junctions не обходятся.
+Все создаваемые/переносимые файлы проверяются на коллизии до записи. При конфликте этап останавливается;
+во время самой записи возможны IO-сбои, поэтому исходное состояние должно быть сохранено в VCS.
+
+`migrate_kora_2.py` меняет Kora namespace/FQCN, импортированные типы и распознанные координаты
+Gradle/Maven/catalog. `--kora-version-property frameworkVersion` задаёт ваше имя свойства версии.
+SNAPSHOT сохраняется. Kotlin/KSP pins обновляются только с `--update-tooling`;
+дополнительно доступны `--kotlin-version`, `--ksp-version`. Custom convention plugins,
+version.ref/aliases, BOM management и непредусмотренные формы DSL проверяются вручную.
+`--move-packages` переносит source paths `ru/tinkoff/kora`; произвольные пакеты приложения не меняются.
+
+Простые имена меняются только при явном Kora import; comments/string literals в source не переписываются.
+Wildcard/alias imports, receiver types и shadowing требуют анализа. Скрипты не удаляют глобально KAPT,
+`@Nullable`, `@Nonnull`, `suspend`, не меняют произвольные `parameters`, имена классов приложения,
+JUnit/MockK/GraalVM/OpenAPI plugin или JDK toolchain. Миграцию этих мест выполняйте по семантическим разделам.
+
+Config stage знает `httpServer` / `openapi.management`; для custom paths задайте
+`--http-server-path`, `--openapi-path`. Для каждого circuit breaker явно укажите
+`--circuit-breaker-path resilient.circuitbreaker.<name>`. `db` не переименовывается автоматически:
+сопоставьте путь со своей JDBC factory. YAML получает вложенный `system`; сложный/inline HOCON,
+YAML anchors, source-embedded config и конфликтующие ключи требуют ручного переноса.
+
+Resilient stage генерирует specs из импортированных Kora annotations в package исходника.
+Для custom корня config задайте `--config-prefix`, для generated type prefix — `--spec-prefix`.
+Индивидуальные config paths, общий spec для нескольких исходников и коллизии проверьте вручную.
+API stage оставляет неоднозначные JSON/repository/extract вызовы на `REVIEW`, сохраняя чужие методы.
+
+После правок перегенерируйте AP/KSP/OpenAPI/protobuf, выполните сборку своего проекта и его тесты.
+Gradle: используйте wrapper проекта, `clean`, затем production/test compilation с `--no-build-cache`.
+Maven: используйте wrapper проекта или установленный Maven, `clean compile test-compile`.
+Для тестов Gradle сначала настройте `showStandardStreams(false)` и `events("failed")`.
+Успех механического этапа не подтверждает runtime config, wire contracts и native image.
+
+
 Документ адресован нейро-агенту (AI-agent), мигрирующему **чужой** проект, и покрывает только те трансформации,
 которые нельзя выполнить безопасно через OpenRewrite или детерминированный скрипт.
 
@@ -8,9 +73,9 @@
 | Слой | Что делает | Где описан |
 |---|---|---|
 | OpenRewrite | Java AST: пакеты, типы, координаты зависимостей | `migration/openrewrite/` |
-| Скрипт `migrate_kora_2.py` | текстовые/файловые замены: Gradle, Kotlin, ресурсы, перенос каталогов пакетов | `migration/scripts/` |
+| Скрипты | Механические изменения в выбранном проекте и REVIEW для неоднозначных случаев | `$MIGRATION_TOOLS/scripts/` |
 | **Нейро-агент (этот файл)** | смысловые изменения, требующие анализа окружающего кода | ниже |
-| Человек | архитектурные решения по модулям с удалённой функциональностью | `KORA_2_MIGRATION_STATUS.md` |
+| Человек | архитектурные решения по модулям с удалённой функциональностью | журнал миграции целевого проекта |
 
 Прежде чем применять паттерн — прочитайте соответствующий раздел языкового гайда
 (`KORA_2_JAVA_MIGRATION_GUIDE.md` / `KORA_2_KOTLIN_MIGRATION_GUIDE.md`).
@@ -231,12 +296,12 @@ return KoraConfigModification.ofString("""
 
 1. Построить полный граф вызовов от `suspend`-метода репозитория вверх — до контроллера/слушателя/теста. Снятие `suspend` обязано пройти по всей цепочке; частичная правка оставит несобираемый код.
 2. Отдельно выделить места, где корутины использовались ради параллелизма (`coroutineScope`,
-   `supervisorScope`, `async`/`await`, `awaitAll`, structured cancellation/timeouts). Они не
-   остаются в application service: их семантика переводится на Java `StructuredTaskScope`.
-   Использовать последний GA JDK и последнюю preview-итерацию этого JDK; включить
+   `supervisorScope`, `async`/`await`, `awaitAll`, structured cancellation/timeouts). Для application service выбрать
+   синхронное выполнение, virtual threads или Java `StructuredTaskScope`, сохранив cancellation semantics.
+   Если выбран preview API, использовать API закреплённого JDK; включить
    `--enable-preview` для compile, test и каждого runtime launch. В `@HttpClient` interface
    нельзя оставлять даже default `suspend`-обёртки над blocking-методом.
-   Для Kotlin compilation дополнительно задать `-Xjdk-release=<latest-GA-major>` и
+   Для Kotlin compilation дополнительно задать `-Xjdk-release=<selected-JDK-major>` и
    `-Xjvm-enable-preview`; одного `JavaCompile.compilerArgs += --enable-preview` недостаточно
    для описания Kotlin-задач. Не переносить названия API из предыдущего preview JDK.
 3. Проверить транзакции: код, полагавшийся на корутинный контекст транзакции, требует пересборки границ.
@@ -400,7 +465,7 @@ JSpecify-аннотации — **type-use**. Позиция в объявлен
 
 1. Проверить, не остался ли в модуле код 1.x, который процессор не ожидает. Подтверждённый пример: строковый `@CircuitBreaker("pet")` вызывает `ClassCastException: String → KSType` — первопричина в коде, а не в процессоре.
 2. Смигрировать модуль по языковому гайду и перезапустить `kspKotlin`.
-3. Если краш воспроизводится на корректном коде 2.0 — минимизировать репродукцию (один класс, одна аннотация) и завести запись в `KORA_2_FRAMEWORK_ISSUES.md`.
+3. Если краш воспроизводится на корректном коде 2.0 — минимизировать репродукцию (один класс, одна аннотация) и завести запись в журнал подтверждённых проблем выбранного релиза.
 4. Только после минимизации предлагать фикс во фреймворке.
 
 ### Common mistakes
@@ -474,8 +539,8 @@ find . -name "reflection-config.json"      # такого имени native-imag
 Каталог переименован под новую группу, имена файлов каноничные, содержимое **не трогается**.
 
 ```
-META-INF/native-image/ru.tinkoff.kora.examples/logback/reflect-config.json
-→ META-INF/native-image/io.koraframework.examples/logback/reflect-config.json
+META-INF/native-image/<application-group>/<application-artifact>/reflect-config.json
+→ сохраняйте namespace приложения; переименовывайте только изменившиеся FQCN внутри metadata
 ```
 
 ### Gradle changes
@@ -564,6 +629,20 @@ diff -r /tmp/na-config src/main/resources/META-INF/native-image/<group>/
 ### Escalate when
 
 Минимальный пробник (шаг 2) воспроизводит падение без кода приложения — это работа по фреймворку
-или по библиотеке, а не по миграции. Заводите запись в `KORA_2_FRAMEWORK_ISSUES.md`
+или по библиотеке, а не по миграции. Заводите запись в журнал подтверждённых проблем выбранного релиза
 с указанием цифр до/после — модульный тест на такой дефект написать нельзя: на JVM он
 не воспроизводится вообще.
+
+
+## Актуальные контракты Kora 2.x
+
+1. Зафиксировать целевой tag/commit: точный релиз Kora 2.x; post-RC2 изменения требуют соответствующего commit/release.
+2. Использовать существующие `migrate_kora_2.py`, `migrate_api_renames.py`, `migrate_config_keys.py`,
+   `migrate_resilient_specs.py`: сначала dry-run, затем --apply. Отдельного RC-этапа нет.
+3. Проверить custom telemetry factories/providers и dashboards по целевой версии;
+   не переименовывать метрики глобальной заменой.
+4. Для ручного KafkaAssignConsumerContainer перенести topic в config.topics и убрать constructor argument.
+5. При переходе на HEAD явно решить, нужен ли enableServerValidationInterceptor и legacy form serialization.
+6. Перегенерировать OpenAPI и processors; проверить wire contracts и native metadata.
+
+Полные требования к актуальным контрактам включены в оба языковых руководства.

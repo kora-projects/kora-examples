@@ -1,8 +1,8 @@
 ########################################################################################
-# Kora 1.x -> 2.0, OpenRewrite recipes.
+# Kora 1.x -> 2.x, OpenRewrite recipes.
 #
-# Focused recipes that can be activated one by one; Kora1To2 composes all of them.
-# Only deterministic, AST-safe changes live here. Semantic changes (resilient specs,
+# Core recipes are composed by Kora1To2; optional tooling/filename heuristics require explicit activation.
+# Java type recipes use AST attribution; resource/build and optional Kotlin recipes use text. Semantic changes (resilient specs,
 # suspend call-chain removal, JSpecify placement, S3 client) are out of scope on purpose and are
 # described in KORA_2_MIGRATION_NEURO.md.
 ########################################################################################
@@ -10,7 +10,7 @@ type: specs.openrewrite.org/v1beta/recipe
 name: io.koraframework.migration.Kora1To2
 displayName: Migrate Kora 1.x to 2.0
 description: >-
-  Aggregate of every deterministic Kora 1.x to 2.0 change: package relocation, annotation
+  Conservative core Kora 1.x to 2.x migration: package relocation, annotation
   and type moves, nullability annotations and build coordinates. Semantic API changes are
   intentionally left to module-specific migration.
 recipeList:
@@ -20,12 +20,6 @@ recipeList:
   - io.koraframework.migration.MigrateNullabilityAnnotations
   - io.koraframework.migration.UpdateKoraDependencies
   - io.koraframework.migration.NormalizeKotlinDependencies
-  - io.koraframework.migration.UpdateJUnit
-  - io.koraframework.migration.UpdateMockK
-  - io.koraframework.migration.RemoveEmptyEnvironmentBlock
-  - io.koraframework.migration.RemoveSuspendHttpClientMethods
-  - io.koraframework.migration.RemoveSuspendRepositoryMethods
-  - io.koraframework.migration.RemoveSuspendHttpServerMethods
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -92,6 +86,19 @@ recipeList:
       oldFullyQualifiedTypeName: io.koraframework.cache.redis.RedisCacheModule
       newFullyQualifiedTypeName: io.koraframework.cache.redis.lettuce.LettuceRedisCacheModule
 
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: io.koraframework.logging.logback.ConsoleTextRecordEncoder
+      newFullyQualifiedTypeName: io.koraframework.logging.logback.text.ConsoleTextRecordEncoder
+  - org.openrewrite.text.FindAndReplace:
+      find: 'io.koraframework.logging.logback.ConsoleTextRecordEncoder'
+      replace: 'io.koraframework.logging.logback.text.ConsoleTextRecordEncoder'
+      filePattern: '**/*.xml;**/*.json'
+  - org.openrewrite.text.FindAndReplace:
+      find: 'ru.tinkoff.kora.logging.logback.ConsoleTextRecordEncoder'
+      replace: 'io.koraframework.logging.logback.text.ConsoleTextRecordEncoder'
+      filePattern: '**/*.xml;**/*.json'
+
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: io.koraframework.migration.MigrateNullabilityAnnotations
@@ -111,8 +118,8 @@ name: io.koraframework.migration.UpdateKoraDependencies
 displayName: Update Kora build coordinates
 description: >-
   Kora 2.0 publishes under the `io.koraframework` group; the BOM and other artifacts were also renamed.
-  Versions are left untouched -- the Kora version is normally driven by the
-  `io.koraframework:kora-bom` BOM.
+  The conventional koraVersion property is updated to 2.0.0.RC2; Kotlin/KSP version
+  properties are aligned with the current 2.x baseline. SNAPSHOT versions are preserved.
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: ru.tinkoff.kora
@@ -144,20 +151,30 @@ recipeList:
       newArtifactId: cache-redis-lettuce
       overrideManagedVersion: false
 
+  - org.openrewrite.text.FindAndReplace:
+      find: '(?m)^(koraVersion[ \t]*=[ \t]*)(?:1\.[0-9A-Za-z.+_-]+|2\.0\.0\.RC1)([ \t]*(?:#.*)?)$'
+      replace: '$12.0.0.RC2$2'
+      regex: true
+      filePattern: '**/gradle.properties'
+  - org.openrewrite.text.FindAndReplace:
+      find: '(?m)^(kotlinVersion[ \t]*=[ \t]*)(?:1\.9\.25|2\.4\.10)([ \t]*(?:#.*)?)$'
+      replace: '$12.4.20$2'
+      regex: true
+      filePattern: '**/gradle.properties'
+  - org.openrewrite.text.FindAndReplace:
+      find: '(?m)^(kspVersion[ \t]*=[ \t]*)(?:1\.9\.25-1\.0\.20|2\.3\.11)([ \t]*(?:#.*)?)$'
+      replace: '$12.3.12$2'
+      regex: true
+      filePattern: '**/gradle.properties'
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: io.koraframework.migration.NormalizeKotlinDependencies
 displayName: Normalize Kora dependencies in Kotlin Gradle builds
 description: >-
-  Use the BOM directly on implementation, version KSP explicitly, and remove obsolete processor wiring.
+  Use the BOM directly on implementation, version KSP explicitly, while preserving custom processor wiring and build blocks.
   kspTest is semantic and is preserved; tests declaring @KoraApp in src/test require it.
 recipeList:
-  - org.openrewrite.text.FindAndReplace:
-      find: '(?ms)^[ \t]*val koraBom: Configuration by configurations\.creating\r?\n[ \t]*configurations \{\r?\n.*?extendsFrom\(koraBom\).*?^[ \t]*\}\r?\n(?:\r?\n)?'
-      replace: ''
-      regex: true
-      filePattern: '**/*.gradle.kts'
-
   - org.openrewrite.text.FindAndReplace:
       find: 'koraBom(platform("io.koraframework:kora-bom:${property("koraVersion")}"))'
       replace: 'implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))'
@@ -169,11 +186,6 @@ recipeList:
   - org.openrewrite.text.FindAndReplace:
       find: 'kspTest("io.koraframework:symbol-processors")'
       replace: 'kspTest("io.koraframework:symbol-processors:${property("koraVersion")}")'
-      filePattern: '**/*.gradle.kts'
-  - org.openrewrite.text.FindAndReplace:
-      find: '(?mi)^.*ka(?i:pt).*\r?\n'
-      replace: ''
-      regex: true
       filePattern: '**/*.gradle.kts'
 
 ---
@@ -209,7 +221,8 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: io.koraframework.migration.RemoveEmptyEnvironmentBlock
 displayName: Remove invalid empty Gradle environment entries
-description: Remove environment(["": ""]) placeholders that prevent JVM process startup on Windows.
+description: >-
+  Remove environment(["": ""]) placeholders that prevent JVM process startup on Windows.
 recipeList:
   - org.openrewrite.text.FindAndReplace:
       find: '(?ms)\r?\n[ \t]*environment\(\[\s*\r?\n[ \t]*"": "",?\s*\r?\n[ \t]*\]\)\s*\r?\n'

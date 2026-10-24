@@ -1,183 +1,142 @@
 #!/usr/bin/env python3
-"""Kora 1.x -> 2.0: migrate configuration keys and section names.
+"""Kora 1.x -> 2.x configuration keys, scoped by explicit configuration paths.
 
-HTTP server
------------
-In Kora 1.x the public and the private (system) HTTP servers were configured by flat keys
-inside the `httpServer` section. In Kora 2.0 the system server has its own nested section
-`httpServer.system`, and the public server uses plain `port`.
-
-    publicApiHttpPort           -> port
-    privateApiHttpPort          -> system.port
-    privateApiHttpReadinessPath -> system.readinessPath
-    privateApiHttpLivenessPath  -> system.livenessPath
-    privateApiHttpMetricsPath   -> system.metricsPath
-
-Why this matters beyond cosmetics: `SystemHttpServerConfig extends HttpServerConfig`, so the
-system server inherits `port()` = 8080. While `privateApiHttpPort` stays unrecognised, BOTH
-servers bind to 8080 and the application dies on startup with
-
-    HTTP server 'kora-undertow-system' (Undertow) failed to start on port '8080': port is already in use
-
-JDBC section
-------------
-The JDBC datasource section was renamed: `db` -> `jdbc`. In 2.0 `JdbcDatabaseModule` wires
-`new JdbcDatabaseFactoryModule("jdbc")`, so a config still using `db` leaves every value unset and
-the application fails on startup (or in tests) with
-
-    ConfigValueException: Config expected value, but got null at path: 'ROOT.jdbc.username'
-
-Only a top-level `db` block is renamed, and only in files that actually contain `jdbcUrl`, so
-unrelated `db` sections of other integrations are left alone.
-
-Dry-run by default; pass --apply to write. Idempotent: running it twice changes nothing.
-
-Usage:
-    python migration/scripts/migrate_config_keys.py [--apply] [PATH ...]
-
-PATH defaults to the `examples` and `guides` directories of this repository.
-
-Limitations:
-    - Only HOCON/YAML/properties-like `key = value` and `key: value` forms are handled.
-    - A key is rewritten only when it is not already nested under `system`; the script does not
-      reformat or reorder the section, it only renames keys in place.
-    - `dataApiHttpPort` and other non-Kora keys are left untouched and reported, because their
-      intent is application-specific.
-    - The `db` -> `jdbc` rule keys off a top-level `db {` / `db:` line; a JDBC section nested
-      somewhere else has to be migrated by hand.
+Handles simple multiline HOCON, YAML mappings and dotted .properties keys.
+Inline HOCON objects, substitutions as keys, YAML aliases/flow collections and
+source-embedded configuration are reported for manual review, never guessed.
 """
-
 from __future__ import annotations
-
-import argparse
 import re
-import sys
-from pathlib import Path
+import migration_common as common
 
-ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_SCAN = (ROOT / "examples", ROOT / "guides")
-SUFFIXES = {".conf", ".yaml", ".yml", ".properties"}
-SOURCE_SUFFIXES = {".java", ".kt"}
-SKIP_PARTS = {"build", ".gradle", ".git", "agents-md"}
-
-# Tests configure the graph with HOCON embedded in a text block:
-#     KoraConfigModification.ofString("""
-#         jdbc { ... }
-#         """)
-# Those keys need the same migration as the .conf files, but the rewrite has to stay inside the
-# text block - applying config rules to arbitrary Java or Kotlin would corrupt real code.
-EMBEDDED_CONFIG = re.compile(r'(ofString\(\s*""")(.*?)(""")', re.S)
-
-RENAMES = (
-    ("publicApiHttpPort", "port"),
-    ("privateApiHttpPort", "system.port"),
-    ("privateApiHttpReadinessPath", "system.readinessPath"),
-    ("privateApiHttpLivenessPath", "system.livenessPath"),
-    ("privateApiHttpMetricsPath", "system.metricsPath"),
-)
-
-UNKNOWN_KEYS = ("dataApiHttpPort",)
+HTTP = {'publicApiHttpPort': 'port', 'privateApiHttpPort': 'system.port',
+        'privateApiHttpReadinessPath': 'system.readinessPath',
+        'privateApiHttpLivenessPath': 'system.livenessPath',
+        'privateApiHttpMetricsPath': 'system.metricsPath'}
 
 
-def config_files(scan_roots):
-    for scan_root in scan_roots:
-        if scan_root.is_file():
-            yield scan_root
+def entries(text, yaml):
+    """Yield (line index, full path, local key, indentation, value, opening block)."""
+    stack = []
+    for index, line in enumerate(text.splitlines(True)):
+        stripped = line.strip()
+        if not stripped or stripped.startswith(('#', '//', '!')):
             continue
-        for path in scan_root.rglob("*"):
-            if not path.is_file() or SKIP_PARTS.intersection(path.parts):
-                continue
-            if path.suffix in SUFFIXES or path.suffix in SOURCE_SUFFIXES:
-                yield path
-
-
-def migrate_text(text: str) -> tuple[str, list[str]]:
-    changes = []
-    for old, new in RENAMES:
-        # `key = value` / `key: value`, keeping the original indentation and separator
-        pattern = re.compile(rf"^(\s*){re.escape(old)}(\s*[:=])", re.M)
-        text, count = pattern.subn(rf"\g<1>{new}\g<2>", text)
-        if count:
-            changes.append(f"{old} -> {new} ({count})")
-
-    # A 1.x circuit breaker had one count-based sliding window; 2.0 has several implementations,
-    # and the window moved into the `countBased` block. The default implementation
-    # (STRIPED_APPROX) dereferences `countBased()` without a null check, so the block is
-    # effectively required once a circuit breaker is in use.
-    pattern = re.compile(r"^(\s*)slidingWindowSize(\s*[:=]\s*)(\S+)\s*$", re.M)
-    text, count = pattern.subn(
-        lambda m: f"{m.group(1)}type = FIXED_WINDOW\n{m.group(1)}countBased.windowSize{m.group(2)}{m.group(3)}",
-        text)
-    if count:
-        changes.append(f"slidingWindowSize -> type + countBased.windowSize ({count})")
-
-    # OpenApiManagementConfig#files is a required list in 2.0; the 1.x key was `file` and could be
-    # a single string. HOCON accepts a scalar where a list is expected, so only the name changes.
-    text, count = re.subn(r"^(\s*)file(\s*[:=])", r"\g<1>files\g<2>", text, flags=re.M) \
-        if "openapi" in text and "management" in text else (text, 0)
-    if count:
-        changes.append(f"openapi.management.file -> files ({count})")
-
-    # RapiDoc is gone in 2.0; the second viewer is Scalar. The key is silently ignored otherwise,
-    # which hides the fact that the endpoint no longer exists.
-    if "rapidoc" in text:
-        text, count = re.subn(r"^(\s*)rapidoc(\s*[.{:])", r"\g<1>scalar\g<2>", text, flags=re.M)
-        if count:
-            changes.append(f"rapidoc -> scalar ({count})")
-
-    # `db` section is JDBC only when it configures a datasource
-    if "jdbcUrl" in text:
-        # leading whitespace is allowed because the same config appears indented inside test text blocks
-        text, count = re.subn(r"^(\s*)db(\s*[{:])", r"\g<1>jdbc\g<2>", text, flags=re.M)
-        if count:
-            changes.append(f"db -> jdbc section ({count})")
-
-    return text, changes
-
-
-def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--apply", action="store_true", help="write changes; default is dry-run")
-    parser.add_argument("paths", nargs="*", type=Path, help="files or directories to scan")
-    args = parser.parse_args()
-
-    scan_roots = [path.resolve() for path in (args.paths or list(DEFAULT_SCAN))]
-
-    changed_files = 0
-    warned = []
-    for path in config_files(scan_roots):
-        original = path.read_text(encoding="utf-8")
-
-        if path.suffix in SOURCE_SUFFIXES:
-            changes = []
-
-            def migrate_block(match):
-                migrated, block_changes = migrate_text(match.group(2))
-                changes.extend(block_changes)
-                return match.group(1) + migrated + match.group(3)
-
-            updated = EMBEDDED_CONFIG.sub(migrate_block, original)
+        indent = line[:len(line)-len(line.lstrip())]
+        if yaml:
+            while stack and len(indent) <= stack[-1][0]:
+                stack.pop()
         else:
-            updated, changes = migrate_text(original)
-
-        for unknown in UNKNOWN_KEYS:
-            if re.search(rf"^\s*{re.escape(unknown)}\s*[:=]", original, re.M):
-                warned.append(f"{path.relative_to(ROOT)}: {unknown} is not a Kora 2.0 key, left untouched")
-
-        if updated == original:
+            if re.fullmatch(r'\},?\s*(?:(?://|#).*)?', stripped):
+                if stack:
+                    stack.pop()
+                continue
+        match = re.match(r'([A-Za-z_][\w.-]*)\s*(\{|[:=])\s*(.*?)(?:\r?\n)?$', line.lstrip())
+        if not match:
+            if yaml and stripped.startswith('-'):
+                stack.append((len(indent), '__unsupported_list__'))
             continue
-        changed_files += 1
-        print(f"CHANGE {path.relative_to(ROOT)}: {', '.join(changes)}")
-        if args.apply:
-            path.write_text(updated, encoding="utf-8")
+        key, separator, value = match.groups()
+        # Inline structures are not parsed by this deliberately small reader.
+        if separator == '{' and value.strip() or any(c in common.code_mask(value) for c in '{}'):
+            if '{' in common.code_mask(value) and '}' not in common.code_mask(value):
+                stack.append((len(indent), '__unsupported_object__'))
+            continue
+        prefix = stack[-1][1] if stack else ''
+        full = prefix + '.' + key if prefix else key
+        block = separator == '{' or yaml and separator == ':' and (not value.strip() or value.lstrip().startswith('#'))
+        yield index, full, key, indent, value, block
+        if block or yaml:
+            stack.append((len(indent), full))
 
-    for warning in warned:
-        print(f"WARN   {warning}", file=sys.stderr)
 
-    mode = "APPLIED" if args.apply else "DRY-RUN"
-    print(f"{mode}: {changed_files} file(s)")
-    return 0
+def migrate_text(path, text, args):
+    yaml = path.suffix in {'.yaml', '.yml'}
+    if yaml and re.search(r'(?m)(?:^|\s)(?:[&*][\w-]+|<<:)', text):
+        return text, ['YAML anchors/aliases/merge keys: migrate with a YAML-aware tool']
+    newline = '\r\n' if '\r\n' in text else '\n'
+    lines = text.splitlines(True)
+    items = list(entries(text, yaml))
+    paths = {item[1] for item in items}
+    edits, system, reviews = {}, [], []
+    for index, full, key, indent, value, block in items:
+        parent = full.rsplit('.', 1)[0] if '.' in full else ''
+        leaf = full.rsplit('.', 1)[-1]
+        replacement = None
+        if parent == args.http_server_path and leaf in HTTP:
+            replacement = HTTP[leaf]
+            if replacement.startswith('system.') and yaml:
+                if args.http_server_path + '.system' in paths:
+                    reviews.append('Existing HTTP system block: merge legacy privateApi keys manually')
+                else:
+                    system.append((index, indent, replacement.split('.', 1)[1], value))
+                continue
+        if parent == args.openapi_path and leaf == 'file' and not block:
+            if args.openapi_path + '.files' in paths:
+                reviews.append('Both OpenAPI file and files exist: merge manually')
+                continue
+            # Only a simple string literal is mechanically turned into a one-element list.
+            if not re.fullmatch(r'"(?:\\.|[^"\\])*"\s*', value):
+                reviews.append('OpenAPI file value is not a simple quoted string: convert to files list manually')
+                continue
+            replacement = 'files'
+            value = '[' + value.strip() + ']'
+            edits[index] = indent + (key[:len(key)-len(leaf)] if '.' in key else '') + 'files' + (': ' if yaml else ' = ') + value + newline
+            continue
+        if full == args.openapi_path + '.rapidoc' or full.startswith(args.openapi_path + '.rapidoc.'):
+            if 'rapidoc' in key:
+                edits[index] = lines[index].replace(key, key.replace('rapidoc', 'scalar', 1), 1)
+            continue
+        if leaf == 'slidingWindowSize' and parent in args.circuit_breaker_path:
+            if parent + '.type' in paths or parent + '.countBased' in paths or parent + '.countBased.windowSize' in paths:
+                reviews.append(f'{parent}: existing type/countBased requires manual merge')
+            else:
+                prefix = parent + '.' if '.' in key else ''
+                if yaml:
+                    edits[index] = indent + 'type: FIXED_WINDOW' + newline + indent + 'countBased:' + newline + indent + '  windowSize: ' + value + newline
+                else:
+                    edits[index] = indent + prefix + 'type = FIXED_WINDOW' + newline + indent + prefix + 'countBased.windowSize = ' + value + newline
+            continue
+        if replacement:
+            target = parent + '.' + replacement
+            if target in paths:
+                reviews.append(f'{full}: target {target} already exists; merge manually')
+                continue
+            # Replace local key only, retain value/comments and formatting.
+            local = replacement if '.' not in key else key[:len(key)-len(leaf)] + replacement
+            edits[index] = lines[index].replace(key, local, 1)
+    if system:
+        first = system[0][0]
+        body = system[0][1] + 'system:' + newline
+        for index, indent, key, value in system:
+            body += indent + '  ' + key + ': ' + value + newline
+            edits[index] = ''
+        edits[first] = body
+    for token, notice in (
+            ('jdbcUrl', 'Review JDBC factory config path; custom db paths are preserved'),
+            ('slidingWindowSize', 'Set --circuit-breaker-path for each owned legacy circuit-breaker block'),
+            ('singlePartUploadLimit', 'HEAD S3 removed upload.singlePartUploadLimit; review only S3-owned config'),
+            ('{', 'Inline HOCON objects are left for manual review if not simple multiline blocks')):
+        if token in text and (token != '{' or any('{' in line and '}' in line for line in lines)):
+            reviews.append(notice)
+    return ''.join(edits.get(i, line) for i, line in enumerate(lines)), reviews
 
 
-if __name__ == "__main__":
-    raise SystemExit(main())
+def main():
+    parser = common.parser(__doc__)
+    parser.add_argument('--http-server-path', default='httpServer')
+    parser.add_argument('--openapi-path', default='openapi.management')
+    parser.add_argument('--circuit-breaker-path', action='append', default=[])
+    args = parser.parse_args()
+    root = args.project_root.resolve()
+    plans, reviews = [], []
+    for path in common.files(args, {'.conf', '.yaml', '.yml', '.properties'}):
+        old = common.read(path)
+        new, notices = migrate_text(path, old, args)
+        plans.append((path, path, old, new))
+        reviews.extend(f'{path.relative_to(root)}: {notice}' for notice in notices)
+    return common.execute(args, plans, reviews)
+
+
+if __name__ == '__main__':
+    common.run(main)

@@ -35,14 +35,8 @@ dependencies {
 test {
     useJUnitPlatform()
     testLogging {
-        def isCiBuild = providers.environmentVariable("CI").map { it.toBoolean() }.orElse(false).get()
-        if (isCiBuild) {
-            showStandardStreams(false)
-            events("failed")
-        } else {
-            showStandardStreams(true)
-            events("passed", "skipped", "failed")
-        }
+        showStandardStreams(false)
+        events("failed")
         exceptionFormat = "full"
     }
 }

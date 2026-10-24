@@ -18,6 +18,46 @@ import org.openrewrite.test.RewriteTest;
  */
 class Kora1To2Test implements RewriteTest {
 
+    @Test
+    void relocatesLegacyJavaEncoder() {
+        rewriteRun(spec -> spec.recipeFromResources("io.koraframework.migration.Kora1To2")
+                .parser(JavaParser.fromJavaVersion().dependsOn(
+                    "package ru.tinkoff.kora.logging.logback; public class ConsoleTextRecordEncoder {}")),
+            java("""
+                import ru.tinkoff.kora.logging.logback.ConsoleTextRecordEncoder;
+                class Logging { ConsoleTextRecordEncoder encoder; }
+                """, """
+                import io.koraframework.logging.logback.text.ConsoleTextRecordEncoder;
+
+                class Logging { ConsoleTextRecordEncoder encoder; }
+                """));
+    }
+
+    @Test
+    void updatesMigrationVersionProperties() {
+        rewriteRun(spec -> spec.recipeFromResources("io.koraframework.migration.Kora1To2"),
+            text("koraVersion=1.2.0\nkotlinVersion=1.9.25\nkspVersion=1.9.25-1.0.20\n",
+                 "koraVersion=2.0.0.RC2\nkotlinVersion=2.4.20\nkspVersion=2.3.12\n",
+                 spec -> spec.path("gradle.properties")));
+    }
+
+    @Test
+    void relocatesLegacyXmlEncoder() {
+        rewriteRun(spec -> spec.recipeFromResources("io.koraframework.migration.Kora1To2"),
+            text("<encoder class=\"ru.tinkoff.kora.logging.logback.ConsoleTextRecordEncoder\"/>",
+                 "<encoder class=\"io.koraframework.logging.logback.text.ConsoleTextRecordEncoder\"/>",
+                 spec -> spec.path("src/main/resources/logback.xml")));
+    }
+
+    @Test
+    void corePreservesUnrelatedKotlinAndToolingVersions() {
+        rewriteRun(
+            text("junitVersion=5.11.0\nmockkVersion=1.13.0\n", spec -> spec.path("gradle.properties")),
+            text("class CustomController { suspend fun calculate() = 1 }", spec -> spec.path("src/main/kotlin/CustomController.kt")),
+            text("kapt(\"org.mapstruct:mapstruct-processor:1.6.3\")\n", spec -> spec.path("build.gradle.kts"))
+        );
+    }
+
     private static final String[] KORA_1_X_STUBS = {
             """
             package ru.tinkoff.kora.common;
