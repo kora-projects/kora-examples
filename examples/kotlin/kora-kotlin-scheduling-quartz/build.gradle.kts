@@ -3,38 +3,30 @@
 plugins {
     id("application")
     id("jacoco")
-    kotlin("jvm") version ("1.9.25")
-    id("com.google.devtools.ksp") version ("1.9.25-1.0.20")
-}
-
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom); compileOnly.get().extendsFrom(koraBom)
-    api.get().extendsFrom(koraBom); implementation.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom); kspTest.get().extendsFrom(koraBom)
+    kotlin("jvm") version ("2.4.10")
+    id("com.google.devtools.ksp") version ("2.3.11")
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
-    ksp("ru.tinkoff.kora:symbol-processors")
-    kspTest("ru.tinkoff.kora:symbol-processors")
-    implementation("ru.tinkoff.kora:scheduling-quartz")
-    implementation("ru.tinkoff.kora:config-hocon")
-    implementation("ru.tinkoff.kora:logging-logback")
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
+    implementation("io.koraframework:scheduling-quartz")
+    implementation("io.koraframework:config-hocon")
+    implementation("io.koraframework:logging-logback")
+    testImplementation("io.koraframework:test-junit5")
     testImplementation("org.awaitility:awaitility:4.2.0")
 }
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
 
 application {
     applicationName = "application"
-    mainClass.set("ru.tinkoff.kora.kotlin.example.scheduling.quartz.ApplicationKt")
+    mainClass.set("io.koraframework.kotlin.example.scheduling.quartz.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 

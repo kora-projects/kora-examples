@@ -1,0 +1,38 @@
+package io.koraframework.kotlin.example.kafka.listener
+
+import io.goodforgod.testcontainers.extensions.ContainerMode
+import io.goodforgod.testcontainers.extensions.kafka.*
+import org.junit.jupiter.api.Test
+import org.testcontainers.shaded.org.awaitility.Awaitility
+import io.koraframework.application.graph.Lifecycle
+import io.koraframework.common.annotation.Tag
+import io.koraframework.kotlin.example.kafka.Application
+import io.koraframework.kotlin.example.kafka.kafkaConfig
+import io.koraframework.test.extension.junit5.KoraAppTest
+import io.koraframework.test.extension.junit5.KoraAppTestConfigModifier
+import io.koraframework.test.extension.junit5.KoraConfigModification
+import io.koraframework.test.extension.junit5.TestComponent
+import java.time.Duration
+import java.util.concurrent.Executors
+
+@TestcontainersKafka(mode = ContainerMode.PER_RUN, topics = Topics("my-topic-consumer"))
+@KoraAppTest(Application::class)
+class AutoCommitRecordsListenerTests : KoraAppTestConfigModifier {
+    @ConnectionKafka
+    lateinit var connection: KafkaConnection
+
+    @Tag(AutoCommitRecordsListenerModule.AutoCommitRecordsListenerProcessTag::class)
+    @TestComponent
+    lateinit var consumerLifecycle: Lifecycle
+
+    @TestComponent
+    lateinit var consumer: AutoCommitRecordsListener
+    override fun config(): KoraConfigModification = kafkaConfig(connection)
+
+    @Test
+    fun processed() {
+        connection.send("my-topic-consumer", Event.ofValueAndRandomKey("Ivan"))
+        Awaitility.await().atMost(Duration.ofSeconds(15)).pollExecutorService(Executors.newSingleThreadExecutor())
+            .until { consumer.received().size == 1 }
+    }
+}

@@ -1,8 +1,8 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
-    kotlin("jvm") version "1.9.25" apply false
-    id("com.google.devtools.ksp") version "1.9.25-1.0.20" apply false
+    kotlin("jvm") version "2.4.10" apply false
+    id("com.google.devtools.ksp") version "2.3.11" apply false
     id("jacoco")
 }
 
@@ -14,7 +14,7 @@ subprojects {
     pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
         configure<org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension> {
             jvmToolchain {
-                languageVersion.set(JavaLanguageVersion.of(21))
+                languageVersion.set(JavaLanguageVersion.of(25))
                 vendor.set(JvmVendorSpec.ADOPTIUM)
             }
             sourceSets.named("main") { kotlin.srcDir("build/generated/ksp/main/kotlin") }
@@ -22,20 +22,15 @@ subprojects {
         }
     }
 
-    val koraBom: Configuration by configurations.creating
-    configurations {
-        listOf("ksp", "kspTest", "compileOnly", "api", "implementation", "testImplementation").forEach { name ->
-            named(name) { extendsFrom(koraBom) }
-        }
-    }
-
     dependencies {
-        koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
-        add("ksp", "ru.tinkoff.kora:symbol-processors")
+        add("implementation", platform("io.koraframework:kora-bom:${property("koraVersion")}"))
+        add("ksp", "io.koraframework:symbol-processors:${property("koraVersion")}")
 
         add("testImplementation", "org.json:json:20231013")
         add("testImplementation", "org.skyscreamer:jsonassert:1.5.1")
-        add("testImplementation", "ru.tinkoff.kora:test-junit5")
+        add("testImplementation", "io.koraframework:test-junit5")
+        // mockito-kotlin 5.4.0 pins an older mockito-core whose Byte Buddy rejects Java 25 class files
+        add("testImplementation", "org.mockito:mockito-core:5.18.0")
         add("testImplementation", "org.mockito.kotlin:mockito-kotlin:5.4.0")
     }
 

@@ -2,7 +2,7 @@
 
 This module is the runnable Kotlin/Gradle companion application for
 the [S3 guide](../../../agents-md/kora-docs/mkdocs/docs/en/guides/s3.md). It demonstrates Kora S3 client integration,
-object upload/download operations, MinIO-compatible local testing, and typed service code around object storage.
+object upload/download operations, local testing against RustFS, and typed service code around object storage.
 
 ## Documentation
 

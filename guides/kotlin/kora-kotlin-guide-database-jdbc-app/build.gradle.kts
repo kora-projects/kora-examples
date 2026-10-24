@@ -7,38 +7,28 @@ plugins {
     id("application")
 }
 
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom)
-    compileOnly.get().extendsFrom(koraBom)
-    runtimeOnly.get().extendsFrom(koraBom)
-    implementation.get().extendsFrom(koraBom)
-    testCompileOnly.get().extendsFrom(koraBom)
-    kspTest.get().extendsFrom(koraBom)
-    testRuntimeOnly.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom)
-}
-
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
 
-    ksp("ru.tinkoff.kora:symbol-processors")
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
     runtimeOnly("org.postgresql:postgresql:42.7.3")
-    implementation("ru.tinkoff.kora:config-hocon")
-    implementation("ru.tinkoff.kora:database-flyway")
-    implementation("ru.tinkoff.kora:database-jdbc")
-    implementation("ru.tinkoff.kora:http-server-undertow")
-    implementation("ru.tinkoff.kora:json-module")
-    implementation("ru.tinkoff.kora:logging-logback")
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    implementation("io.koraframework:config-hocon")
+    implementation("io.koraframework:database-flyway")
+    // с Flyway 10 поддержка конкретных СУБД вынесена в отдельные артефакты;
+    // без этого приложение падает на старте: "Unsupported Database: PostgreSQL"
+    implementation("org.flywaydb:flyway-database-postgresql:13.8.1")
+    implementation("io.koraframework:database-jdbc")
+    implementation("io.koraframework:http-server-undertow")
+    implementation("io.koraframework:json-common")
+    implementation("io.koraframework:logging-logback")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.koraframework:test-junit5")
 }
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
     sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
@@ -47,7 +37,7 @@ kotlin {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
@@ -59,7 +49,7 @@ ksp {
 
 application {
     applicationName = "application"
-    mainClass.set("ru.tinkoff.kora.guide.databasejdbc.ApplicationKt")
+    mainClass.set("io.koraframework.guide.databasejdbc.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 

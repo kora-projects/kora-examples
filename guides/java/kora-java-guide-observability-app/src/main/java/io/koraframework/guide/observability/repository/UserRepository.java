@@ -1,0 +1,18 @@
+package io.koraframework.guide.observability.repository;
+
+import java.util.List;
+import java.util.Optional;
+import io.koraframework.guide.observability.dto.UserResponse;
+
+public interface UserRepository {
+
+    List<UserResponse> findAll();
+
+    Optional<UserResponse> findById(String id);
+
+    String save(String name, String email);
+
+    boolean update(String id, String name, String email);
+
+    boolean deleteById(String id);
+}

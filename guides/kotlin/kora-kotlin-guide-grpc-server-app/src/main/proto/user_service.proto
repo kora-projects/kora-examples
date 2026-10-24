@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package ru.tinkoff.kora.guide.grpcserver;
+package io.koraframework.guide.grpcserver;
 option java_multiple_files = true;
 
 import "google/protobuf/empty.proto";

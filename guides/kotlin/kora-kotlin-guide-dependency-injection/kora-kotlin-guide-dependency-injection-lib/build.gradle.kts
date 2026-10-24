@@ -1,24 +1,23 @@
-val koraBom: Configuration by configurations.creating
-configurations {
-    compileOnly.get().extendsFrom(koraBom)
-    api.get().extendsFrom(koraBom)
-    implementation.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom)
-}
-
 plugins {
     id("org.jetbrains.kotlin.jvm")
+    id("com.google.devtools.ksp")
     id("java-library")
 }
 
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
+
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
 
     api(project(":guides:kotlin:kora-kotlin-guide-dependency-injection:kora-kotlin-guide-dependency-injection-common"))
 
-    implementation("ru.tinkoff.kora:config-common")
+    implementation("io.koraframework:config-common")
 
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.koraframework:test-junit5")
+}
+
+kotlin {
+    sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
 }

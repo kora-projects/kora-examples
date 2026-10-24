@@ -7,39 +7,27 @@ plugins {
     id("application")
 }
 
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom)
-    compileOnly.get().extendsFrom(koraBom)
-    runtimeOnly.get().extendsFrom(koraBom)
-    implementation.get().extendsFrom(koraBom)
-    testCompileOnly.get().extendsFrom(koraBom)
-    kspTest.get().extendsFrom(koraBom)
-    testRuntimeOnly.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom)
-}
-
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
 
-    ksp("ru.tinkoff.kora:symbol-processors")
-    implementation("ru.tinkoff.kora:config-hocon")
-    implementation("ru.tinkoff.kora:http-client-ok")
-    implementation("ru.tinkoff.kora:http-server-undertow")
-    implementation("ru.tinkoff.kora:json-module")
-    implementation("ru.tinkoff.kora:logging-logback")
-    implementation("ru.tinkoff.kora.experimental:s3-client-aws")
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
+    implementation("io.koraframework:config-hocon")
+    implementation("io.koraframework:http-client-jdk")
+    implementation("io.koraframework:http-server-undertow")
+    implementation("io.koraframework:json-common")
+    implementation("io.koraframework:logging-logback")
+    implementation("io.koraframework:s3-client-aws")
+    implementation("io.koraframework.experimental:s3-client-kora")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
-    testImplementation("io.goodforgod:testcontainers-extensions-minio:0.13.1")
-    testImplementation("ru.tinkoff.kora:test-junit5")
+    testImplementation("io.goodforgod:testcontainers-extensions-rustfs:0.16.0")
+    testImplementation("io.koraframework:test-junit5")
 }
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
     sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") }
@@ -48,7 +36,7 @@ kotlin {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
@@ -56,7 +44,7 @@ java {
 
 application {
     applicationName = "application"
-    mainClass.set("ru.tinkoff.kora.guide.s3.ApplicationKt")
+    mainClass.set("io.koraframework.guide.s3.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 

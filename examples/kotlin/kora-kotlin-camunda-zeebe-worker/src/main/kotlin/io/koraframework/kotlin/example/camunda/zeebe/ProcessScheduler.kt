@@ -1,0 +1,36 @@
+package io.koraframework.kotlin.example.camunda.zeebe
+
+import io.camunda.client.CamundaClient
+import org.slf4j.LoggerFactory
+import io.koraframework.common.annotation.Component
+import io.koraframework.scheduling.jdk.annotation.ScheduleJdkAtFixedRate
+import java.util.Date
+import java.util.UUID
+
+@Component
+class ProcessScheduler(private val client: CamundaClient) {
+    private val logger = LoggerFactory.getLogger(ProcessScheduler::class.java)
+
+    @ScheduleJdkAtFixedRate(period = 5000L, initialDelay = 500L)
+    fun start() {
+        val event = client
+            .newCreateInstanceCommand()
+            .bpmnProcessId("demo")
+            .latestVersion()
+            .variables(
+                """
+                {"startId":"${UUID.randomUUID()}","b":"${Date()}"}
+                """.trimIndent(),
+            )
+            .send()
+            .join()
+
+        logger.info(
+            "Started Process Instance for workflowKey={}, bpmnProcessId={}, version={} with workflowInstanceKey={}",
+            event.processDefinitionKey,
+            event.bpmnProcessId,
+            event.version,
+            event.processInstanceKey,
+        )
+    }
+}

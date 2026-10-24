@@ -3,44 +3,28 @@
 plugins {
     id("application")
     id("jacoco")
-    kotlin("jvm") version ("1.9.25")
-    id("com.google.devtools.ksp") version ("1.9.25-1.0.20")
+    kotlin("jvm") version ("2.4.10")
+    id("com.google.devtools.ksp") version ("2.3.11")
     id("com.github.bjornvester.wsdl2java") version ("2.0.2")
 }
 
-val koraBom: Configuration by configurations.creating
-configurations {
-    ksp.get().extendsFrom(koraBom); compileOnly.get().extendsFrom(koraBom)
-    api.get().extendsFrom(koraBom); implementation.get().extendsFrom(koraBom)
-    testImplementation.get().extendsFrom(koraBom); kspTest.get().extendsFrom(koraBom)
-}
-
 dependencies {
-    koraBom(platform("ru.tinkoff.kora:kora-parent:${property("koraVersion")}"))
-    ksp("ru.tinkoff.kora:symbol-processors")
-    kspTest("ru.tinkoff.kora:symbol-processors")
+    implementation(platform("io.koraframework:kora-bom:${property("koraVersion")}"))
+    ksp("io.koraframework:symbol-processors:${property("koraVersion")}")
 
-    implementation("ru.tinkoff.kora:json-module")
-    implementation("ru.tinkoff.kora:http-client-jdk")
-    implementation("ru.tinkoff.kora:soap-client") {
-        exclude(group = "jakarta.xml")
-        exclude(group = "jakarta.jws")
-        exclude(group = "jakarta.xml.ws")
-        exclude(group = "jakarta.xml.bind")
-        exclude(group = "org.glassfish.jaxb")
-        exclude(group = "com.sun.activation")
-    }
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.1")
-    implementation("ru.tinkoff.kora:logging-logback")
-    implementation("ru.tinkoff.kora:config-hocon")
+    implementation("io.koraframework:json-common")
+    implementation("io.koraframework:http-client-ok")
+    implementation("io.koraframework:soap-client")
+    implementation("io.koraframework:logging-logback")
+    implementation("io.koraframework:config-hocon")
 
-    testImplementation("ru.tinkoff.kora:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-mockserver:0.13.1")
+    testImplementation("io.koraframework:test-junit5")
+    testImplementation("io.goodforgod:testcontainers-extensions-mockserver:0.16.0")
 }
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
@@ -51,7 +35,7 @@ wsdl2java {
     useJakarta.set(true)
     markGenerated.set(true)
     verbose.set(false)
-    packageName.set("ru.tinkoff.kora.example.generated.soap")
+    packageName.set("io.koraframework.example.generated.soap")
     generatedSourceDir.set(layout.buildDirectory.dir("generated/sources/wsdl2java/java"))
     includesWithOptions.set(
         mapOf("**/simple-service.wsdl" to listOf("-wsdlLocation", "https://kora.tinkoff.ru/simple/service?wsdl"))
@@ -64,7 +48,7 @@ sourceSets.main {
 
 application {
     applicationName = "application"
-    mainClass.set("ru.tinkoff.kora.kotlin.example.soap.client.ApplicationKt")
+    mainClass.set("io.koraframework.kotlin.example.soap.client.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dfile.encoding=UTF-8")
 }
 

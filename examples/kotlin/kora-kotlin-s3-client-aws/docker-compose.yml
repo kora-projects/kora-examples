@@ -1,15 +1,14 @@
 services:
-  minio:
-    image: minio/minio:RELEASE.2025-07-23T15-54-02Z
+  rustfs:
+    image: rustfs/rustfs:1.0.0
     restart: unless-stopped
     ports:
       - '9000:9000'
     environment:
-      MINIO_ACCESS_KEY: minio
-      MINIO_SECRET_KEY: minio123
-    command: server /data/minio
+      RUSTFS_ACCESS_KEY: rustfs
+      RUSTFS_SECRET_KEY: rustfs123
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/health']
       interval: 30s
       timeout: 20s
       retries: 3

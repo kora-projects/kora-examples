@@ -6,7 +6,7 @@ plugins {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
         vendor = JvmVendorSpec.ADOPTIUM
     }
 }
@@ -18,22 +18,22 @@ configurations {
 }
 
 dependencies {
-    koraBom platform("ru.tinkoff.kora:kora-parent:$koraVersion")
-    annotationProcessor "ru.tinkoff.kora:annotation-processors"
+    koraBom platform("io.koraframework:kora-bom:$koraVersion")
+    annotationProcessor "io.koraframework:annotation-processors"
 
-    implementation "ru.tinkoff.kora:http-server-undertow"
-    implementation "ru.tinkoff.kora.experimental:camunda-engine-bpmn"
-    implementation "ru.tinkoff.kora.experimental:camunda-rest-undertow"
-    implementation "ru.tinkoff.kora:json-module"
+    implementation "io.koraframework:http-server-undertow"
+    implementation "io.koraframework.experimental:camunda-engine-bpmn"
+    implementation "io.koraframework.experimental:camunda-rest-undertow"
+    implementation "io.koraframework:json-common"
     implementation "org.postgresql:postgresql:42.7.7"
-    implementation "ru.tinkoff.kora:database-jdbc"
+    implementation "io.koraframework:database-jdbc"
 
-    implementation "ru.tinkoff.kora:logging-logback"
-    implementation "ru.tinkoff.kora:config-hocon"
+    implementation "io.koraframework:logging-logback"
+    implementation "io.koraframework:config-hocon"
 
     testImplementation "org.mockito:mockito-core:5.18.0"
-    testImplementation "ru.tinkoff.kora:test-junit5"
-    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.13.1"
+    testImplementation "io.koraframework:test-junit5"
+    testImplementation "io.goodforgod:testcontainers-extensions-postgres:0.16.0"
     testRuntimeOnly "com.h2database:h2:2.2.224"
     testImplementation "org.camunda.bpm:camunda-bpm-assert:7.21.0"
     testImplementation "org.assertj:assertj-core:3.26.0"
@@ -41,7 +41,7 @@ dependencies {
 
 application {
     applicationName = "application"
-    mainClass = "ru.tinkoff.kora.example.camunda.engine.Application"
+    mainClass = "io.koraframework.example.camunda.engine.Application"
     applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
 }
 
@@ -65,10 +65,6 @@ test {
             "-XX:+TieredCompilation",
             "-XX:TieredStopAtLevel=1",
     ]
-
-    environment([
-            "": ""
-    ])
 
     useJUnitPlatform()
     testLogging {
