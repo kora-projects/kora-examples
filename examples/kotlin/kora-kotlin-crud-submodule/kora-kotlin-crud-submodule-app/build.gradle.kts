@@ -30,8 +30,6 @@ dependencies {
     testRuntimeOnly(project(":examples:kotlin:kora-kotlin-crud-submodule:kora-kotlin-crud-submodule-common"))
     testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.16.2")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
-    // JsonModule exposes HttpClientRequestMapper in its signatures; JUnit 5.13+ fails discovery of TestApplication without it
-    testRuntimeOnly("ru.tinkoff.kora:http-client-common")
 }
 
 application {
@@ -72,6 +70,7 @@ val openApiGenerateHttpServer = tasks.register<GenerateTask>("openApiGenerateHtt
 }
 
 tasks.test {
+    exclude("**/TestApplication*") // not a test; JUnit 5.13+ fails discovery if its module types are missing
     dependsOn("distTar")
 }
 
