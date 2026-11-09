@@ -32,7 +32,7 @@ dependencies {
     implementation("ru.tinkoff.kora:logging-logback")
     kspTest("ru.tinkoff.kora:symbol-processors")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
-    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.16.2")
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("ru.tinkoff.kora:test-junit5")
 }
