@@ -19,7 +19,6 @@ import ru.tinkoff.kora.validation.module.ValidationModule;
 
 @ResourceHint(include = { "openapi/http-server.yaml" })
 @NativeImageHint(name = "application", entrypoint = Application.class)
-@ReflectionHint(value = ReflectionHint.AccessType.ALL_PUBLIC_CONSTRUCTORS, types = MicrometerMetricsTrackerFactory.class)
 @KoraApp
 public interface Application extends
         HoconConfigModule,
