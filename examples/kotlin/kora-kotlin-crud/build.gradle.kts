@@ -51,7 +51,7 @@ dependencies {
 
     testImplementation("io.mockk:mockk:1.13.8")
     testImplementation("ru.tinkoff.kora:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-postgres:0.16.2")
     testImplementation("org.testcontainers:junit-jupiter:1.21.4")
 }
 
@@ -139,6 +139,7 @@ tasks.test {
     }
 
     exclude("**/\$*")
+    exclude("**/TestApplication*") // not a test; JUnit 5.13+ fails discovery if its module types are missing
 
     jacoco {
         jacocoExcludeSet.forEach { exclude(it) }
