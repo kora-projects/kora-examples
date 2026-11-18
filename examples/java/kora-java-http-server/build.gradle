@@ -68,6 +68,7 @@ test {
     }
 
     exclude("**/\$*")
+    exclude("**/TestApplication*") // not a test; JUnit 5.13+ fails discovery if its module types are missing
 
     jacoco {
         excludes += ["**/generated/**", "**/Application*", "**/\$*"]

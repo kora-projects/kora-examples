@@ -63,5 +63,6 @@ tasks.test {
         junitXml.required = false
     }
     exclude("**/\$*")
+    exclude("**/TestApplication*") // not a test; JUnit 5.13+ fails discovery if its module types are missing
     jacoco { jacocoExcludeSet.forEach { exclude(it) } }
 }

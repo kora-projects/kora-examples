@@ -22,7 +22,7 @@ dependencies {
     implementation("ru.tinkoff.kora:config-hocon")
     implementation("ru.tinkoff.kora:logging-logback")
     testImplementation("ru.tinkoff.kora:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-redis:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-redis:0.16.2")
     testImplementation("redis.clients:jedis:4.4.3")
 }
 

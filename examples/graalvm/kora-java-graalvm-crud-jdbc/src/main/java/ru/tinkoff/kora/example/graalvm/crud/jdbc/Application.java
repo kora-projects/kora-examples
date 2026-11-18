@@ -1,6 +1,8 @@
 package ru.tinkoff.kora.example.graalvm.crud.jdbc;
 
+import com.zaxxer.hikari.metrics.micrometer.MicrometerMetricsTrackerFactory;
 import io.goodforgod.graalvm.hint.annotation.NativeImageHint;
+import io.goodforgod.graalvm.hint.annotation.ReflectionHint;
 import io.goodforgod.graalvm.hint.annotation.ResourceHint;
 import ru.tinkoff.kora.application.graph.KoraApplication;
 import ru.tinkoff.kora.cache.caffeine.CaffeineCacheModule;

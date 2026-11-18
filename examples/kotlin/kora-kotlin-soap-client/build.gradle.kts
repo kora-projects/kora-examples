@@ -35,7 +35,7 @@ dependencies {
     implementation("ru.tinkoff.kora:config-hocon")
 
     testImplementation("ru.tinkoff.kora:test-junit5")
-    testImplementation("io.goodforgod:testcontainers-extensions-mockserver:0.13.1")
+    testImplementation("io.goodforgod:testcontainers-extensions-mockserver:0.16.2")
 }
 
 kotlin {
